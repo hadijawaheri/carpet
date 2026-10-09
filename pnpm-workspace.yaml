@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+
+catalog:
+  "@eslint/js": ~9.39.5
+  eslint: ~9.39.5
+  typescript: ~6.0.3
+
+minimumReleaseAge: 4320
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
