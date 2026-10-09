@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { JetBrains_Mono, Reem_Kufi, Vazirmatn } from "next/font/google";
+import { Fraunces, JetBrains_Mono, Reem_Kufi, Vazirmatn } from "next/font/google";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { defaultMetadata } from "@/lib/seo";
@@ -15,6 +15,12 @@ const vazirmatn = Vazirmatn({
 const reemKufi = Reem_Kufi({
   subsets: ["arabic", "latin"],
   variable: "--font-reem-kufi",
+  display: "swap",
+});
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  style: ["italic"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 const jetbrainsMono = JetBrains_Mono({
@@ -31,7 +37,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       lang="fa"
       dir="rtl"
       suppressHydrationWarning
-      className={cn("antialiased", vazirmatn.variable, reemKufi.variable, jetbrainsMono.variable)}
+      className={cn(
+        "antialiased",
+        vazirmatn.variable,
+        reemKufi.variable,
+        fraunces.variable,
+        jetbrainsMono.variable,
+      )}
     >
       <body className="min-h-dvh bg-background font-sans text-foreground">
         <AppProviders>{children}</AppProviders>
