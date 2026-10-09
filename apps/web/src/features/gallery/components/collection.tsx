@@ -41,12 +41,7 @@ export function Collection({ carpets, activeIndex, onSelect }: CollectionProps) 
               const width = height * c.imageAspect;
               const active = i === activeIndex;
               return (
-                <li key={c.slug} className="relative flex flex-col gap-4 pt-6">
-                  {/* The rod the carpet hangs from; every rod sits on the same line, so heights compare truthfully. */}
-                  <span
-                    aria-hidden
-                    className="absolute inset-x-[-0.75rem] top-0 h-1 rounded-full bg-saffron"
-                  />
+                <li key={c.slug} className="relative flex flex-col gap-4 pt-1">
                   <button
                     type="button"
                     onClick={() => {
@@ -70,12 +65,12 @@ export function Collection({ carpets, activeIndex, onSelect }: CollectionProps) 
                     />
                   </button>
                   <div className="flex flex-col gap-0.5" style={{ width: Math.max(width, 150) }}>
-                    <span className="font-mono text-accession text-on-wall-muted">
-                      <span dir="ltr">{accessionNumber(i)}</span>
-                    </span>
                     <span className="font-display text-xl font-bold">{c.name}</span>
                     <span className="text-label text-on-wall-muted">
                       {materialLabels[c.material]} · {formatSizeCm(c.widthCm, c.lengthCm)}
+                    </span>
+                    <span className="font-mono text-accession text-on-wall-muted">
+                      <span dir="ltr">{accessionNumber(i)}</span>
                     </span>
                   </div>
                 </li>

@@ -46,16 +46,6 @@ export function AccessionLabel({
       aria-label={`برچسب شیء ${carpet.name}`}
       className={cn("flex flex-col gap-4 bg-card p-5 text-card-foreground shadow-mount", className)}
     >
-      <div className="flex items-baseline justify-between gap-4 text-accession text-muted-foreground">
-        <span dir="ltr" className="font-mono tracking-wider">
-          {accessionNumber(index)}
-        </span>
-        <span>
-          {formatNumber(index + 1)} از {formatNumber(count)}
-          {carpet.isPlaceholder ? " · عکس موقت" : ""}
-        </span>
-      </div>
-
       <h2 className="font-display text-heading leading-tight font-bold">{carpet.name}</h2>
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-spec">
@@ -106,6 +96,16 @@ export function AccessionLabel({
           <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden />
           شیء قبلی
         </button>
+        {/* Museum labels end with the accession number, so the name leads. */}
+        <span className="flex flex-col items-center text-accession text-muted-foreground">
+          <span dir="ltr" className="font-mono tracking-wider">
+            {accessionNumber(index)}
+          </span>
+          <span>
+            {formatNumber(index + 1)} از {formatNumber(count)}
+            {carpet.isPlaceholder ? " · عکس موقت" : ""}
+          </span>
+        </span>
         <button
           type="button"
           onClick={() => onStep(1)}

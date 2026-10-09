@@ -6,7 +6,9 @@ import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } fr
 
 import { formatNumber } from "@/lib/format";
 
-const ZOOM = 4;
+/** Never magnify past the photo's own pixels: beyond that the lens shows blur, not knots. */
+const MAX_ZOOM = 4;
+const MIN_ZOOM = 1.5;
 const LENS = 176;
 const KEY_STEP = 0.04;
 
@@ -15,6 +17,17 @@ export function Loupe({ carpet }: { carpet: Carpet }) {
   const frame = useRef<HTMLDivElement>(null);
   const [point, setPoint] = useState({ x: 0.5, y: 0.42 });
   const [size, setSize] = useState({ w: 0, h: 0 });
+  const [naturalWidth, setNaturalWidth] = useState(0);
+
+  useEffect(() => {
+    // The lens reads the original file, not a resized next/image variant, so measure that file.
+    const img = new window.Image();
+    img.onload = () => setNaturalWidth(img.naturalWidth);
+    img.src = carpet.image;
+    return () => {
+      img.onload = null;
+    };
+  }, [carpet.image]);
 
   useEffect(() => {
     const el = frame.current;
@@ -58,6 +71,10 @@ export function Loupe({ carpet }: { carpet: Carpet }) {
     }));
   };
 
+  const zoom =
+    size.w > 0 && naturalWidth > 0
+      ? Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round((naturalWidth / size.w) * 10) / 10))
+      : MIN_ZOOM;
   const lensX = point.x * size.w;
   const lensY = point.y * size.h;
 
@@ -76,7 +93,7 @@ export function Loupe({ carpet }: { carpet: Carpet }) {
         }}
         onKeyDown={handleKey}
         onFocus={measure}
-        className="relative cursor-none [touch-action:pan-y] overflow-hidden bg-muted shadow-mount outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-card"
+        className="relative cursor-none [touch-action:pan-y] overflow-hidden bg-muted shadow-mount outline-none focus-visible:ring-2 focus-visible:ring-saffron focus-visible:ring-offset-4 focus-visible:ring-offset-background"
         style={{ aspectRatio: carpet.imageAspect }}
       >
         <Image
@@ -96,15 +113,15 @@ export function Loupe({ carpet }: { carpet: Carpet }) {
               left: lensX - LENS / 2,
               top: lensY - LENS / 2,
               backgroundImage: `url(${carpet.image})`,
-              backgroundSize: `${size.w * ZOOM}px ${size.h * ZOOM}px`,
-              backgroundPosition: `${LENS / 2 - lensX * ZOOM}px ${LENS / 2 - lensY * ZOOM}px`,
+              backgroundSize: `${size.w * zoom}px ${size.h * zoom}px`,
+              backgroundPosition: `${LENS / 2 - lensX * zoom}px ${LENS / 2 - lensY * zoom}px`,
             }}
           />
         ) : null}
       </div>
-      <figcaption className="flex justify-between gap-4 text-label text-muted-foreground">
+      <figcaption className="flex justify-between gap-4 text-label text-on-wall-muted">
         <span>{carpet.name}، زیر ذره‌بین</span>
-        <span>بزرگ‌نمایی {formatNumber(ZOOM)} برابر</span>
+        <span>بزرگ‌نمایی {formatNumber(zoom)} برابر</span>
       </figcaption>
     </figure>
   );

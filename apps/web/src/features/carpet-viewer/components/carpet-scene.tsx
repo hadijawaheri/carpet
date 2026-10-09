@@ -4,7 +4,7 @@ import type { Carpet, PileMaterial } from "@farsh/contracts";
 import { AdaptiveDpr, Environment, Lightformer } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
-import { ACESFilmicToneMapping, PCFShadowMap } from "three";
+import { ACESFilmicToneMapping, NeutralToneMapping, PCFShadowMap } from "three";
 
 import { CarpetCloth } from "./carpet-cloth";
 
@@ -34,8 +34,9 @@ export function CarpetScene({
       gl={{
         antialias: true,
         alpha: true,
-        toneMapping: ACESFilmicToneMapping,
-        toneMappingExposure: gallery ? 1.12 : 1.05,
+        // Neutral keeps the madder of the photo; ACES pushed the red-on-red hall towards brown.
+        toneMapping: gallery ? NeutralToneMapping : ACESFilmicToneMapping,
+        toneMappingExposure: gallery ? 1.35 : 1.05,
       }}
       style={{ touchAction: "none" }}
     >
@@ -49,13 +50,15 @@ export function CarpetScene({
           position={[0, 4, 4]}
           scale={[8, 3, 1]}
         />
-        <Lightformer
-          form="rect"
-          intensity={1.2}
-          color="#f3d27a"
-          position={[5, 1, -2]}
-          scale={[3, 6, 1]}
-        />
+        {gallery ? null : (
+          <Lightformer
+            form="rect"
+            intensity={1.2}
+            color="#f3d27a"
+            position={[5, 1, -2]}
+            scale={[3, 6, 1]}
+          />
+        )}
         <Lightformer form="ring" intensity={0.8} color="#ffffff" position={[-5, 0, 3]} scale={3} />
       </Environment>
       {gallery ? <GalleryLights /> : <StudioLights />}
@@ -114,14 +117,14 @@ function GalleryLights() {
         penumbra={0.75}
         intensity={70}
         decay={1.6}
-        color="#ffe8c4"
+        color="#fff4e8"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0004}
         shadow-radius={5}
       />
-      <directionalLight position={[-4, 1, 5]} intensity={0.55} color="#f6d7b0" />
-      <ambientLight intensity={0.12} color="#ffd9c2" />
+      <directionalLight position={[-3, 1.5, 6]} intensity={1.1} color="#fbf1e6" />
+      <ambientLight intensity={0.12} color="#fff4ec" />
     </>
   );
 }

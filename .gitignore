@@ -10,6 +10,6 @@ playwright-report
 .env.local
 next-env.d.ts
 .DS_Store
-.impeccable/hook.cache.json
-.impeccable/questions
-.impeccable/review
+**/.impeccable/hook.cache.json
+**/.impeccable/questions
+**/.impeccable/review
