@@ -30,7 +30,7 @@ export function CarpetCard({
   return (
     <Card
       className={cn(
-        "group relative gap-0 shadow-none transition-shadow duration-500 ease-settle hover:shadow-lift has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring",
+        "group relative gap-0 shadow-none transition-shadow duration-500 ease-settle hover:shadow-mount has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring",
         className,
       )}
     >

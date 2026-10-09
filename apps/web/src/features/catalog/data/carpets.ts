@@ -8,6 +8,7 @@ const placeholderCarpets = [
     material: "silk",
     widthCm: 150,
     lengthCm: 225,
+    density: { unit: "raj", value: 60 },
     image: "/carpets/medallion-black.jpg",
     imageAspect: 0.6558,
     isPlaceholder: true,
