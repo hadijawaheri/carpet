@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T18:33:54+00:00",
+  "title": "Design System: Farsh",
+  "extensions": {
+    "colorMeta": {
+      "madder-wall": {
+        "role": "primary",
+        "displayName": "Madder Wall",
+        "canonical": "#6c1116",
+        "tonalRamp": [
+          "oklch(15% 0.071 24.2)",
+          "oklch(25% 0.092 24.2)",
+          "oklch(35% 0.113 24.2)",
+          "oklch(45% 0.124 24.2)",
+          "oklch(58% 0.124 24.2)",
+          "oklch(70% 0.123 24.2)",
+          "oklch(82% 0.098 24.2)",
+          "oklch(94% 0.073 24.2)"
+        ]
+      },
+      "wall-deep": {
+        "role": "primary",
+        "displayName": "Deep Wall",
+        "canonical": "#470a0e",
+        "tonalRamp": [
+          "oklch(15% 0.060 23.0)",
+          "oklch(25% 0.075 23.0)",
+          "oklch(35% 0.090 23.0)",
+          "oklch(45% 0.090 23.0)",
+          "oklch(58% 0.090 23.0)",
+          "oklch(70% 0.090 23.0)",
+          "oklch(82% 0.080 23.0)",
+          "oklch(94% 0.062 23.0)"
+        ]
+      },
+      "wall-lit": {
+        "role": "primary",
+        "displayName": "Lit Wall",
+        "canonical": "#8c1b20",
+        "tonalRamp": [
+          "oklch(15% 0.079 24.5)",
+          "oklch(25% 0.104 24.5)",
+          "oklch(35% 0.129 24.5)",
+          "oklch(45% 0.148 24.5)",
+          "oklch(58% 0.148 24.5)",
+          "oklch(70% 0.141 24.5)",
+          "oklch(82% 0.111 24.5)",
+          "oklch(94% 0.082 24.5)"
+        ]
+      },
+      "gallery-cream": {
+        "role": "neutral",
+        "displayName": "Gallery Cream",
+        "canonical": "#f4e8d5",
+        "tonalRamp": [
+          "oklch(15% 0.028 79.5)",
+          "oklch(25% 0.028 79.5)",
+          "oklch(35% 0.028 79.5)",
+          "oklch(45% 0.028 79.5)",
+          "oklch(58% 0.028 79.5)",
+          "oklch(70% 0.028 79.5)",
+          "oklch(82% 0.028 79.5)",
+          "oklch(94% 0.028 79.5)"
+        ]
+      },
+      "on-wall-muted": {
+        "role": "neutral",
+        "displayName": "Wall Muted",
+        "canonical": "#e2c2a4",
+        "tonalRamp": [
+          "oklch(15% 0.048 65.1)",
+          "oklch(25% 0.054 65.1)",
+          "oklch(35% 0.054 65.1)",
+          "oklch(45% 0.054 65.1)",
+          "oklch(58% 0.054 65.1)",
+          "oklch(70% 0.054 65.1)",
+          "oklch(82% 0.054 65.1)",
+          "oklch(94% 0.049 65.1)"
+        ]
+      },
+      "saffron": {
+        "role": "secondary",
+        "displayName": "Saffron",
+        "canonical": "#d6a24a",
+        "tonalRamp": [
+          "oklch(15% 0.070 78.1)",
+          "oklch(25% 0.091 78.1)",
+          "oklch(35% 0.111 78.1)",
+          "oklch(45% 0.121 78.1)",
+          "oklch(58% 0.121 78.1)",
+          "oklch(70% 0.121 78.1)",
+          "oklch(82% 0.097 78.1)",
+          "oklch(94% 0.072 78.1)"
+        ]
+      },
+      "mount-board": {
+        "role": "neutral",
+        "displayName": "Mount Board",
+        "canonical": "#f2e7d3",
+        "tonalRamp": [
+          "oklch(15% 0.029 82.6)",
+          "oklch(25% 0.029 82.6)",
+          "oklch(35% 0.029 82.6)",
+          "oklch(45% 0.029 82.6)",
+          "oklch(58% 0.029 82.6)",
+          "oklch(70% 0.029 82.6)",
+          "oklch(82% 0.029 82.6)",
+          "oklch(94% 0.029 82.6)"
+        ]
+      },
+      "mount-ink": {
+        "role": "neutral",
+        "displayName": "Mount Ink",
+        "canonical": "#2a1410",
+        "tonalRamp": [
+          "oklch(15% 0.037 31.2)",
+          "oklch(25% 0.037 31.2)",
+          "oklch(35% 0.037 31.2)",
+          "oklch(45% 0.037 31.2)",
+          "oklch(58% 0.037 31.2)",
+          "oklch(70% 0.037 31.2)",
+          "oklch(82% 0.037 31.2)",
+          "oklch(94% 0.037 31.2)"
+        ]
+      },
+      "mount-muted": {
+        "role": "neutral",
+        "displayName": "Mount Muted",
+        "canonical": "#e9dcc4",
+        "tonalRamp": [
+          "oklch(15% 0.035 82.9)",
+          "oklch(25% 0.035 82.9)",
+          "oklch(35% 0.035 82.9)",
+          "oklch(45% 0.035 82.9)",
+          "oklch(58% 0.035 82.9)",
+          "oklch(70% 0.035 82.9)",
+          "oklch(82% 0.035 82.9)",
+          "oklch(94% 0.035 82.9)"
+        ]
+      },
+      "mount-muted-ink": {
+        "role": "neutral",
+        "displayName": "Mount Muted Ink",
+        "canonical": "#6a4637",
+        "tonalRamp": [
+          "oklch(15% 0.048 43.4)",
+          "oklch(25% 0.055 43.4)",
+          "oklch(35% 0.055 43.4)",
+          "oklch(45% 0.055 43.4)",
+          "oklch(58% 0.055 43.4)",
+          "oklch(70% 0.055 43.4)",
+          "oklch(82% 0.055 43.4)",
+          "oklch(94% 0.049 43.4)"
+        ]
+      },
+      "mount-pressed": {
+        "role": "neutral",
+        "displayName": "Mount Pressed",
+        "canonical": "#e6d6bb",
+        "tonalRamp": [
+          "oklch(15% 0.040 80.9)",
+          "oklch(25% 0.040 80.9)",
+          "oklch(35% 0.040 80.9)",
+          "oklch(45% 0.040 80.9)",
+          "oklch(58% 0.040 80.9)",
+          "oklch(70% 0.040 80.9)",
+          "oklch(82% 0.040 80.9)",
+          "oklch(94% 0.040 80.9)"
+        ]
+      },
+      "mount-rule": {
+        "role": "neutral",
+        "displayName": "Mount Rule",
+        "canonical": "#d2bd9b",
+        "tonalRamp": [
+          "oklch(15% 0.047 79.8)",
+          "oklch(25% 0.052 79.8)",
+          "oklch(35% 0.052 79.8)",
+          "oklch(45% 0.052 79.8)",
+          "oklch(58% 0.052 79.8)",
+          "oklch(70% 0.052 79.8)",
+          "oklch(82% 0.052 79.8)",
+          "oklch(94% 0.048 79.8)"
+        ]
+      },
+      "oxblood-action": {
+        "role": "tertiary",
+        "displayName": "Oxblood Action",
+        "canonical": "#7d141a",
+        "tonalRamp": [
+          "oklch(15% 0.076 24.4)",
+          "oklch(25% 0.099 24.4)",
+          "oklch(35% 0.122 24.4)",
+          "oklch(45% 0.139 24.4)",
+          "oklch(58% 0.139 24.4)",
+          "oklch(70% 0.134 24.4)",
+          "oklch(82% 0.106 24.4)",
+          "oklch(94% 0.079 24.4)"
+        ]
+      },
+      "rust-destructive": {
+        "role": "tertiary",
+        "displayName": "Rust",
+        "canonical": "#8f2a14",
+        "tonalRamp": [
+          "oklch(15% 0.077 33.7)",
+          "oklch(25% 0.100 33.7)",
+          "oklch(35% 0.123 33.7)",
+          "oklch(45% 0.140 33.7)",
+          "oklch(58% 0.140 33.7)",
+          "oklch(70% 0.135 33.7)",
+          "oklch(82% 0.107 33.7)",
+          "oklch(94% 0.079 33.7)"
+        ]
+      },
+      "indigo": {
+        "role": "tertiary",
+        "displayName": "Indigo",
+        "canonical": "#1f2f57",
+        "tonalRamp": [
+          "oklch(15% 0.055 265.8)",
+          "oklch(25% 0.067 265.8)",
+          "oklch(35% 0.075 265.8)",
+          "oklch(45% 0.075 265.8)",
+          "oklch(58% 0.075 265.8)",
+          "oklch(70% 0.075 265.8)",
+          "oklch(82% 0.071 265.8)",
+          "oklch(94% 0.056 265.8)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "inscription": {
+        "displayName": "Inscription",
+        "purpose": "Hall headline and closing line; one per room at most."
+      },
+      "display-l": {
+        "displayName": "Display L",
+        "purpose": "Room titles."
+      },
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Mount titles, catalogue entries, saffron study terms."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Room introductions in wall-muted."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running prose, about 60ch max."
+      },
+      "spec": {
+        "displayName": "Spec",
+        "purpose": "Tombstone data inside mounts, tabular numerals."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Captions, hints, legends, footer."
+      },
+      "accession": {
+        "displayName": "Accession",
+        "purpose": "Mono catalogue numbers (FR-01), LTR-isolated."
+      }
+    },
+    "shadows": [
+      {
+        "name": "mount",
+        "value": "0 24px 48px -28px rgb(20 2 4 / 0.7), 0 2px 6px -2px rgb(20 2 4 / 0.35)",
+        "purpose": "Cream mount boards and framed photos on the wall; the only box-shadow token."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-settle",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "All UI transitions: tab colour 300ms, rail lift 500ms, grab-hint fade 700ms."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Oxblood action, mostly on mounts.",
+      "html": "<button class=\"ds-btn-primary\">ادامه</button>",
+      "css": ".ds-btn-primary{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 24px;border:0;border-radius:2px;background:var(--primary);color:var(--primary-foreground);font-size:.875rem;font-weight:600;cursor:pointer;transition:background-color .15s} .ds-btn-primary:hover{background:var(--wall-deep)} .ds-btn-primary:focus-visible{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}"
+    },
+    {
+      "name": "Mount Button",
+      "kind": "button",
+      "refersTo": "button-mount",
+      "description": "Cream button for actions placed on the wall.",
+      "html": "<button class=\"ds-btn-mount\">بازگشت به تالار</button>",
+      "css": ".ds-btn-mount{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; display:inline-flex;align-items:center;height:44px;padding:0 24px;border:0;border-radius:2px;background:var(--card);color:var(--card-foreground);font-size:.875rem;font-weight:600;cursor:pointer;transition:background-color .15s} .ds-btn-mount:hover{background:var(--secondary)} .ds-btn-mount:focus-visible{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Transparent outline in currentColor; works on wall or mount.",
+      "html": "<button class=\"ds-btn-secondary\">شیء بعدی</button>",
+      "css": ".ds-btn-secondary{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; display:inline-flex;align-items:center;height:44px;padding:0 24px;border:1px solid color-mix(in srgb,currentColor 40%,transparent);border-radius:2px;background:transparent;color:var(--foreground);font-size:.875rem;font-weight:600;cursor:pointer;transition:border-color .15s} .ds-btn-secondary:hover{border-color:currentColor} .ds-btn-secondary:focus-visible{outline:none;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--saffron)}"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-default",
+      "description": "Near-square metadata tag.",
+      "html": "<span class=\"ds-badge\">پیش‌نویس</span>",
+      "css": ".ds-badge{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; display:inline-flex;align-items:center;padding:2px 10px;border-radius:1px;background:var(--primary);color:var(--primary-foreground);font-size:.75rem;font-weight:600}"
+    },
+    {
+      "name": "Site Header",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "Wordmark painted on the wall; room links underline in saffron.",
+      "html": "<header class=\"ds-nav\" dir=\"rtl\"><a class=\"ds-nav-mark\" href=\"#\"><span>فرش</span><small>تالار لمسی فرش ایرانی</small></a><ul><li><a href=\"#\">تالار</a></li><li><a href=\"#\">ذره‌بین</a></li><li><a href=\"#\">مجموعه</a></li><li><a href=\"#\">پژوهش</a></li></ul></header>",
+      "css": ".ds-nav{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:12px 40px;padding:24px 40px 0;background:var(--background);color:var(--foreground)} .ds-nav-mark{display:flex;align-items:baseline;gap:12px;color:inherit;text-decoration:none} .ds-nav-mark span{font-family: var(--font-markazi), var(--font-vazirmatn), 'Times New Roman', serif; font-size:2.25rem;line-height:1;font-weight:700} .ds-nav-mark small{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; font-size:.8125rem;color:var(--on-wall-muted)} .ds-nav ul{display:flex;flex-wrap:wrap;gap:4px 24px;margin:0;padding:0;list-style:none} .ds-nav ul a{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; color:inherit;text-decoration:none;font-size:.875rem;font-weight:600;text-decoration-color:var(--saffron);text-underline-offset:8px;text-decoration-thickness:1px} .ds-nav ul a:hover{text-decoration-line:underline} .ds-nav a:focus-visible{outline:none;border-radius:1px;box-shadow:0 0 0 2px var(--saffron)}"
+    },
+    {
+      "name": "Accession Label",
+      "kind": "custom",
+      "refersTo": "accession-label",
+      "description": "Museum tombstone mount that doubles as the carpet's material switch.",
+      "html": "<div class=\"ds-wall\" dir=\"rtl\"><div class=\"ds-label\"><h3>ترنج تیره</h3><dl><dt>ابعاد</dt><dd>۲۲۵ × ۱۵۰ سانتی‌متر</dd><dt>تراکم</dt><dd>۴۰ رج</dd></dl><div class=\"ds-tabs\" role=\"radiogroup\"><button aria-checked=\"true\">ابریشم</button><button aria-checked=\"false\">پشم دستباف</button><button aria-checked=\"false\">ماشینی</button></div><p class=\"ds-acc\" dir=\"ltr\">FR-01</p></div></div>",
+      "css": ".ds-wall{background:var(--background);padding:40px} .ds-label{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; display:flex;flex-direction:column;gap:16px;max-width:25rem;padding:20px;background:var(--card);color:var(--card-foreground);box-shadow:0 24px 48px -28px rgb(20 2 4 / 0.7), 0 2px 6px -2px rgb(20 2 4 / 0.35)} .ds-label h3{font-family: var(--font-markazi), var(--font-vazirmatn), 'Times New Roman', serif; margin:0;font-size:2rem;line-height:1.25;font-weight:700} .ds-label dl{display:grid;grid-template-columns:auto 1fr;gap:6px 24px;margin:0;font-size:.875rem;line-height:1.5} .ds-label dt{color:var(--muted-foreground)} .ds-label dd{margin:0;font-variant-numeric:tabular-nums} .ds-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);padding-top:12px} .ds-tabs button{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; padding:8px 0;border:0;border-bottom:2px solid var(--border);background:none;color:var(--muted-foreground);font-size:.875rem;font-weight:600;cursor:pointer;transition:color .3s cubic-bezier(0.22, 1, 0.36, 1),border-color .3s cubic-bezier(0.22, 1, 0.36, 1)} .ds-tabs button:hover{color:var(--card-foreground)} .ds-tabs button[aria-checked=true]{border-color:var(--primary);color:var(--primary)} .ds-tabs button:focus-visible{outline:none;box-shadow:0 0 0 2px var(--ring)} .ds-acc{font-family: var(--font-azeret), ui-monospace, monospace; margin:0;text-align:center;font-size:.75rem;letter-spacing:.05em;color:var(--muted-foreground)}"
+    },
+    {
+      "name": "Research Catalogue",
+      "kind": "card",
+      "refersTo": "mount-panel",
+      "description": "Reading list on a cream mount; entries split by hairline rules.",
+      "html": "<div class=\"ds-wall\" dir=\"rtl\"><ol class=\"ds-cat\"><li><h3>۱۰۰۰ شانه یعنی چه؟</h3><p>شانه و تراکم را از نزدیک می‌شماریم.</p></li><li><h3>پشت فرش را بخوانید</h3><p>گره‌های دستباف کمی ناهمواراند.</p></li></ol></div>",
+      "css": ".ds-wall{background:var(--background);padding:40px} .ds-cat{list-style:none;margin:0;padding:0 40px;background:var(--card);color:var(--card-foreground);box-shadow:0 24px 48px -28px rgb(20 2 4 / 0.7), 0 2px 6px -2px rgb(20 2 4 / 0.35)} .ds-cat li{padding:28px 0;border-top:1px solid var(--border)} .ds-cat li:first-child{border-top:0} .ds-cat h3{font-family: var(--font-markazi), var(--font-vazirmatn), 'Times New Roman', serif; margin:0 0 8px;font-size:2rem;line-height:1.25;font-weight:700} .ds-cat p{font-family: var(--font-vazirmatn), Tahoma, system-ui, sans-serif; margin:0;max-width:58ch;font-size:1.0625rem;line-height:1.95;color:var(--muted-foreground)}"
+    },
+    {
+      "name": "Gallery Rail",
+      "kind": "custom",
+      "refersTo": "rail",
+      "description": "Saffron rail with specimens hung at true relative scale; hover lifts 4px.",
+      "html": "<div class=\"ds-bay\" dir=\"rtl\"><span class=\"ds-rail\"></span><ol><li><a href=\"#\" class=\"ds-spec\" style=\"width:90px;height:135px\"></a><b>ترنج تیره</b><small dir=\"ltr\">FR-01</small></li><li><a href=\"#\" class=\"ds-spec ds-active\" style=\"width:120px;height:180px\"></a><b>کاشان سرخ</b><small dir=\"ltr\">FR-05</small></li></ol></div>",
+      "css": ".ds-bay{position:relative;background:var(--wall-deep);color:var(--foreground);padding:64px 40px 40px} .ds-rail{position:absolute;inset-inline:0;top:64px;height:4px;border-radius:9999px;background:var(--saffron)} .ds-bay ol{display:flex;gap:48px;margin:0;padding:4px 0 0;list-style:none} .ds-bay li{display:flex;flex-direction:column;gap:4px} .ds-spec{display:block;background:var(--muted);box-shadow:0 24px 48px -28px rgb(20 2 4 / 0.7), 0 2px 6px -2px rgb(20 2 4 / 0.35);transition:transform .5s cubic-bezier(0.22, 1, 0.36, 1)} .ds-spec:hover{transform:translateY(-4px)} .ds-spec:focus-visible,.ds-active{outline:none;box-shadow:0 24px 48px -28px rgb(20 2 4 / 0.7), 0 2px 6px -2px rgb(20 2 4 / 0.35),0 0 0 4px var(--wall-deep),0 0 0 6px var(--saffron)} .ds-bay b{font-family: var(--font-markazi), var(--font-vazirmatn), 'Times New Roman', serif; font-size:1.25rem} .ds-bay small{font-family: var(--font-azeret), ui-monospace, monospace; font-size:.75rem;color:var(--on-wall-muted)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Study Gallery",
+    "overview": "**Creative North Star: \"The Study Gallery\"**\n\nFarsh is a carpet museum's study hall, not a shop. Every page is a madder-red wall; carpets hang on it as accessioned specimens under raking light, and the visitor is allowed to handle them. Everything that must be read at length (the accession label, the study table, the research catalogue) is pinned to the wall as a cream mount board. There is one world and one theme: a gallery does not repaint its walls, so there is no light/dark switch.\n\nDensity is calm and generous: large Naskh inscriptions across the wall, long-leaded Persian body copy, mounts with tight tombstone-style data inside. The only imagery is the owner's own carpet photographs, either as 3D hanging cloth or as framed photos; carpets are never drawn, illustrated or generated. The layout is right-to-left and built entirely with logical properties.",
+    "keyCharacteristics": [
+      "Madder wall everywhere; cream exists only as inset mount boards.",
+      "Saffron is the wall's accent (rails, rods, focus, one inscribed word); indigo is the mount's focus colour and the loupe ring.",
+      "Near-square corners (2px); depth comes from mounts lifting off the wall, not from cards.",
+      "Naskh serif inscriptions, Vazirmatn text, mono accession numbers.",
+      "Real photos only; the 3D carpet casts its own shadow on the wall."
+    ],
+    "rules": [
+      {
+        "name": "The Two Surfaces Rule",
+        "body": "There are exactly two grounds: the madder wall and the cream mount. Cream never becomes a page background; red never becomes a reading panel.",
+        "section": "colors"
+      },
+      {
+        "name": "The Focus Follows the Ground Rule",
+        "body": "Focus rings are saffron on the wall and indigo on the mount, always 2px, with a 4px offset on wall images.",
+        "section": "colors"
+      },
+      {
+        "name": "The Inscription Rule",
+        "body": "Markazi is for inscriptions and titles only, always bold; it never sets UI controls or body text.",
+        "section": "typography"
+      },
+      {
+        "name": "The Register Rule",
+        "body": "The mono face sets accession numbers and nothing else, isolated with `dir=\"ltr\"`.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Shadow Rule",
+        "body": "The mount shadow is the only box-shadow token. Buttons, tabs, badges and cards stay flat.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** use `bg-background` (madder) for every page and room; use `bg-wall-deep` to mark a distinct bay.",
+      "**Do** put any label, table or long reading list on a cream mount with the mount shadow.",
+      "**Do** use saffron for focus and rails on the wall, indigo for focus on the mount.",
+      "**Do** set room titles in Markazi bold and keep body copy at 1.95 leading, max about 60ch.",
+      "**Do** use only the owner's photos from `public/carpets`, with the settle ease for any motion and a still fallback for reduced motion."
+    ],
+    "donts": [
+      "**Don't** add a light/dark theme or `dark:` overrides; the wall never repaints.",
+      "**Don't** use cream as a page background or red as a reading panel.",
+      "**Don't** draw, illustrate or generate carpets, patterns or cartoon rugs.",
+      "**Don't** add rounded cards, extra shadow tokens or shadows on controls.",
+      "**Don't** use physical left/right properties or raw colour values in components."
+    ]
+  }
+}

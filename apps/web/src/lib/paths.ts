@@ -1,8 +1,8 @@
 export const paths = {
   home: "/",
+  hall: "/#hall",
+  study: "/#study",
+  collection: "/#collection",
+  research: "/#research",
   designHub: "/design-hub",
-  carpets: "/carpets",
-  carpet: (slug: string) => `/carpets/${slug}`,
-  research: "/research",
-  article: (slug: string) => `/research/${slug}`,
 } as const;
