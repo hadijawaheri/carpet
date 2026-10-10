@@ -62,7 +62,7 @@ export function CarpetScene({
         <Lightformer form="ring" intensity={0.8} color="#ffffff" position={[-5, 0, 3]} scale={3} />
       </Environment>
       {gallery ? <GalleryLights /> : <StudioLights />}
-      <group rotation={gallery ? [0, -0.16, 0] : [-0.32, 0.26, 0.08]}>
+      <group rotation={gallery ? [0, 0.16, 0] : [-0.32, 0.26, 0.08]}>
         {gallery ? (
           // The wall sits just behind the hanging carpet so a lifted corner throws a sharp shadow.
           <mesh position={[0, 0, -0.08]} receiveShadow>

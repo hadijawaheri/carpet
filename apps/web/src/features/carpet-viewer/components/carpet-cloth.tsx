@@ -152,9 +152,9 @@ export function CarpetCloth({
           envMapIntensity={0.7}
           roughness={surface.roughness}
           // Under the gallery spot full silk sheen washes the photo milky; cap it so the colours stay true.
-          sheen={hanging ? Math.min(surface.sheen, 0.35) : surface.sheen}
-          sheenRoughness={surface.sheenRoughness}
-          sheenColor={hanging ? "#f4e8d5" : surface.sheenColor}
+          sheen={hanging ? Math.min(surface.sheen, 0.2) : surface.sheen}
+          sheenRoughness={hanging ? Math.max(surface.sheenRoughness, 0.55) : surface.sheenRoughness}
+          sheenColor={hanging ? "#c98f6e" : surface.sheenColor}
           anisotropy={surface.anisotropy}
           anisotropyRotation={Math.PI / 2}
           clearcoat={surface.clearcoat}

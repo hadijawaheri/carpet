@@ -22,10 +22,7 @@ const notes = [
 export function Study({ carpet }: { carpet: Carpet }) {
   return (
     <section id="study" aria-labelledby="study-title" className="bg-background">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-20 lg:py-28 [&>*]:min-w-0">
-        <div className="lg:sticky lg:top-10 lg:self-start">
-          <Loupe carpet={carpet} />
-        </div>
+      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-20 lg:py-28 [&>*]:min-w-0">
         <div className="flex flex-col gap-12">
           <div className="flex flex-col gap-4">
             <h2 id="study-title" className="font-display text-display-l font-bold">
@@ -51,6 +48,9 @@ export function Study({ carpet }: { carpet: Carpet }) {
             <h3 className="font-display text-heading font-bold">سه جنس در یک جدول</h3>
             <KnotSpecTable specs={materialSpecs} />
           </div>
+        </div>
+        <div className="lg:sticky lg:top-10 lg:self-start">
+          <Loupe carpet={carpet} />
         </div>
       </div>
     </section>
