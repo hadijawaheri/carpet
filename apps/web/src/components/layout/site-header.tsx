@@ -27,7 +27,7 @@ export function SiteHeader() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="rounded-sm decoration-saffron underline-offset-8 hover:underline focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+                className="inline-block rounded-sm py-1 decoration-saffron underline-offset-8 hover:underline focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
               >
                 {item.label}
               </Link>

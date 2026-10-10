@@ -22,19 +22,19 @@ export function Closing() {
           <nav aria-label="پایان" className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
             <Link
               href={paths.hall}
-              className="underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+              className="inline-block py-1 underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
             >
               بازگشت به تالار
             </Link>
             <Link
               href={paths.designHub}
-              className="underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+              className="inline-block py-1 underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
             >
               راهنمای طراحی
             </Link>
             <a
               href="https://github.com/hadijawaheri/carpet"
-              className="underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+              className="inline-block py-1 underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
             >
               کد روی گیت‌هاب
             </a>

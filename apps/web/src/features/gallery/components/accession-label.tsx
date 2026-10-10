@@ -91,7 +91,7 @@ export function AccessionLabel({
         <button
           type="button"
           onClick={() => onStep(-1)}
-          className="flex cursor-pointer items-center gap-1 rounded-sm text-sm font-semibold hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="flex cursor-pointer items-center gap-1 rounded-sm py-1 text-sm font-semibold hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden />
           شیء قبلی
@@ -109,7 +109,7 @@ export function AccessionLabel({
         <button
           type="button"
           onClick={() => onStep(1)}
-          className="flex cursor-pointer items-center gap-1 rounded-sm text-sm font-semibold hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="flex cursor-pointer items-center gap-1 rounded-sm py-1 text-sm font-semibold hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           شیء بعدی
           <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />

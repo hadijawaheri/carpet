@@ -33,7 +33,7 @@ export function DesignHub() {
                 <li key={t.id}>
                   <a
                     href={`#${t.id}`}
-                    className="rounded-sm decoration-saffron underline-offset-8 hover:underline focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+                    className="inline-block rounded-sm py-1 decoration-saffron underline-offset-8 hover:underline focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
                   >
                     {t.label}
                   </a>
