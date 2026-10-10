@@ -19,13 +19,20 @@ const subscribeReducedMotion = (onChange: () => void) => {
   return () => mql.removeEventListener("change", onChange);
 };
 
+// useSyncExternalStore reads the snapshot on every render; probing each time opened a new WebGL context per render.
+let webglSupport: boolean | undefined;
+
 function canUseWebGL() {
+  if (webglSupport !== undefined) return webglSupport;
   try {
     const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
+    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    webglSupport = Boolean(gl);
   } catch {
-    return false;
+    webglSupport = false;
   }
+  return webglSupport;
 }
 
 interface CarpetStageProps {
