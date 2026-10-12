@@ -4,6 +4,12 @@ const STRUCTURAL = 0;
 const SHEAR = 1;
 const BEND = 2;
 
+/** Downward pull along the sheet's normal when it lies on a floor, in the solver's own units per second squared. */
+const FLOOR_GRAVITY = 6;
+/** Horizontal speed kept per step by a particle resting on the floor: the pile grips the boards. */
+const FLOOR_GRIP = 0.7;
+const FLOOR_CONTACT = 1e-3;
+
 /**
  * Verlet cloth on a cols × rows grid in the carpet's local XY plane; z is the carpet normal.
  * Kept free of React and three.js so it can be unit-tested and moved to a Web Worker later.
@@ -24,6 +30,9 @@ export class ClothSolver {
 
   /** When true the top row stays on its rest points, like a carpet hung from a gallery rod. */
   private hanging = false;
+
+  /** When true the sheet lies on a floor at z = 0: gravity pulls it down and nothing passes through. */
+  private floor = false;
 
   /** Index of the particle held by the pointer, or -1. */
   private grabbed = -1;
@@ -96,6 +105,10 @@ export class ClothSolver {
     this.hanging = hanging;
   }
 
+  setFloor(floor: boolean) {
+    this.floor = floor;
+  }
+
   get isGrabbing() {
     return this.grabbed >= 0;
   }
@@ -149,7 +162,8 @@ export class ClothSolver {
     const prev = this.previous;
     const rest = this.rest;
     const dt2 = dt * dt;
-    const windAmp = windEnabled ? physics.wind * 2.2 : 0;
+    const windAmp = windEnabled && !this.floor ? physics.wind * 2.2 : 0;
+    const gravity = this.floor ? -FLOOR_GRAVITY * dt2 : 0;
 
     for (let i = 0; i < this.particleCount; i++) {
       const i3 = i * 3;
@@ -163,7 +177,7 @@ export class ClothSolver {
         (0.55 * Math.sin(rx * 1.7 + time * 1.9) + 0.8 * Math.sin(ry * 1.2 - time * 1.4 + rx * 0.6));
       pos[i3] = x + (x - prev[i3]!) * physics.damping;
       pos[i3 + 1] = y + (y - prev[i3 + 1]!) * physics.damping;
-      pos[i3 + 2] = z + (z - prev[i3 + 2]!) * physics.damping + wind * dt2;
+      pos[i3 + 2] = z + (z - prev[i3 + 2]!) * physics.damping + wind * dt2 + gravity;
       prev[i3] = x;
       prev[i3 + 1] = y;
       prev[i3 + 2] = z;
@@ -200,6 +214,23 @@ export class ClothSolver {
     }
     this.pinTopRow();
     this.pinGrabbed();
+    this.settleOnFloor();
+  }
+
+  /** Floor contact: nothing sinks below z = 0, and a particle touching it loses most of its sideways speed. */
+  private settleOnFloor() {
+    if (!this.floor) return;
+    const pos = this.positions;
+    const prev = this.previous;
+    for (let i = 0; i < this.particleCount; i++) {
+      if (i === this.grabbed) continue;
+      const i3 = i * 3;
+      if (pos[i3 + 2]! > FLOOR_CONTACT) continue;
+      pos[i3 + 2] = 0;
+      if (prev[i3 + 2]! < 0) prev[i3 + 2] = 0;
+      prev[i3] = pos[i3]! - (pos[i3]! - prev[i3]!) * FLOOR_GRIP;
+      prev[i3 + 1] = pos[i3 + 1]! - (pos[i3 + 1]! - prev[i3 + 1]!) * FLOOR_GRIP;
+    }
   }
 
   private isPinned(i: number) {

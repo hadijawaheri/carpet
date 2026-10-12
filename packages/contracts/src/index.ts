@@ -2,3 +2,4 @@ export * from "./carpet/carpet.schema";
 export * from "./carpet/material-presets";
 export * from "./common/digits";
 export * from "./research/research.schema";
+export * from "./room/room.schema";

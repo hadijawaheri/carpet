@@ -4,5 +4,6 @@ export const paths = {
   study: "/#study",
   collection: "/#collection",
   research: "/research",
+  room: "/room",
   designHub: "/design-hub",
 } as const;

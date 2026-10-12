@@ -37,7 +37,14 @@ interface CarpetClothProps {
   reducedMotion: boolean;
   /** Pins the top edge, as on a gallery rod; lifting a lower corner shows the plain reverse. */
   hanging?: boolean;
+  /** Lies flat on a floor at the group's origin; lifting a corner lets it fall back. Mutually exclusive with hanging. */
+  lying?: boolean;
+  /** Height of the carpet in world units; the width follows the photo. */
+  heightUnits?: number;
+  /** When false the carpet ignores the pointer, so the surrounding scene can use it (selecting, orbiting). */
+  interactive?: boolean;
   onGrab?: () => void;
+  onGrabEnd?: () => void;
   /** Filled with a function that kicks the cloth; the stage's button calls it. Null while motion is reduced. */
   shakeRef?: RefObject<(() => void) | null>;
 }
@@ -47,7 +54,11 @@ export function CarpetCloth({
   material,
   reducedMotion,
   hanging = false,
+  lying = false,
+  heightUnits = CARPET_HEIGHT,
+  interactive = true,
   onGrab,
+  onGrabEnd,
   shakeRef,
 }: CarpetClothProps) {
   const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy());
@@ -57,9 +68,12 @@ export function CarpetCloth({
   });
   const camera = useThree((s) => s.camera);
   const meshRef = useRef<Group>(null);
-  const width = CARPET_HEIGHT * carpet.imageAspect;
+  const width = heightUnits * carpet.imageAspect;
 
-  const solver = useMemo(() => new ClothSolver(width, CARPET_HEIGHT, GRID_COLUMNS), [width]);
+  const solver = useMemo(
+    () => new ClothSolver(width, heightUnits, GRID_COLUMNS),
+    [width, heightUnits],
+  );
   const geometry = useMemo(() => {
     const g = new BufferGeometry();
     g.setAttribute("position", new BufferAttribute(solver.positions, 3).setUsage(DynamicDrawUsage));
@@ -73,7 +87,8 @@ export function CarpetCloth({
 
   useEffect(() => {
     solver.setHanging(hanging);
-  }, [solver, hanging]);
+    solver.setFloor(lying);
+  }, [solver, hanging, lying]);
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -112,7 +127,7 @@ export function CarpetCloth({
   const toLocal = (point: Vector3) => meshRef.current?.worldToLocal(point.clone());
 
   const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
-    if (reducedMotion) return;
+    if (reducedMotion || !interactive) return;
     event.stopPropagation();
     const local = toLocal(event.point);
     if (!local) return;
@@ -131,9 +146,11 @@ export function CarpetCloth({
     if (local) solver.moveTarget(local.x, local.y, local.z + GRAB_LIFT);
   };
   const handlePointerUp = (event: ThreeEvent<PointerEvent>) => {
+    if (!solver.isGrabbing) return;
     solver.release();
     (event.target as unknown as Element).releasePointerCapture(event.pointerId);
     document.body.style.cursor = "";
+    onGrabEnd?.();
   };
 
   return (
@@ -143,19 +160,25 @@ export function CarpetCloth({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      onPointerOver={() => (document.body.style.cursor = "grab")}
-      onPointerOut={() => !solver.isGrabbing && (document.body.style.cursor = "")}
+      onPointerOver={() => {
+        if (interactive && !reducedMotion) document.body.style.cursor = "grab";
+      }}
+      onPointerOut={() => {
+        if (!solver.isGrabbing) document.body.style.cursor = "";
+      }}
     >
-      <mesh geometry={geometry} castShadow>
+      <mesh geometry={geometry} castShadow={!lying} receiveShadow={lying}>
         <meshPhysicalMaterial
           map={texture}
           side={FrontSide}
           envMapIntensity={0.7}
           roughness={surface.roughness}
           // Under the gallery spot full silk sheen washes the photo milky; cap it so the colours stay true.
-          sheen={hanging ? Math.min(surface.sheen, 0.2) : surface.sheen}
-          sheenRoughness={hanging ? Math.max(surface.sheenRoughness, 0.55) : surface.sheenRoughness}
-          sheenColor={hanging ? "#c98f6e" : surface.sheenColor}
+          sheen={hanging || lying ? Math.min(surface.sheen, 0.2) : surface.sheen}
+          sheenRoughness={
+            hanging || lying ? Math.max(surface.sheenRoughness, 0.55) : surface.sheenRoughness
+          }
+          sheenColor={hanging || lying ? "#c98f6e" : surface.sheenColor}
           anisotropy={surface.anisotropy}
           anisotropyRotation={Math.PI / 2}
           clearcoat={surface.clearcoat}
@@ -165,7 +188,7 @@ export function CarpetCloth({
       {hanging ? (
         // Brass gallery rod the top edge hangs from.
         <mesh
-          position={[0, CARPET_HEIGHT / 2 + 0.03, 0.02]}
+          position={[0, heightUnits / 2 + 0.03, 0.02]}
           rotation={[0, 0, Math.PI / 2]}
           castShadow
         >

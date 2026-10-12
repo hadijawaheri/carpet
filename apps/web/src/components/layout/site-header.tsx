@@ -6,6 +6,7 @@ const nav = [
   { href: paths.hall, label: "تالار" },
   { href: paths.study, label: "ذره‌بین" },
   { href: paths.collection, label: "مجموعه" },
+  { href: paths.room, label: "اتاق‌ساز" },
   { href: paths.research, label: "پژوهش" },
   { href: paths.designHub, label: "راهنمای طراحی" },
 ];
