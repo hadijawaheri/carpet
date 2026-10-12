@@ -64,4 +64,86 @@ describe("ClothSolver", () => {
       expect(cloth.positions[c * 3 + 2]).toBeCloseTo(0, 5);
     }
   });
+
+  describe("lying on a floor", () => {
+    const zs = (cloth: ClothSolver) => Array.from(cloth.positions.filter((_, i) => i % 3 === 2));
+
+    it("stays flat on the floor", () => {
+      const cloth = new ClothSolver(1, 1.5, 12);
+      cloth.setFloor(true);
+      for (let i = 0; i < 120; i++) cloth.step(STEP, i * STEP, materialPresets.wool.physics);
+      expect(Math.max(...zs(cloth).map(Math.abs))).toBeLessThan(1e-6);
+    });
+
+    it("never sinks below the floor, even after a kick", () => {
+      const cloth = new ClothSolver(1, 1.5, 12);
+      cloth.setFloor(true);
+      cloth.impulse(0.08);
+      for (let i = 0; i < 240; i++) {
+        cloth.step(STEP, i * STEP, materialPresets.silk.physics);
+        expect(Math.min(...zs(cloth))).toBeGreaterThanOrEqual(-1e-9);
+      }
+    });
+
+    it("lets a lifted corner fall back and lie flat once released", () => {
+      const cloth = new ClothSolver(1, 1.5, 12);
+      cloth.setFloor(true);
+      cloth.grabNearest(-0.5, 0.75, 0);
+      cloth.moveTarget(-0.4, 0.6, 0.3);
+      for (let i = 0; i < 60; i++) cloth.step(STEP, i * STEP, materialPresets.wool.physics);
+      expect(Math.max(...zs(cloth))).toBeGreaterThan(0.25);
+      cloth.release();
+      for (let i = 0; i < 360; i++) cloth.step(STEP, (60 + i) * STEP, materialPresets.wool.physics);
+      expect(Math.max(...zs(cloth))).toBeLessThan(0.03);
+    });
+
+    it.each(["wool", "silk", "machine"] as const)(
+      "keeps a %s corner folded over itself, one pile thickness above the layer beneath",
+      (material) => {
+        const thickness = 0.012;
+        const cloth = new ClothSolver(1, 1.5, 14);
+        cloth.setFloor(true, thickness);
+        cloth.grabNearest(-0.5, 0.75, 0);
+        // Lift the top-left corner and carry it over the rug towards the middle, as a hand folds a rug.
+        for (let i = 0; i < 90; i++) {
+          const t = Math.min(1, i / 60);
+          cloth.moveTarget(-0.5 + 0.55 * t, 0.75 - 0.6 * t, 0.25);
+          cloth.step(STEP, i * STEP, materialPresets[material].physics);
+        }
+        cloth.release();
+        for (let i = 0; i < 480; i++)
+          cloth.step(STEP, (90 + i) * STEP, materialPresets[material].physics);
+
+        const cornerX = cloth.positions[0]!;
+        const cornerY = cloth.positions[1]!;
+        const cornerZ = cloth.positions[2]!;
+        // It stays folded over, well inside the rug, not back at its rest point (-0.5, 0.75).
+        expect(cornerX).toBeGreaterThan(-0.35);
+        expect(cornerY).toBeLessThan(0.45);
+        // It rests on the layer beneath: lifted by about one thickness, not sunk through, not hovering.
+        expect(cornerZ).toBeGreaterThan(thickness * 0.5);
+        expect(cornerZ).toBeLessThan(thickness * 3);
+        expect(Math.min(...zs(cloth))).toBeGreaterThanOrEqual(-1e-9);
+      },
+    );
+
+    it("flattens back to its rest pose on request", () => {
+      const cloth = new ClothSolver(1, 1.5, 12);
+      cloth.setFloor(true);
+      cloth.grabNearest(-0.5, 0.75, 0);
+      cloth.moveTarget(0, 0, 0.3);
+      for (let i = 0; i < 30; i++) cloth.step(STEP, i * STEP, materialPresets.wool.physics);
+      cloth.release();
+      cloth.flatten();
+      expect(cloth.maxLift).toBe(0);
+      expect(cloth.positions[0]).toBeCloseTo(-0.5, 6);
+    });
+
+    it("ignores wind, so a carpet on the floor does not ripple by itself", () => {
+      const cloth = new ClothSolver(1, 1.5, 12);
+      cloth.setFloor(true);
+      for (let i = 0; i < 120; i++) cloth.step(STEP, i * STEP, materialPresets.silk.physics, true);
+      expect(Math.max(...zs(cloth).map(Math.abs))).toBeLessThan(1e-6);
+    });
+  });
 });

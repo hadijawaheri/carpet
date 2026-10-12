@@ -1,10 +1,13 @@
 "use client";
 
 import type { Carpet } from "@farsh/contracts";
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { materialLabels } from "@/features/carpet-viewer";
 import { formatNumber, formatSizeCm } from "@/lib/format";
+import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
 
 import { accessionNumber } from "../accession";
@@ -29,6 +32,13 @@ export function Collection({ carpets, activeIndex, onSelect }: CollectionProps) 
           همه‌ی فرش‌ها با یک مقیاس آویخته شده‌اند، پس بزرگی‌شان را کنار هم می‌بینید. هر کدام را
           انتخاب کنید تا در تالار آویزان شود.
         </p>
+        <Link
+          href={paths.room}
+          className="inline-flex w-fit items-center gap-2 rounded-sm py-1 text-sm font-semibold underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+        >
+          فرش را در یک اتاق سه‌بعدی بچینید، با مبل و پرده و رنگ دلخواه شما
+          <ArrowLeft aria-hidden className="size-4 rtl:rotate-180" />
+        </Link>
       </div>
 
       <div className="overflow-x-auto pb-16 lg:pb-24">
@@ -69,6 +79,12 @@ export function Collection({ carpets, activeIndex, onSelect }: CollectionProps) 
                     <span className="text-label text-on-wall-muted">
                       {materialLabels[c.material]} · {formatSizeCm(c.widthCm, c.lengthCm)}
                     </span>
+                    <Link
+                      href={`${paths.room}?carpet=${c.slug}`}
+                      className="w-fit rounded-sm text-label font-semibold underline decoration-saffron underline-offset-4 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+                    >
+                      در اتاق بگذارید
+                    </Link>
                     <span className="font-mono text-accession text-on-wall-muted">
                       <span dir="ltr">{accessionNumber(i)}</span>
                     </span>

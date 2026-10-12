@@ -3,8 +3,9 @@
 import type { Carpet, PileMaterial } from "@farsh/contracts";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useRef, useSyncExternalStore } from "react";
+import { useRef } from "react";
 
+import { useHydrated, useReducedMotion, useWebglSupport } from "@/lib/browser-support";
 import { cn } from "@/lib/utils";
 
 import type { CarpetSceneVariant } from "./carpet-scene";
@@ -13,29 +14,6 @@ const CarpetScene = dynamic(() => import("./carpet-scene").then((m) => m.CarpetS
   ssr: false,
   loading: () => null,
 });
-
-const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
-const subscribeReducedMotion = (onChange: () => void) => {
-  const mql = window.matchMedia(reducedMotionQuery);
-  mql.addEventListener("change", onChange);
-  return () => mql.removeEventListener("change", onChange);
-};
-
-// useSyncExternalStore reads the snapshot on every render; probing each time opened a new WebGL context per render.
-let webglSupport: boolean | undefined;
-
-function canUseWebGL() {
-  if (webglSupport !== undefined) return webglSupport;
-  try {
-    const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-    gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    webglSupport = Boolean(gl);
-  } catch {
-    webglSupport = false;
-  }
-  return webglSupport;
-}
 
 interface CarpetStageProps {
   carpet: Carpet;
@@ -57,23 +35,10 @@ export function CarpetStage({
   shakeControl = true,
 }: CarpetStageProps) {
   const shake = useRef<(() => void) | null>(null);
-  const reducedMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    () => window.matchMedia(reducedMotionQuery).matches,
-    () => false,
-  );
-  const webgl = useSyncExternalStore(
-    () => () => {},
-    canUseWebGL,
-    () => false,
-  );
-
+  const reducedMotion = useReducedMotion();
+  const webgl = useWebglSupport();
   // The server and the first client render both say "no WebGL"; the caption waits for hydration so WebGL users never see it.
-  const hydrated = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+  const hydrated = useHydrated();
 
   return (
     <div
