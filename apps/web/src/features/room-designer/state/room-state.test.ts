@@ -1,13 +1,21 @@
-import { type Carpet, createDefaultRoomLayout, roomLayoutSchema } from "@farsh/contracts";
+import {
+  type Carpet,
+  createDefaultRoomLayout,
+  MAX_ROOM_ITEMS,
+  type PaintingItem,
+  roomLayoutSchema,
+} from "@farsh/contracts";
 import { describe, expect, it } from "vitest";
 
 import { suggestPalettes } from "@/lib/image-palette";
 
-import { clampToRoom, snapSofaToWall, wallFrame } from "./room-geometry";
+import { frameDepth, paintingDimensions } from "../data/catalog";
+import { clampToRoom, floorFootprint, snapSofaToWall, wallFrame, wallGaps } from "./room-geometry";
 import { createItem, roomReducer, type RoomState } from "./room-reducer";
 
 const carpets: Carpet[] = [
   {
+    kind: "rug",
     slug: "kashan-red",
     name: "کاشان سرخ",
     material: "wool",
@@ -27,7 +35,7 @@ describe("roomReducer", () => {
     state = roomReducer(state, { type: "wall", side: "all", color: "#2f3f63" });
     state = roomReducer(state, { type: "add", item: createItem("sofa", state.layout) });
     state = roomReducer(state, { type: "add", item: createItem("curtain", state.layout) });
-    state = roomReducer(state, { type: "rug", patch: { scale: 1.4, rotation: 1.2 } });
+    state = roomReducer(state, { type: "rug", patch: { lengthCm: 420, rotation: 1.2 } });
     expect(roomLayoutSchema.safeParse(state.layout).success).toBe(true);
   });
 
@@ -58,12 +66,12 @@ describe("roomReducer", () => {
     expect(sofa?.kind === "sofa" && Math.abs(sofa.x)).toBeLessThanOrEqual(0.42);
   });
 
-  it("never holds more than 24 items", () => {
+  it("never holds more than the layout's item limit", () => {
     let state = start();
     for (let i = 0; i < 40; i++) {
       state = roomReducer(state, { type: "add", item: createItem("table", state.layout) });
     }
-    expect(state.layout.items).toHaveLength(24);
+    expect(state.layout.items).toHaveLength(MAX_ROOM_ITEMS);
   });
 
   it("spreads new curtains over the walls the overview camera can see before using the hidden one", () => {
@@ -131,5 +139,78 @@ describe("room geometry", () => {
       expect(inside).toBeLessThan(Math.hypot(f.x, f.z));
       expect(f.tangent.x * f.normal.x + f.tangent.z * f.normal.z).toBeCloseTo(0, 9);
     }
+  });
+
+  it("measures the gap from a turned footprint to each wall", () => {
+    const gaps = wallGaps(room, 1, 0, { width: 2, depth: 1 }, Math.PI / 2);
+    // Turned a quarter, the 2 m side runs front to back: 0.5 m each side of x = 1.
+    expect(gaps.right).toBeCloseTo(2.5 - 1.5, 5);
+    expect(gaps.left).toBeCloseTo(1 - 0.5 + 2.5, 5);
+    expect(gaps.back).toBeCloseTo(1, 5);
+    expect(gaps.front).toBeCloseTo(1, 5);
+  });
+
+  it("moves a chaise sofa's footprint forward of its back", () => {
+    const footprint = floorFootprint({
+      id: "s",
+      kind: "sofa",
+      seats: 3,
+      style: "modern",
+      chaise: "left",
+      color: "#8f877d",
+      legColor: "#2b1f19",
+      x: 0,
+      z: 0,
+      rotation: 0,
+    });
+    expect(footprint.offsetZ).toBeGreaterThan(0);
+    // Against the back wall, the box must still end at the wall, not the chaise's middle.
+    const spot = clampToRoom(room, 0, -9, footprint, 0);
+    expect(spot.z - footprint.depth / 2 + (footprint.offsetZ ?? 0)).toBeCloseTo(-2, 5);
+  });
+
+  it("keeps a carpet tableau's photo proportions inside any frame", () => {
+    const tableau: Pick<PaintingItem, "size" | "orientation" | "art" | "frame"> = {
+      size: "m",
+      orientation: "portrait",
+      art: "carpet",
+      frame: "gold",
+    };
+    const aspect = 0.5768;
+    const outer = paintingDimensions(tableau, aspect);
+    const bar = 2 * frameDepth.gold;
+    expect((outer.width - bar) / (outer.height - bar)).toBeCloseTo(aspect, 5);
+  });
+});
+
+describe("undo and redo", () => {
+  it("undoes a whole drag as one step and redoes it", () => {
+    let state = start();
+    const before = state.layout.rug.x;
+    for (const x of [0.1, 0.2, 0.3]) {
+      state = roomReducer(state, { type: "rug", patch: { x }, group: "drag-1" });
+    }
+    state = roomReducer(state, { type: "undo" });
+    expect(state.layout.rug.x).toBe(before);
+    state = roomReducer(state, { type: "redo" });
+    expect(state.layout.rug.x).toBeCloseTo(0.3, 5);
+  });
+
+  it("keeps separate changes as separate steps and drops the redo branch on a new change", () => {
+    let state = start();
+    state = roomReducer(state, { type: "light", light: "night" });
+    state = roomReducer(state, { type: "floorStyle", style: "tiles" });
+    state = roomReducer(state, { type: "undo" });
+    expect(state.layout.floorStyle).toBe("planks");
+    expect(state.layout.light).toBe("night");
+    state = roomReducer(state, { type: "light", light: "morning" });
+    expect(state.future).toEqual([]);
+    expect(roomReducer(state, { type: "redo" })).toBe(state);
+  });
+
+  it("does not offer the loaded room itself as a step to undo", () => {
+    const state = roomReducer(start(), { type: "load", layout: start().layout });
+    expect(state.past).toEqual([]);
+    expect(roomReducer(state, { type: "undo" })).toBe(state);
   });
 });

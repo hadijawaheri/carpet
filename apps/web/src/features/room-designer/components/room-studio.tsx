@@ -1,6 +1,6 @@
 "use client";
 
-import type { Carpet, RoomLayout } from "@farsh/contracts";
+import { type Carpet, isFloorItem, type RoomLayout } from "@farsh/contracts";
 import {
   Box,
   Download,
@@ -8,8 +8,10 @@ import {
   Link2,
   Move,
   Proportions,
+  Redo2,
   RotateCcw,
   ScanEye,
+  Undo2,
   Waves,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -19,11 +21,15 @@ import { type KeyboardEvent, useEffect, useReducer, useRef, useState } from "rea
 
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { materialLabels } from "@/features/carpet-viewer/material-labels";
 import { useReducedMotion, useWebglSupport } from "@/lib/browser-support";
+import { formatSizeCm } from "@/lib/format";
 import { paths } from "@/lib/paths";
 import { encodeLayout } from "@/lib/room-codec";
 
-import { NUDGE, nudgeItem, roomReducer } from "../state/room-reducer";
+import { captionImage } from "../state/caption-image";
+import { rugSize } from "../state/room-geometry";
+import { duplicateItem, NUDGE, nudgeItem, roomReducer } from "../state/room-reducer";
 import { type PanelTab, RoomPanel } from "./room-panel";
 import { type RoomTool, RUG_ID } from "./room-scene";
 import type { RoomView } from "./room-shell";
@@ -58,8 +64,10 @@ interface RoomStudioProps {
 }
 
 export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
-  const [{ layout }, dispatch] = useReducer(roomReducer, { layout: initial, carpets }, (start) =>
-    roomReducer(start, { type: "load", layout: start.layout }),
+  const [{ layout, past, future }, dispatch] = useReducer(
+    roomReducer,
+    { layout: initial, carpets },
+    (start) => roomReducer(start, { type: "load", layout: start.layout }),
   );
   const [selectedId, setSelectedId] = useState<string | null>(RUG_ID);
   const [tab, setTab] = useState<PanelTab>("rug");
@@ -70,6 +78,7 @@ export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
   const [paintingImages, setPaintingImages] = useState<Record<string, string>>({});
 
   const shakeRef = useRef<(() => void) | null>(null);
+  const flattenRef = useRef<(() => void) | null>(null);
   const captureRef = useRef<(() => Promise<Blob | null>) | null>(null);
   const initialEncoded = useRef(encodeLayout(initial));
   const imagesRef = useRef(paintingImages);
@@ -93,6 +102,25 @@ export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
     const timer = window.setTimeout(() => setConfirmReset(false), 4000);
     return () => window.clearTimeout(timer);
   }, [confirmReset]);
+
+  // Undo is a page-wide habit, so it works wherever focus is, except while typing in a field.
+  useEffect(() => {
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, [contenteditable='true']")) return;
+      const key = event.key.toLowerCase();
+      if (key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        dispatch({ type: "undo" });
+      } else if ((key === "z" && event.shiftKey) || key === "y") {
+        event.preventDefault();
+        dispatch({ type: "redo" });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     imagesRef.current = paintingImages;
@@ -168,11 +196,19 @@ export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
   };
 
   const saveImage = async () => {
-    const blob = await captureRef.current?.();
-    if (!blob) {
+    const shot = await captureRef.current?.();
+    if (!shot) {
       setStatus("تصویر ساخته نشد؛ دوباره امتحان کنید.");
       return;
     }
+    const size = rugSize(layout.rug, carpet);
+    const blob = await captionImage(shot, {
+      title: `فرش ${carpet.name}`,
+      detail: `${formatSizeCm(Math.round(size.width * 100), Math.round(size.length * 100))} · ${materialLabels[layout.rug.material]}`,
+    }).catch((error: unknown) => {
+      void error;
+      return shot;
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -188,6 +224,30 @@ export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
       select(null);
       return;
     }
+    const item = layout.items.find((i) => i.id === selectedId);
+    if ((event.key === "Delete" || event.key === "Backspace") && item) {
+      event.preventDefault();
+      dispatch({ type: "remove", id: item.id });
+      select(null);
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d" && item) {
+      event.preventDefault();
+      const copy = duplicateItem(item, layout);
+      dispatch({ type: "add", item: copy });
+      select(copy.id);
+      return;
+    }
+    if (event.key.toLowerCase() === "r" && !event.ctrlKey && !event.metaKey) {
+      // R turns by 15°, Shift+R back: the same step as the turning ring's snap.
+      const turn = (event.shiftKey ? -1 : 1) * (Math.PI / 12);
+      if (selectedId === RUG_ID) {
+        dispatch({ type: "rug", patch: { rotation: layout.rug.rotation + turn } });
+      } else if (item && isFloorItem(item)) {
+        dispatch({ type: "replace", item: { ...item, rotation: item.rotation + turn } });
+      }
+      return;
+    }
     const step = {
       ArrowLeft: [-NUDGE, 0],
       ArrowRight: [NUDGE, 0],
@@ -201,7 +261,6 @@ export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
       dispatch({ type: "rug", patch: { x: layout.rug.x + dx, z: layout.rug.z + dz } });
       return;
     }
-    const item = layout.items.find((i) => i.id === selectedId);
     if (item) dispatch({ type: "replace", item: nudgeItem(item, dx, dz) });
   };
 
@@ -244,6 +303,28 @@ export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
             </ToggleGroup>
           </div>
           <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-label="برگرداندن"
+              title="برگرداندن (Ctrl+Z)"
+              disabled={!past?.length}
+              onClick={() => dispatch({ type: "undo" })}
+            >
+              <Undo2 aria-hidden className="rtl:rotate-180" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-label="دوباره"
+              title="دوباره (Ctrl+Shift+Z)"
+              disabled={!future?.length}
+              onClick={() => dispatch({ type: "redo" })}
+            >
+              <Redo2 aria-hidden className="rtl:rotate-180" />
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -299,22 +380,24 @@ export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
           <RoomCanvas
             layout={layout}
             carpet={carpet}
+            carpets={carpets}
             selectedId={selectedId}
             tool={tool}
             view={view}
             reducedMotion={reducedMotion}
             paintingImages={paintingImages}
             shakeRef={shakeRef}
+            flattenRef={flattenRef}
             captureRef={captureRef}
             dispatch={dispatch}
             onSelect={select}
           />
           <p className="pointer-events-none absolute start-3 bottom-3 max-w-[calc(100%-1.5rem)] bg-wall-deep/80 px-3 py-1 text-accession text-on-wall-muted">
             {tool === "touch"
-              ? "گوشه‌ی فرش را بگیرید و بالا بکشید؛ رها کنید تا روی زمین بنشیند."
+              ? "گوشه‌ی فرش را بگیرید و روی خودش تا کنید؛ رها کنید، همان‌جا می‌ماند."
               : view === "inside"
-                ? "بکشید تا اطراف را ببینید."
-                : "اثاث را بکشید تا جابه‌جا شود؛ فضای خالی را بکشید تا بچرخید."}
+                ? "بکشید تا اطراف را ببینید؛ تابلو را می‌شود تا دیوار کناری کشید."
+                : "وسیله را بکشید تا جابه‌جا شود و با دایره‌ی زرد بچرخانید؛ فضای خالی را بکشید تا دور اتاق بچرخید."}
           </p>
         </div>
         <p role="status" aria-live="polite" className="min-h-6 text-label text-on-wall-muted">
@@ -341,6 +424,7 @@ export function RoomStudio({ carpets, initial, notice }: RoomStudioProps) {
           dispatch={dispatch}
           onSelect={select}
           onPaintingImage={setPaintingImage}
+          onFlatten={() => flattenRef.current?.()}
         />
       </aside>
     </div>

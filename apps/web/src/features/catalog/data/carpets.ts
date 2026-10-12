@@ -3,6 +3,7 @@ import { type Carpet, carpetSchema } from "@farsh/contracts";
 // Stand-ins until the owner supplies the final product photos; material and size are placeholders too.
 const placeholderCarpets = [
   {
+    kind: "rug",
     slug: "medallion-black",
     name: "ترنج تیره",
     material: "silk",
@@ -14,6 +15,7 @@ const placeholderCarpets = [
     isPlaceholder: true,
   },
   {
+    kind: "rug",
     slug: "three-medallion",
     name: "سه ترنج",
     material: "machine",
@@ -25,6 +27,7 @@ const placeholderCarpets = [
     isPlaceholder: true,
   },
   {
+    kind: "rug",
     slug: "mashhad-navy",
     name: "حاشیه لاجوردی",
     material: "wool",
@@ -36,6 +39,7 @@ const placeholderCarpets = [
     isPlaceholder: true,
   },
   {
+    kind: "rug",
     slug: "navy-medallion",
     name: "ترنج سرمه‌ای",
     material: "silk",
@@ -47,6 +51,7 @@ const placeholderCarpets = [
     isPlaceholder: true,
   },
   {
+    kind: "rug",
     slug: "kashan-red",
     name: "کاشان سرخ",
     material: "wool",

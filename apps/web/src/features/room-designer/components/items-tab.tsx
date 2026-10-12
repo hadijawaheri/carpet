@@ -1,7 +1,13 @@
 "use client";
 
-import type { RoomItemKind, RoomLayout } from "@farsh/contracts";
-import { Blinds, Frame, Sofa, Table2 } from "lucide-react";
+import {
+  type Carpet,
+  MAX_ROOM_ITEMS,
+  type RoomItem,
+  type RoomItemKind,
+  type RoomLayout,
+} from "@farsh/contracts";
+import { Archive, Blinds, Cylinder, Frame, LampFloor, Sofa, Sprout, Table2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/format";
@@ -11,17 +17,32 @@ import { itemLabels } from "../data/catalog";
 import { createItem, type RoomAction } from "../state/room-reducer";
 import { ItemInspector, itemTitle } from "./item-inspector";
 
-const MAX_ITEMS = 24;
-
 const kinds: { kind: RoomItemKind; icon: typeof Sofa }[] = [
   { kind: "sofa", icon: Sofa },
   { kind: "table", icon: Table2 },
+  { kind: "pouf", icon: Cylinder },
+  { kind: "cabinet", icon: Archive },
+  { kind: "lamp", icon: LampFloor },
+  { kind: "plant", icon: Sprout },
   { kind: "painting", icon: Frame },
   { kind: "curtain", icon: Blinds },
 ];
 
+/** The colour a piece is known by in the list. */
+function itemColor(item: RoomItem) {
+  switch (item.kind) {
+    case "plant":
+      return item.potColor;
+    case "painting":
+      return item.art === "colors" ? item.accent : item.frameColor;
+    default:
+      return item.color;
+  }
+}
+
 interface ItemsTabProps {
   layout: RoomLayout;
+  carpets: Carpet[];
   selectedId: string | null;
   paintingImages: Record<string, string>;
   dispatch: (action: RoomAction) => void;
@@ -31,6 +52,7 @@ interface ItemsTabProps {
 
 export function ItemsTab({
   layout,
+  carpets,
   selectedId,
   paintingImages,
   dispatch,
@@ -38,7 +60,7 @@ export function ItemsTab({
   onPaintingImage,
 }: ItemsTabProps) {
   const selected = layout.items.find((item) => item.id === selectedId);
-  const full = layout.items.length >= MAX_ITEMS;
+  const full = layout.items.length >= MAX_ROOM_ITEMS;
 
   return (
     <>
@@ -76,7 +98,7 @@ export function ItemsTab({
         <h3 id="list-title" className="flex items-baseline justify-between text-base font-bold">
           در اتاق
           <span className="text-label font-normal text-muted-foreground">
-            {formatNumber(layout.items.length)} از {formatNumber(MAX_ITEMS)}
+            {formatNumber(layout.items.length)} از {formatNumber(MAX_ROOM_ITEMS)}
           </span>
         </h3>
         {layout.items.length === 0 ? (
@@ -98,9 +120,7 @@ export function ItemsTab({
                   <span
                     aria-hidden
                     className="size-4 rounded-full border border-input/40"
-                    style={{
-                      backgroundColor: item.kind === "painting" ? item.accent : item.color,
-                    }}
+                    style={{ backgroundColor: itemColor(item) }}
                   />
                 </button>
               </li>
@@ -114,6 +134,7 @@ export function ItemsTab({
           key={selected.id}
           item={selected}
           layout={layout}
+          carpets={carpets}
           paintingImage={paintingImages[selected.id]}
           dispatch={dispatch}
           onSelect={onSelect}

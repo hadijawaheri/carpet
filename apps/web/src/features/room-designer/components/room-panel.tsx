@@ -22,6 +22,7 @@ interface RoomPanelProps {
   dispatch: (action: RoomAction) => void;
   onSelect: (id: string | null) => void;
   onPaintingImage: (id: string, file: File | null) => void;
+  onFlatten: () => void;
 }
 
 /** The mount board beside the room: three tabs, each a task a buyer does in turn. */
@@ -31,7 +32,7 @@ export function RoomPanel({ tab, onTab, ...props }: RoomPanelProps) {
       <TabsList aria-label="بخش‌های طراحی">
         <TabsTrigger value="rug">فرش</TabsTrigger>
         <TabsTrigger value="room">اتاق</TabsTrigger>
-        <TabsTrigger value="items">مبلمان</TabsTrigger>
+        <TabsTrigger value="items">وسایل</TabsTrigger>
       </TabsList>
       <div className="min-h-0 flex-1 overflow-y-auto pe-1">
         <TabsContent value="rug">
@@ -40,6 +41,7 @@ export function RoomPanel({ tab, onTab, ...props }: RoomPanelProps) {
             carpets={props.carpets}
             carpet={props.carpet}
             dispatch={props.dispatch}
+            onFlatten={props.onFlatten}
           />
         </TabsContent>
         <TabsContent value="room">
@@ -48,6 +50,7 @@ export function RoomPanel({ tab, onTab, ...props }: RoomPanelProps) {
         <TabsContent value="items">
           <ItemsTab
             layout={props.layout}
+            carpets={props.carpets}
             selectedId={props.selectedId}
             paintingImages={props.paintingImages}
             dispatch={props.dispatch}

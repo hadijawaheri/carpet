@@ -10,6 +10,8 @@ export interface ClothPhysics {
   /** Pull back towards the flat rest pose per step (0–1). */
   restore: number;
   wind: number;
+  /** Thickness of the pile in metres when the carpet lies on a floor; a fold rests this far above itself. */
+  pileHeight: number;
 }
 
 export interface PileSurface {
@@ -40,6 +42,7 @@ export const materialPresets: Record<PileMaterial, MaterialPreset> = {
       damping: 0.989,
       restore: 0.0016,
       wind: 1,
+      pileHeight: 0.006,
     },
     surface: {
       roughness: 0.36,
@@ -61,6 +64,7 @@ export const materialPresets: Record<PileMaterial, MaterialPreset> = {
       damping: 0.975,
       restore: 0.0035,
       wind: 0.5,
+      pileHeight: 0.012,
     },
     surface: {
       roughness: 0.9,
@@ -82,6 +86,7 @@ export const materialPresets: Record<PileMaterial, MaterialPreset> = {
       damping: 0.93,
       restore: 0.011,
       wind: 0.2,
+      pileHeight: 0.009,
     },
     surface: {
       roughness: 0.74,

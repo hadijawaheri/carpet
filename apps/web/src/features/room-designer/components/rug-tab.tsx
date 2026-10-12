@@ -1,42 +1,55 @@
 "use client";
 
 import type { Carpet, PileMaterial, RoomLayout } from "@farsh/contracts";
-import { RotateCw } from "lucide-react";
+import { Eraser, RotateCw } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { materialLabels } from "@/features/carpet-viewer/material-labels";
-import { formatSizeCm } from "@/lib/format";
+import { formatNumber, formatSizeCm } from "@/lib/format";
 import { suggestPalettes } from "@/lib/image-palette";
 import { cn } from "@/lib/utils";
 
+import { rugSizes } from "../data/catalog";
 import { useCarpetSwatches } from "../hooks/use-carpet-swatches";
 import { rugSize } from "../state/room-geometry";
 import type { RoomAction } from "../state/room-reducer";
+import { RangeField, toDegrees, toRadians } from "./range-field";
 
 interface RugTabProps {
   layout: RoomLayout;
   carpets: Carpet[];
   carpet: Carpet;
   dispatch: (action: RoomAction) => void;
+  onFlatten: () => void;
 }
+
+/** What each pile does in the room, in the terms the simulation actually differs by. */
+const materialNotes: Record<PileMaterial, string> = {
+  silk: "نازک و سبک؛ نور را برمی‌گرداند و نرم تا می‌خورد.",
+  wool: "پرز بلند و لبه‌ی ضخیم؛ مات و گرم.",
+  machine: "پرز کوتاه‌تر و لبه‌ی نازک‌تر از دستباف پشمی؛ یکدست و مات.",
+};
 
 const materials = Object.keys(materialLabels) as PileMaterial[];
 
-export function RugTab({ layout, carpets, carpet, dispatch }: RugTabProps) {
+export function RugTab({ layout, carpets, carpet, dispatch, onFlatten }: RugTabProps) {
   const { rug } = layout;
   const size = rugSize(rug, carpet);
   const swatches = useCarpetSwatches(carpet.image);
   const palettes = swatches ? suggestPalettes(swatches) : [];
+  // Tableaux hang on walls; the floor takes rugs.
+  const rugs = carpets.filter((c) => c.kind === "rug");
+  const presets = carpet.isPlaceholder
+    ? rugSizes
+    : [...rugSizes, { label: "اندازه‌ی واقعی", lengthCm: carpet.lengthCm }];
 
   return (
     <>
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-label font-semibold">فرش را انتخاب کنید</legend>
+        <legend className="mb-1 text-label font-semibold">طرح فرش</legend>
         <div className="grid grid-cols-5 gap-2">
-          {carpets.map((option) => {
+          {rugs.map((option) => {
             const selected = option.slug === carpet.slug;
             return (
               <button
@@ -62,68 +75,123 @@ export function RugTab({ layout, carpets, carpet, dispatch }: RugTabProps) {
           })}
         </div>
         <p className="text-label text-muted-foreground">
-          {carpet.name}؛ {formatSizeCm(Math.round(size.width * 100), Math.round(size.length * 100))}
-          {carpet.isPlaceholder ? " (اندازه و جنس هنوز نمونه است)" : ""}
+          {carpet.name}
+          {carpet.isPlaceholder ? " (اندازه و جنس این عکس هنوز نمونه است)" : ""}
         </p>
       </fieldset>
 
-      <div className="flex flex-col gap-2">
-        <span id="rug-material" className="text-label font-semibold">
-          جنس فرش
-        </span>
-        <ToggleGroup
-          type="single"
-          value={rug.material}
-          aria-labelledby="rug-material"
-          onValueChange={(next) => {
-            const picked = materials.find((m) => m === next);
-            if (picked) dispatch({ type: "rug", patch: { material: picked } });
-          }}
-        >
-          {materials.map((material) => (
-            <ToggleGroupItem key={material} value={material} size="sm">
-              {materialLabels[material]}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-        <p className="text-accession text-muted-foreground">
-          جنس روی برق و سنگینی پارچه‌ی فرش اثر می‌گذارد؛ ابریشم سبک‌تر می‌افتد و می‌درخشد.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <div className="flex items-baseline justify-between text-label font-semibold">
-          <span>اندازه</span>
-          <span className="text-muted-foreground">
-            {Math.round(rug.scale * 100).toLocaleString("fa-IR")}٪ نمونه
-          </span>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 text-label font-semibold">نوع بافت</legend>
+        <div className="grid gap-2">
+          {materials.map((material) => {
+            const selected = rug.material === material;
+            return (
+              <button
+                key={material}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => dispatch({ type: "rug", patch: { material } })}
+                className={cn(
+                  "flex cursor-pointer flex-col items-start gap-0.5 rounded-sm border border-input/40 px-3 py-2 text-start outline-none hover:border-primary focus-visible:ring-2 focus-visible:ring-ring",
+                  selected && "border-primary bg-secondary",
+                )}
+              >
+                <span className="text-sm font-semibold">{materialLabels[material]}</span>
+                <span className="text-accession text-muted-foreground">
+                  {materialNotes[material]}
+                </span>
+              </button>
+            );
+          })}
         </div>
-        <Slider
-          label="اندازه‌ی فرش"
-          min={0.6}
-          max={1.6}
-          step={0.05}
-          value={[rug.scale]}
-          onValueChange={([scale]) =>
-            scale !== undefined && dispatch({ type: "rug", patch: { scale } })
+      </fieldset>
+
+      <section aria-labelledby="rug-size-title" className="flex flex-col gap-3">
+        <h3 id="rug-size-title" className="flex items-baseline justify-between gap-3">
+          <span className="text-base font-bold">اندازه</span>
+          <span className="text-label text-muted-foreground tabular-nums">
+            {formatSizeCm(Math.round(size.width * 100), Math.round(size.length * 100))}
+          </span>
+        </h3>
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="اندازه‌های رایج">
+          {presets.map((preset) => {
+            const selected = Math.round(rug.lengthCm) === preset.lengthCm;
+            return (
+              <button
+                key={preset.label}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => dispatch({ type: "rug", patch: { lengthCm: preset.lengthCm } })}
+                className={cn(
+                  "h-8 cursor-pointer rounded-sm border border-input/40 px-2.5 text-xs font-semibold outline-none hover:border-primary focus-visible:ring-2 focus-visible:ring-ring",
+                  selected && "border-primary bg-primary text-primary-foreground",
+                )}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+        <RangeField
+          label="طول فرش"
+          valueLabel={`${formatNumber(Math.round(rug.lengthCm))} سانتی‌متر`}
+          min={60}
+          max={600}
+          step={5}
+          value={rug.lengthCm}
+          onChange={(lengthCm, group) => dispatch({ type: "rug", patch: { lengthCm }, group })}
+        />
+        <p className="text-accession text-muted-foreground">
+          پهنا از نسبت عکس می‌آید تا نقش فرش کشیده نشود. نام‌ها اندازه‌ی تقریبی بازارند.
+        </p>
+      </section>
+
+      <section aria-labelledby="rug-turn-title" className="flex flex-col gap-3">
+        <h3 id="rug-turn-title" className="text-base font-bold">
+          چرخش و حالت
+        </h3>
+        <RangeField
+          label="زاویه"
+          valueLabel={`${formatNumber(toDegrees(rug.rotation))} درجه`}
+          min={-180}
+          max={180}
+          step={1}
+          value={toDegrees(rug.rotation)}
+          onChange={(degrees, group) =>
+            dispatch({ type: "rug", patch: { rotation: toRadians(degrees) }, group })
           }
         />
-        <Button
-          type="button"
-          variant="mount"
-          size="sm"
-          className="mt-2 w-fit border border-input/40"
-          onClick={() =>
-            dispatch({
-              type: "rug",
-              patch: { rotation: (rug.rotation + Math.PI / 2) % (2 * Math.PI) },
-            })
-          }
-        >
-          <RotateCw aria-hidden />
-          فرش را بچرخانید
-        </Button>
-      </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="mount"
+            size="sm"
+            className="border border-input/40"
+            onClick={() =>
+              dispatch({
+                type: "rug",
+                patch: { rotation: toRadians(toDegrees(rug.rotation + Math.PI / 2)) },
+              })
+            }
+          >
+            <RotateCw aria-hidden />
+            ۹۰ درجه
+          </Button>
+          <Button
+            type="button"
+            variant="mount"
+            size="sm"
+            className="border border-input/40"
+            onClick={onFlatten}
+          >
+            <Eraser aria-hidden />
+            صاف کردن فرش
+          </Button>
+        </div>
+        <p className="text-accession text-muted-foreground">
+          در حالت «لمس فرش» گوشه‌ای را بگیرید و روی خودش تا کنید؛ همان‌جا می‌ماند تا صافش کنید.
+        </p>
+      </section>
 
       <section aria-labelledby="palette-title" className="flex flex-col gap-3">
         <h3 id="palette-title" className="text-base font-bold">

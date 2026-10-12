@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createDefaultRoomLayout, roomLayoutSchema } from "./room.schema";
+import { createDefaultRoomLayout, MAX_ROOM_ITEMS, roomLayoutSchema } from "./room.schema";
 
 describe("roomLayoutSchema", () => {
   it("accepts the default room", () => {
@@ -23,11 +23,28 @@ describe("roomLayoutSchema", () => {
     expect(roomLayoutSchema.safeParse(small).success).toBe(false);
   });
 
+  it("fills fields that older links did not carry", () => {
+    const layout = createDefaultRoomLayout("kashan-red");
+    const older: Record<string, unknown> = { ...layout };
+    delete older.light;
+    delete older.floorStyle;
+    const parsed = roomLayoutSchema.parse({
+      ...older,
+      items: [{ id: "s", kind: "sofa", seats: 2, color: "#8f877d", x: 0, z: 0, rotation: 0 }],
+    });
+    expect(parsed.light).toBe("noon");
+    expect(parsed.floorStyle).toBe("planks");
+    expect(parsed.items[0]).toMatchObject({ style: "modern", chaise: "none" });
+  });
+
   it("caps how many items a layout can hold, so a shared link stays small", () => {
     const layout = createDefaultRoomLayout("kashan-red");
     const first = layout.items[0];
     if (!first) throw new Error("default room has no items");
-    layout.items = Array.from({ length: 25 }, (_, i) => ({ ...first, id: `x-${i}` }));
+    layout.items = Array.from({ length: MAX_ROOM_ITEMS + 1 }, (_, i) => ({
+      ...first,
+      id: `x-${i}`,
+    }));
     expect(roomLayoutSchema.safeParse(layout).success).toBe(false);
   });
 });

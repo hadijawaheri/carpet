@@ -1,13 +1,14 @@
 "use client";
 
-import type { RoomLayout, WallSide } from "@farsh/contracts";
+import type { FloorStyle, RoomLayout, WallSide } from "@farsh/contracts";
 import { useFrame } from "@react-three/fiber";
-import { type ReactNode, useEffect, useMemo, useRef } from "react";
-import { CanvasTexture, type Group, RepeatWrapping, SRGBColorSpace } from "three";
+import { type ReactNode, useRef } from "react";
+import { BackSide, type Group, type Texture } from "three";
 
 import { mixHex } from "@/lib/color";
 
 import { wallFrame } from "../state/room-geometry";
+import { concreteTexture, herringboneTexture, plankTexture, tileTexture } from "../three/textures";
 
 export type RoomView = "orbit" | "inside" | "top";
 
@@ -15,64 +16,17 @@ const THICKNESS = 0.12;
 const WALLS: WallSide[] = ["back", "right", "left", "front"];
 /** Height the walls shrink to in the plan view, so the floor reads as a floor plan. */
 const PLAN_WALL_HEIGHT = 0.05;
+const CORNICE = 0.07;
 
-/** A small deterministic generator, so the planks look the same on every load. */
-function seeded(seed: number) {
-  let a = seed;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+/** Each floor finish, and the span in metres one repeat of its texture covers. */
+const floorFinish: Record<FloorStyle, { texture: () => Texture; span: number; roughness: number }> =
+  {
+    planks: { texture: plankTexture, span: 1, roughness: 0.62 },
+    // Blocks of about 30 × 15 cm, a common parquet size.
+    herringbone: { texture: herringboneTexture, span: 2.4, roughness: 0.5 },
+    tiles: { texture: tileTexture, span: 1.2, roughness: 0.32 },
+    concrete: { texture: concreteTexture, span: 3, roughness: 0.7 },
   };
-}
-
-/** Grey planks that the floor colour tints: the tint stays true because the planks average near white. */
-function makePlankTexture() {
-  const size = 512;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  const random = seeded(7);
-  if (ctx) {
-    const planks = 6;
-    const plankHeight = size / planks;
-    for (let i = 0; i < planks; i++) {
-      const y = i * plankHeight;
-      const tone = Math.round(236 + random() * 18);
-      ctx.fillStyle = `rgb(${tone},${tone},${tone})`;
-      ctx.fillRect(0, y, size, plankHeight);
-      for (let g = 0; g < 7; g++) {
-        const gy = y + 4 + random() * (plankHeight - 8);
-        ctx.strokeStyle = `rgba(0,0,0,${0.025 + random() * 0.04})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(0, gy);
-        ctx.bezierCurveTo(
-          size * 0.3,
-          gy + random() * 3 - 1.5,
-          size * 0.6,
-          gy + random() * 3 - 1.5,
-          size,
-          gy,
-        );
-        ctx.stroke();
-      }
-      const seam = random() * size;
-      ctx.fillStyle = "rgba(0,0,0,0.28)";
-      ctx.fillRect(seam, y, 2, plankHeight);
-      ctx.fillStyle = "rgba(0,0,0,0.34)";
-      ctx.fillRect(0, y + plankHeight - 2, size, 2);
-    }
-  }
-  const texture = new CanvasTexture(canvas);
-  texture.colorSpace = SRGBColorSpace;
-  texture.wrapS = RepeatWrapping;
-  texture.wrapT = RepeatWrapping;
-  texture.anisotropy = 8;
-  return texture;
-}
 
 interface WallAssemblyProps {
   wall: WallSide;
@@ -120,7 +74,7 @@ function WallAssembly({
 
   const color = walls[wall];
   const length = wall === "back" || wall === "front" ? room.width + 2 * THICKNESS : room.depth;
-  const baseboard = mixHex(color, "#ffffff", 0.6);
+  const trim = mixHex(color, "#ffffff", 0.6);
 
   return (
     <group ref={root} position={[frame.x, 0, frame.z]} rotation={[0, frame.rotationY, 0]}>
@@ -137,9 +91,18 @@ function WallAssembly({
           <boxGeometry args={[length, room.height, THICKNESS]} />
           <meshStandardMaterial color={color} roughness={0.96} />
         </mesh>
-        <mesh position={[0, 0.045, 0.011]} receiveShadow>
-          <boxGeometry args={[length, 0.09, 0.022]} />
-          <meshStandardMaterial color={baseboard} roughness={0.7} />
+        {/* Skirting with a small top bead, and a cornice under the ceiling: a plain box room reads as a model. */}
+        <mesh position={[0, 0.05, 0.011]} receiveShadow castShadow>
+          <boxGeometry args={[length, 0.1, 0.022]} />
+          <meshStandardMaterial color={trim} roughness={0.6} />
+        </mesh>
+        <mesh position={[0, 0.104, 0.006]}>
+          <boxGeometry args={[length, 0.008, 0.012]} />
+          <meshStandardMaterial color={trim} roughness={0.6} />
+        </mesh>
+        <mesh position={[0, room.height - CORNICE / 2, CORNICE / 2 - 0.01]}>
+          <boxGeometry args={[length, CORNICE, CORNICE]} />
+          <meshStandardMaterial color={trim} roughness={0.8} />
         </mesh>
       </group>
       <group ref={items}>{children}</group>
@@ -162,9 +125,9 @@ export function RoomShell({
   wallItems,
   onBackgroundClick,
 }: RoomShellProps) {
-  const { room, floor } = layout;
-  const texture = useMemo(() => makePlankTexture(), []);
-  useEffect(() => () => texture.dispose(), [texture]);
+  const { room, floor, floorStyle } = layout;
+  const finish = floorFinish[floorStyle];
+  const texture = finish.texture();
 
   return (
     <group>
@@ -178,14 +141,25 @@ export function RoomShell({
         }}
       >
         <planeGeometry args={[room.width, room.depth]} />
-        {/* Repeat once per metre; the texture shows six planks, so a plank is about 17 cm wide. */}
         <meshStandardMaterial
+          key={floorStyle}
           color={floor}
           map={texture}
-          map-repeat={[room.width, room.depth]}
-          roughness={0.62}
+          map-repeat={[room.width / finish.span, room.depth / finish.span]}
+          roughness={finish.roughness}
         />
       </mesh>
+      {/* Only seen from inside: from the overview the room is open to the sky, like a model. */}
+      {view === "inside" ? (
+        <mesh position={[0, room.height, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[room.width, room.depth]} />
+          <meshStandardMaterial
+            color={mixHex(layout.walls.back, "#ffffff", 0.5)}
+            roughness={1}
+            side={BackSide}
+          />
+        </mesh>
+      ) : null}
       {WALLS.map((wall) => (
         <WallAssembly
           key={wall}

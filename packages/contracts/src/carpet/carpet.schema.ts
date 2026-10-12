@@ -17,8 +17,13 @@ export const knotDensitySchema = z.discriminatedUnion("unit", [
 ]);
 export type KnotDensity = z.infer<typeof knotDensitySchema>;
 
+/** What the piece is for: a rug lies on the floor, a tableau (تابلو فرش) is woven to hang framed on a wall. */
+export const carpetKindSchema = z.enum(["rug", "tableau"]);
+export type CarpetKind = z.infer<typeof carpetKindSchema>;
+
 export const carpetSchema = z.object({
   slug: z.string().regex(/^[a-z0-9-]+$/),
+  kind: carpetKindSchema.default("rug"),
   name: z.string().min(1),
   material: pileMaterialSchema,
   widthCm: z.number().int().positive(),
