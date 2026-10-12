@@ -4,7 +4,7 @@ import type { Carpet, PileMaterial } from "@farsh/contracts";
 import { materialPresets } from "@farsh/contracts";
 import { useTexture } from "@react-three/drei";
 import { type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { type RefObject, useEffect, useMemo, useRef } from "react";
 import {
   BackSide,
   BufferAttribute,
@@ -18,21 +18,28 @@ import {
 } from "three";
 
 import { ClothSolver } from "../cloth-solver";
-import { createKnotNormalMap, KNOTS_PER_NORMAL_TILE } from "../knot-normal-map";
 
 const STEP = 1 / 60;
 const CARPET_HEIGHT = 2.2;
 const GRID_COLUMNS = 34;
 /** Lifts the held point towards the viewer, so a grab reads as picking the carpet up. */
 const GRAB_LIFT = 0.25;
+/**
+ * Velocity kick the keyboard shake gives every particle at once. The material-change kicks are 0.01
+ * and 0.03; a shake must read as larger than those without throwing the sheet. A starting value,
+ * not a measurement: tune it by eye.
+ */
+const SHAKE_STRENGTH = 0.08;
 
 interface CarpetClothProps {
   carpet: Carpet;
   material: PileMaterial;
   reducedMotion: boolean;
-  /** Pins the top edge, as on a gallery rod; lifting a lower corner shows the knotted back. */
+  /** Pins the top edge, as on a gallery rod; lifting a lower corner shows the plain reverse. */
   hanging?: boolean;
   onGrab?: () => void;
+  /** Filled with a function that kicks the cloth; the stage's button calls it. Null while motion is reduced. */
+  shakeRef?: RefObject<(() => void) | null>;
 }
 
 export function CarpetCloth({
@@ -41,6 +48,7 @@ export function CarpetCloth({
   reducedMotion,
   hanging = false,
   onGrab,
+  shakeRef,
 }: CarpetClothProps) {
   const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy());
   const texture = useTexture(carpet.image, (loaded) => {
@@ -62,32 +70,24 @@ export function CarpetCloth({
   }, [solver]);
   const preset = materialPresets[material];
   const surface = preset.surface;
-  const normalMap = useMemo(() => {
-    const map = createKnotNormalMap(surface.handKnotted);
-    const repeat = surface.knotsAcross / KNOTS_PER_NORMAL_TILE;
-    map.repeat.set(repeat, repeat / carpet.imageAspect);
-    map.anisotropy = maxAnisotropy;
-    return map;
-  }, [surface.handKnotted, surface.knotsAcross, carpet.imageAspect, maxAnisotropy]);
-
-  // A separate map instance for the reverse, so each material owns and disposes its own texture.
-  const backNormalMap = useMemo(() => {
-    const map = createKnotNormalMap(surface.handKnotted);
-    const repeat = surface.knotsAcross / KNOTS_PER_NORMAL_TILE;
-    map.repeat.set(repeat, repeat / carpet.imageAspect);
-    map.anisotropy = maxAnisotropy;
-    return map;
-  }, [surface.handKnotted, surface.knotsAcross, carpet.imageAspect, maxAnisotropy]);
 
   useEffect(() => {
     solver.setHanging(hanging);
   }, [solver, hanging]);
 
   useEffect(() => {
+    if (reducedMotion) return;
     solver.impulse(material === "machine" ? 0.01 : 0.03);
-  }, [solver, material]);
-  useEffect(() => () => normalMap.dispose(), [normalMap]);
-  useEffect(() => () => backNormalMap.dispose(), [backNormalMap]);
+  }, [solver, material, reducedMotion]);
+
+  // The ref is the only channel between the stage's button and the solver; it is emptied under reduced motion.
+  useEffect(() => {
+    if (!shakeRef) return;
+    shakeRef.current = reducedMotion ? null : () => solver.impulse(SHAKE_STRENGTH);
+    return () => {
+      shakeRef.current = null;
+    };
+  }, [shakeRef, solver, reducedMotion]);
 
   useEffect(() => () => geometry.dispose(), [geometry]);
 
@@ -112,6 +112,7 @@ export function CarpetCloth({
   const toLocal = (point: Vector3) => meshRef.current?.worldToLocal(point.clone());
 
   const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
+    if (reducedMotion) return;
     event.stopPropagation();
     const local = toLocal(event.point);
     if (!local) return;
@@ -159,8 +160,6 @@ export function CarpetCloth({
           anisotropyRotation={Math.PI / 2}
           clearcoat={surface.clearcoat}
           clearcoatRoughness={0.5}
-          normalMap={normalMap}
-          normalScale={[surface.normalScale, surface.normalScale]}
         />
       </mesh>
       {hanging ? (
@@ -174,16 +173,13 @@ export function CarpetCloth({
           <meshStandardMaterial color="#c99a45" metalness={0.85} roughness={0.32} />
         </mesh>
       ) : null}
-      {/* The reverse has no pile: flatter colour, no sheen, knots in relief. */}
+      {/* The reverse has no photo yet, so it is a plain cloth colour: no pattern is invented. */}
       <mesh geometry={geometry} castShadow>
         <meshStandardMaterial
-          map={texture}
           side={BackSide}
           color="#c9b6a4"
           roughness={0.95}
           envMapIntensity={0.5}
-          normalMap={backNormalMap}
-          normalScale={[1.1, 1.1]}
         />
       </mesh>
     </group>

@@ -1,7 +1,8 @@
 import type { ArticleTopic } from "@farsh/contracts";
 
-import { articleSummaries } from "@/features/research";
 import { formatNumber } from "@/lib/format";
+
+import { articleSummaries } from "../data/research";
 
 const topicLabels: Record<ArticleTopic, string> = {
   density: "تراکم",

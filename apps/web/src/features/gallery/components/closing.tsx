@@ -27,6 +27,12 @@ export function Closing() {
               بازگشت به تالار
             </Link>
             <Link
+              href={paths.research}
+              className="inline-block py-1 underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+            >
+              پژوهش
+            </Link>
+            <Link
               href={paths.designHub}
               className="inline-block py-1 underline decoration-saffron underline-offset-8 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
             >

@@ -1,21 +1,20 @@
 import type { Carpet } from "@farsh/contracts";
 
-import { KnotSpecTable, materialSpecs } from "@/features/research";
-
 import { Loupe } from "./loupe";
 
+// The units are named but not defined: neither has a sourced length or count yet, so none is invented.
 const notes = [
   {
     term: "رج",
-    text: "در فرش دستباف، تعداد گره‌هایی که در هفت سانتی‌متر از عرض فرش جا شده‌اند. چهل رج یعنی حدود سیصد هزار گره در هر متر مربع؛ هفتاد رج، نزدیک یک میلیون.",
+    text: "یکی از دو واحد تراکم گره. طول و شمارش آن هنوز منبع ندارد؛ تعریف کامل پس از تأیید می‌آید.",
   },
   {
-    term: "شانه و تراکم",
-    text: "در فرش ماشینی، شانه تعداد نقطه‌های پرز در یک متر عرض است و تراکم همان شمارش در یک متر طول. ۱۲۰۰ شانه با تراکم ۳۶۰۰ یعنی ۴٫۳ میلیون نقطه در متر مربع. این نقطه‌ها گره نیستند؛ نخ از لابه‌لای تار رد شده است.",
+    term: "شانه",
+    text: "واحد دوم تراکم گره. تفاوتش با رج هنوز منبع ندارد؛ تعریف کامل پس از تأیید می‌آید.",
   },
   {
     term: "پشت فرش",
-    text: "پشت دستباف کمی ناهموار است و هر گره را جدا نشان می‌دهد. پشت ماشینی شبکه‌ای کاملاً منظم است با پودهای سراسری. در تالار، گوشه‌ی فرش را بالا بیاورید تا ببینید.",
+    text: "عکس پشت این فرش‌ها هنوز اضافه نشده است.",
   },
 ];
 
@@ -29,24 +28,28 @@ export function Study({ carpet }: { carpet: Carpet }) {
               گره‌ها را بشمارید
             </h2>
             <p className="max-w-[60ch] text-lead text-on-wall-muted">
-              ارزش فرش از فاصله دیده نمی‌شود. ذره‌بین را روی فرش بکشید: هرچه گره‌ها ریزتر، نقش
-              دقیق‌تر و بافتش طولانی‌تر.
+              ارزش فرش از فاصله دیده نمی‌شود. ذره‌بین را روی فرش بکشید و گره‌ها را از نزدیک ببینید.
+            </p>
+            <p className="max-w-[60ch] text-body text-on-wall-muted">
+              در شبیه‌سازی، ابریشم برق بیشتری دارد و ماشینی سفت‌تر می‌افتد. قیمت به جنس و اندازه
+              بستگی دارد؛ جزئیاتش در بخش پژوهش است و پیش‌نویس است.
             </p>
           </div>
-          <dl className="flex flex-col">
-            {notes.map((n) => (
-              <div
-                key={n.term}
-                className="grid gap-2 border-t border-on-wall-muted/30 py-6 sm:grid-cols-[9rem_1fr] sm:gap-8"
-              >
-                <dt className="font-display text-heading font-bold text-saffron">{n.term}</dt>
-                <dd className="max-w-[60ch] text-body">{n.text}</dd>
-              </div>
-            ))}
-          </dl>
-          <div className="flex flex-col gap-4 bg-card p-6 text-card-foreground shadow-mount sm:p-8">
-            <h3 className="font-display text-heading font-bold">سه جنس در یک جدول</h3>
-            <KnotSpecTable specs={materialSpecs} />
+          <div className="flex flex-col gap-4">
+            <dl className="flex flex-col">
+              {notes.map((n) => (
+                <div
+                  key={n.term}
+                  className="grid gap-2 border-t border-on-wall-muted/30 py-6 sm:grid-cols-[9rem_1fr] sm:gap-8"
+                >
+                  <dt className="font-display text-heading font-bold text-saffron">{n.term}</dt>
+                  <dd className="max-w-[60ch] text-body">{n.text}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-label text-on-wall-muted">
+              تعریف‌ها و عددهای این بخش پیش‌نویس‌اند و پیش از انتشار منبع می‌گیرند.
+            </p>
           </div>
         </div>
         <div className="lg:sticky lg:top-10 lg:self-start">

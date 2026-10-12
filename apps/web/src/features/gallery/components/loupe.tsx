@@ -8,7 +8,6 @@ import { formatNumber } from "@/lib/format";
 
 /** Never magnify past the photo's own pixels: beyond that the lens shows blur, not knots. */
 const MAX_ZOOM = 4;
-const MIN_ZOOM = 1.5;
 const LENS = 176;
 const KEY_STEP = 0.04;
 
@@ -73,8 +72,8 @@ export function Loupe({ carpet }: { carpet: Carpet }) {
 
   const zoom =
     size.w > 0 && naturalWidth > 0
-      ? Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round((naturalWidth / size.w) * 10) / 10))
-      : MIN_ZOOM;
+      ? Math.min(MAX_ZOOM, Math.max(1, Math.round((naturalWidth / size.w) * 10) / 10))
+      : 1;
   const lensX = point.x * size.w;
   const lensY = point.y * size.h;
 
