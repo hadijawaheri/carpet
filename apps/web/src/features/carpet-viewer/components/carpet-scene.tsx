@@ -3,7 +3,7 @@
 import type { Carpet, PileMaterial } from "@farsh/contracts";
 import { AdaptiveDpr, Environment, Lightformer } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense } from "react";
+import { type RefObject, Suspense } from "react";
 import { ACESFilmicToneMapping, NeutralToneMapping, PCFShadowMap } from "three";
 
 import { CarpetCloth } from "./carpet-cloth";
@@ -16,6 +16,7 @@ interface CarpetSceneProps {
   reducedMotion: boolean;
   variant?: CarpetSceneVariant;
   onGrab?: () => void;
+  shakeRef?: RefObject<(() => void) | null>;
 }
 
 export function CarpetScene({
@@ -24,6 +25,7 @@ export function CarpetScene({
   reducedMotion,
   variant = "studio",
   onGrab,
+  shakeRef,
 }: CarpetSceneProps) {
   const gallery = variant === "gallery";
   return (
@@ -77,6 +79,7 @@ export function CarpetScene({
             reducedMotion={reducedMotion}
             hanging={gallery}
             onGrab={onGrab}
+            shakeRef={shakeRef}
           />
         </Suspense>
       </group>

@@ -51,7 +51,7 @@ export function Collection({ carpets, activeIndex, onSelect }: CollectionProps) 
                     aria-pressed={active}
                     aria-label={`${c.name} را در تالار آویزان کن`}
                     className={cn(
-                      "group relative block cursor-pointer overflow-hidden shadow-mount transition-transform duration-500 ease-settle outline-none hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:ring-offset-4 focus-visible:ring-offset-wall-deep",
+                      "group relative block cursor-pointer overflow-hidden shadow-mount transition-transform duration-500 ease-settle outline-none hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-saffron focus-visible:ring-offset-4 focus-visible:ring-offset-wall-deep motion-reduce:transition-none motion-reduce:hover:translate-y-0",
                       active && "ring-2 ring-saffron ring-offset-4 ring-offset-wall-deep",
                     )}
                     style={{ width, height }}

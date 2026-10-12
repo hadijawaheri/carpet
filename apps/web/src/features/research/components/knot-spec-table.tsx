@@ -42,14 +42,14 @@ export function KnotSpecTable({ specs }: { specs: MaterialSpec[] }) {
           </dl>
         ))}
         <p className="pt-3 text-label text-muted-foreground">
-          بازه‌ها پیش‌نویس‌اند و هنوز منبع ندارند.
+          تعریف رج، شانه و تراکم هنوز منبع ندارد. بازه‌ها و عددهای در هر متر مربع هم پیش‌نویس‌اند.
         </p>
       </div>
       <div className="hidden sm:block">
         <Table>
           <TableCaption className="text-start">
-            رج: گره در ۷ سانتی‌متر عرض. شانه: نقطه‌ی پرز در یک متر عرض؛ تراکم: همان در یک متر طول.
-            نقطه‌های فرش ماشینی گره‌ی واقعی نیستند. بازه‌ها پیش‌نویس‌اند و هنوز منبع ندارند.
+            تعریف رج، شانه و تراکم هنوز منبع ندارد. بازه‌ها و عددهای در هر متر مربع هم پیش‌نویس‌اند
+            و پیش از انتشار منبع می‌گیرند.
           </TableCaption>
           <TableHeader>
             <TableRow>

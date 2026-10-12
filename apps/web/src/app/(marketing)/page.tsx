@@ -1,10 +1,10 @@
 import { carpets } from "@/features/catalog";
-import { Closing, GalleryExperience, ResearchCatalogue } from "@/features/gallery";
+import { Closing, GalleryExperience } from "@/features/gallery";
 
 export default function HomePage() {
   return (
     <>
-      <GalleryExperience carpets={carpets} after={<ResearchCatalogue />} />
+      <GalleryExperience carpets={carpets} />
       <Closing />
     </>
   );

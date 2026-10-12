@@ -55,13 +55,15 @@ export function AccessionLabel({
         <dd>{carpet.density ? formatDensity(carpet.density) : "ثبت نشده"}</dd>
         <dt className="text-muted-foreground">گره در متر مربع</dt>
         <dd className="tabular-nums">
-          {knots === null ? "ثبت نشده" : `حدود ${formatNumber(Math.round(knots / 1000) * 1000)}`}
+          {knots === null
+            ? "ثبت نشده"
+            : `حدود ${formatNumber(Math.round(knots / 1000) * 1000)} · پیش‌نویس`}
         </dd>
       </dl>
 
       <fieldset className="flex flex-col gap-2 border-t border-border pt-3">
         <legend className="float-start mb-1 w-full text-label font-semibold">
-          همین نقش، با پرز دیگر
+          همین فرش، با جنس دیگر
         </legend>
         <ToggleGroupPrimitive.Root
           type="single"
@@ -85,6 +87,7 @@ export function AccessionLabel({
         <p className="min-h-[3.2em] pt-1 text-label text-muted-foreground" aria-live="polite">
           {materialNotes[material]}
         </p>
+        <p className="text-label text-muted-foreground">جنس را شبیه‌سازی می‌کنیم؛ عکس همان است.</p>
       </fieldset>
 
       <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
