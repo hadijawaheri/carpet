@@ -2,26 +2,26 @@
 @import "tw-animate-css";
 
 /*
- * Farsh: a carpet museum's study gallery. One world, no light/dark switch: walls are drenched
- * in madder (the colour carpet halls are painted), cream mount boards carry every label and
- * reading surface, saffron marks rails and focus on the wall, indigo marks focus on the mount.
- * Contrast pairs are asserted in features/design-hub/data/palette.test.ts.
+ * Farsh: a carpet museum's study hall, painted cream. Most carpets are red, so the walls are cream and
+ * a carpet reads clearly on them; madder is kept for actions and emphasis. Mount boards are a shade
+ * lighter than the wall so every label lifts off it. Contrast pairs are asserted in
+ * features/design-hub/data/palette.test.ts.
  */
 :root {
   --radius: 0.125rem;
 
   /* Wall */
-  --background: #6c1116;
-  --foreground: #f4e8d5;
-  --wall-deep: #470a0e;
-  --wall-lit: #8c1b20;
-  --on-wall-muted: #e2c2a4;
-  --saffron: #d6a24a;
+  --background: #efe3cc;
+  --foreground: #2a1410;
+  --wall-deep: #e4d4b8;
+  --wall-lit: #f7efe0;
+  --on-wall-muted: #6a4637;
+  --saffron: #7a4f12;
 
   /* Mount board */
-  --card: #f2e7d3;
+  --card: #fbf6ec;
   --card-foreground: #2a1410;
-  --popover: #f2e7d3;
+  --popover: #fbf6ec;
   --popover-foreground: #2a1410;
   --muted: #e9dcc4;
   --muted-foreground: #6a4637;
@@ -41,7 +41,7 @@
   --indigo: #1f2f57;
   --indigo-foreground: #f4e8d5;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 @theme inline {

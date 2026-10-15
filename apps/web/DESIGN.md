@@ -2,19 +2,20 @@
 name: Farsh
 description: A carpet museum's study gallery in Persian RTL, where real carpet photos hang as touchable 3D cloth.
 colors:
-  madder-wall: "#6c1116"
-  wall-deep: "#470a0e"
-  wall-lit: "#8c1b20"
-  gallery-cream: "#f4e8d5"
-  on-wall-muted: "#e2c2a4"
-  saffron: "#d6a24a"
-  mount-board: "#f2e7d3"
+  cream-wall: "#efe3cc"
+  wall-deep: "#e4d4b8"
+  wall-lit: "#f7efe0"
+  madder-ink: "#2a1410"
+  on-wall-muted: "#6a4637"
+  saffron: "#7a4f12"
+  mount-board: "#fbf6ec"
   mount-ink: "#2a1410"
   mount-muted: "#e9dcc4"
   mount-muted-ink: "#6a4637"
   mount-pressed: "#e6d6bb"
   mount-rule: "#d2bd9b"
   oxblood-action: "#7d141a"
+  gallery-cream: "#f4e8d5"
   rust-destructive: "#8f2a14"
   indigo: "#1f2f57"
 typography:
@@ -116,13 +117,13 @@ components:
 
 **Creative North Star: "The Study Gallery"**
 
-Farsh is a carpet museum's study hall, not a shop. Every page is a madder-red wall; carpets hang on it as accessioned specimens under raking light, and the visitor is allowed to handle them. Everything that must be read at length (the accession label, the study table, the research catalogue) is pinned to the wall as a cream mount board. There is one world and one theme: a gallery does not repaint its walls, so there is no light/dark switch.
+Farsh is a carpet museum's study hall, not a shop. Every page is a cream wall; most carpets are red, so they hang on it as accessioned specimens that stand out, and the visitor is allowed to handle them. Madder is kept for actions and emphasis. Everything that must be read at length (the accession label, the study table, the research catalogue) is pinned to the wall as a lighter mount board. There is one world and one theme: a gallery does not repaint its walls, so there is no light/dark switch.
 
 Density is calm and generous: large Naskh inscriptions across the wall, long-leaded Persian body copy, mounts with tight tombstone-style data inside. The only imagery is the owner's own carpet photographs, either as 3D hanging cloth or as framed photos; carpets are never drawn, illustrated or generated. The layout is right-to-left and built entirely with logical properties.
 
 **Key Characteristics:**
 
-- Madder wall everywhere; cream exists only as inset mount boards.
+- Cream wall everywhere; madder is for actions and emphasis, mounts are a shade lighter than the wall.
 - Saffron is the wall's accent (rails, rods, focus, one inscribed word); indigo is the mount's focus colour and the loupe ring.
 - Near-square corners (2px); depth comes from mounts lifting off the wall, not from cards.
 - Naskh serif inscriptions, Vazirmatn text, mono accession numbers.

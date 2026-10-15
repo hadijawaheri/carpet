@@ -16,13 +16,17 @@ export function ResearchCatalogue() {
   return (
     <section id="research" aria-labelledby="research-title" className="bg-background">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-20 lg:py-28 [&>*]:min-w-0">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
           <h2 id="research-title" className="font-display text-display-l font-bold">
             پژوهش
           </h2>
           <p className="max-w-[40ch] text-lead text-on-wall-muted">
             چرا یک فرش ابریشم چند برابر فرش ماشینی هم‌اندازه‌اش قیمت دارد؟ نوشته‌ها در حال تکمیل‌اند
             و هر عدد پیش از انتشار منبع می‌گیرد.
+          </p>
+          <p className="max-w-[40ch] text-label text-on-wall-muted">
+            تا منبع معتبر پیدا نشده، عددی منتشر نمی‌شود؛ جدول پایین فقط بازه‌های در دست بررسی را
+            نشان می‌دهد.
           </p>
         </div>
         <ol className="flex flex-col bg-card px-6 text-card-foreground shadow-mount sm:px-10">
