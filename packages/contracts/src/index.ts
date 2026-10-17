@@ -11,3 +11,4 @@ export * from "./common/pagination";
 export * from "./inquiry/inquiry.schema";
 export * from "./inquiry/inquiry-query.schema";
 export * from "./newsletter/newsletter.schema";
+export * from "./research/research.schema";
