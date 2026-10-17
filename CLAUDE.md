@@ -10,7 +10,7 @@ Source of truth: PROJECT_BLUEPRINT_SHADCN.md (kept outside this repo). This file
 
 ## Architecture
 
-- apps/web (Next.js App Router :7782), packages/contracts (Zod, shared). No apps/api yet (docs/adr/0002).
+- apps/web (Next.js App Router :7782), apps/api (NestJS 12 ESM :7781, MongoDB, docs/adr/0006), packages/contracts (Zod, shared).
 - Data shapes (carpets, materials, presets) live ONLY in packages/contracts.
 - 3D lives in apps/web/src/features/carpet-viewer. `cloth-solver.ts` stays free of React and three.js.
 - Carpet images come only from the owner's photos in apps/web/public/carpets. Never draw or generate a carpet.

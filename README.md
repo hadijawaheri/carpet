@@ -1,10 +1,10 @@
 # Farsh · فرش
 
-A portfolio site for Iranian carpets: 3D carpets you can grab and shake, silk vs wool vs machine-made feel, and research articles on knots, shaneh and raj.
+A showroom for Iranian carpets in the Heritage Loom design (docs/adr/0007): 3D carpets you can grab and shake, silk vs wool vs machine-made feel, and research articles on knots, shaneh and raj.
 
 ## Stack
 
-pnpm workspace · Next.js (App Router) · React Three Fiber + drei · shadcn/ui (Radix) + Tailwind v4 · Zod contracts. Persian, RTL.
+pnpm workspace · Next.js (App Router) · React Three Fiber + drei · shadcn/ui (Radix) + Tailwind v4 · NestJS + MongoDB API · Zod contracts. Persian, RTL.
 
 ## Develop
 
@@ -12,8 +12,10 @@ pnpm workspace · Next.js (App Router) · React Three Fiber + drei · shadcn/ui 
 corepack enable
 pnpm install
 pnpm --filter @farsh/contracts build
-pnpm dev            # http://localhost:7782
+pnpm dev            # web http://localhost:7782, api http://127.0.0.1:7781
 ```
+
+The API needs MongoDB and `apps/api/.env`; see [apps/api/README.md](apps/api/README.md) (`docker compose -f infra/docker-compose.yml up -d`, then `pnpm --filter @farsh/api seed`).
 
 Checks: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`.
 
@@ -27,8 +29,14 @@ Checks: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`.
 apps/web/src/
   app/                    routing only
   components/ui/          shadcn components
-  features/carpet-viewer/ cloth solver, knot normal maps, R3F scene
-  features/catalog/       carpet data (placeholder photos for now)
-packages/contracts/       carpet schema, material presets
+  features/carpet-viewer/ cloth solver, knot normal maps, pointer tilt, R3F scene
+  features/showroom/      the Heritage Loom page: header, hero, gallery, room preview, drawer
+  features/inquiry/       inquiry form → POST /api/inquiries
+  features/newsletter/    newsletter form → POST /api/newsletter/subscriptions
+apps/api/src/             NestJS: config, common (guards, pipe, filter), infra/sms, health,
+                          modules/{auth,users,carpets,inquiries,newsletter}
+packages/contracts/       Zod schemas shared by web and api, carpet catalogue, material presets
+infra/                    PM2 ecosystem, Caddyfile, docker-compose (dev Mongo)
+scripts/deploy.sh         pull → install → build → indexes → pm2 reload
 docs/adr/                 decisions
 ```

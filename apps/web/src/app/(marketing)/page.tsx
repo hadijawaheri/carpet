@@ -1,5 +1,5 @@
-import { SkeletonHome } from "@/features/skeleton-home";
+import { ShowroomPage } from "@/features/showroom";
 
 export default function HomePage() {
-  return <SkeletonHome />;
+  return <ShowroomPage />;
 }

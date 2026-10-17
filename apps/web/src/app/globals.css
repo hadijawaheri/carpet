@@ -1,72 +1,43 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 /*
- * Farsh palette (design hub): madder red on undyed cream wool, indigo and saffron as accents.
- * Contrast checked: foreground on background 14.3:1, primary-foreground on primary 7.3:1,
- * muted-foreground on background 6.0:1 (light); 15.6:1, 5.9:1, 8.5:1 (dark).
+ * Heritage Loom palette: warm cream and alabaster, charcoal type, champagne gold, madder red.
+ * Contrast on background: foreground 16.3:1, muted-foreground 5.6:1, gold-text 5.6:1, madder 7.2:1,
+ * primary-foreground on primary 16.3:1. Plain gold (1.97:1) is for rules, icons and borders only.
+ * One light theme: the museum-like cream is the design (docs/adr/0007).
  */
 :root {
-  --radius: 0.125rem;
-  --background: #f3e9d6;
-  --foreground: #2a1612;
-  --card: #faf4e8;
-  --card-foreground: #2a1612;
-  --popover: #faf4e8;
-  --popover-foreground: #2a1612;
-  --primary: #9e1b1f;
-  --primary-foreground: #faf4e8;
-  --secondary: #e8dbc2;
-  --secondary-foreground: #2a1612;
-  --muted: #ebdfc9;
-  --muted-foreground: #6b5246;
-  --accent: #e8dbc2;
-  --accent-foreground: #2a1612;
+  --radius: 0.25rem;
+  --background: #faf7f2;
+  --foreground: #1a1a1a;
+  --card: #fdfbf8;
+  --card-foreground: #1a1a1a;
+  --popover: #fbf9f5;
+  --popover-foreground: #1a1a1a;
+  --primary: #1a1a1a;
+  --primary-foreground: #faf7f2;
+  --secondary: #f5efeb;
+  --secondary-foreground: #1a1a1a;
+  --muted: #efe9e1;
+  --muted-foreground: #6a625b;
+  --accent: #f5efeb;
+  --accent-foreground: #1a1a1a;
   --destructive: #a3361f;
-  --border: #d9c7a8;
-  --input: #6b5246;
-  --ring: #1f2f57;
-  --brand-deep: #6b0f14;
-  --brand-text: #9e1b1f;
-  --indigo: #1f2f57;
-  --indigo-foreground: #faf4e8;
-  --gold: #c08a2e;
-  --gold-text: #8a5f1a;
-}
-
-.dark {
-  --background: #1a0f0d;
-  --foreground: #f3e9d6;
-  --card: #26150f;
-  --card-foreground: #f3e9d6;
-  --popover: #26150f;
-  --popover-foreground: #f3e9d6;
-  --primary: #b3262a;
-  --primary-foreground: #faf4e8;
-  --secondary: #33201a;
-  --secondary-foreground: #f3e9d6;
-  --muted: #2e1c16;
-  --muted-foreground: #c2ab92;
-  --accent: #33201a;
-  --accent-foreground: #f3e9d6;
-  --destructive: #e0745c;
-  --border: #3d2820;
-  --input: #c2ab92;
-  --ring: #9fb2e6;
-  --brand-deep: #6b0f14;
-  --brand-text: #ec7a6c;
-  --indigo: #9fb2e6;
-  --indigo-foreground: #1a0f0d;
-  --gold: #e0b25a;
-  --gold-text: #e0b25a;
+  --border: #e0d8cd;
+  --input: #e0d8cd;
+  --ring: #d4af37;
+  --alabaster: #f5efeb;
+  --gold: #d4af37;
+  --gold-text: #7d5f10;
+  --madder: #9a2a24;
 }
 
 @theme inline {
-  --font-sans: var(--font-vazirmatn), Tahoma, ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-reem-kufi), var(--font-vazirmatn), ui-sans-serif, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-sans:
+    var(--font-jost), var(--font-vazirmatn), Tahoma, ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    var(--font-cormorant), var(--font-markazi), var(--font-vazirmatn), Georgia, ui-serif, serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -86,17 +57,44 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-brand-deep: var(--brand-deep);
-  --color-brand-text: var(--brand-text);
-  --color-indigo: var(--indigo);
-  --color-indigo-foreground: var(--indigo-foreground);
+  --color-alabaster: var(--alabaster);
   --color-gold: var(--gold);
   --color-gold-text: var(--gold-text);
+  --color-madder: var(--madder);
 
-  --radius-sm: calc(var(--radius) - 0.0625rem);
+  --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 0.125rem);
-  --radius-xl: calc(var(--radius) + 0.375rem);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+}
+
+@theme {
+  --shadow-float:
+    0 40px 60px -20px oklch(0.25 0.05 30 / 0.45), 0 18px 24px -12px oklch(0.2 0 0 / 0.25);
+  --shadow-lift: 0 24px 40px -18px oklch(0.25 0.04 40 / 0.35);
+
+  --animate-fade-up: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
 }
 
 @layer base {
@@ -105,11 +103,41 @@
   }
   body {
     @apply bg-background text-foreground;
-    line-height: 1.9;
+    line-height: 1.85;
+    /* Fine woven-paper texture from the design. */
+    background-image:
+      repeating-linear-gradient(0deg, oklch(0.5 0.02 60 / 0.025) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, oklch(0.5 0.02 60 / 0.025) 0 1px, transparent 1px 3px);
   }
   h1,
   h2,
-  h3 {
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
     text-wrap: balance;
+  }
+}
+
+@utility linen {
+  background-image:
+    repeating-linear-gradient(45deg, oklch(0.5 0.02 60 / 0.03) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, oklch(0.5 0.02 60 / 0.03) 0 1px, transparent 1px 4px);
+}
+
+/* The design's eyebrow is tracked uppercase; Persian has no capitals and tracking breaks letter joins. */
+@utility eyebrow {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

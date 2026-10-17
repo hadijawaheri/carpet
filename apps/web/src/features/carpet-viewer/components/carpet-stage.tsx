@@ -5,6 +5,9 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useSyncExternalStore } from "react";
 
+import type { PointerTilt } from "../pointer-tilt";
+import type { CarpetSceneVariant } from "./carpet-scene";
+
 const CarpetScene = dynamic(() => import("./carpet-scene").then((m) => m.CarpetScene), {
   ssr: false,
   loading: () => null,
@@ -30,11 +33,23 @@ interface CarpetStageProps {
   carpet: Carpet;
   material: PileMaterial;
   className?: string;
+  variant?: CarpetSceneVariant;
+  tilt?: PointerTilt;
+  /** Shown while the 3D scene loads and when WebGL is missing. */
+  imageSizes?: string;
   onGrab?: () => void;
 }
 
 /** The 3D carpet, or its photo when WebGL is missing (and during server render). */
-export function CarpetStage({ carpet, material, className, onGrab }: CarpetStageProps) {
+export function CarpetStage({
+  carpet,
+  material,
+  className,
+  variant,
+  tilt,
+  imageSizes = "(min-width: 768px) 40vw, 80vw",
+  onGrab,
+}: CarpetStageProps) {
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     () => window.matchMedia(reducedMotionQuery).matches,
@@ -57,6 +72,8 @@ export function CarpetStage({ carpet, material, className, onGrab }: CarpetStage
           carpet={carpet}
           material={material}
           reducedMotion={reducedMotion}
+          variant={variant}
+          tilt={tilt}
           onGrab={onGrab}
         />
       ) : (
@@ -66,7 +83,7 @@ export function CarpetStage({ carpet, material, className, onGrab }: CarpetStage
           width={Math.round(1200 * carpet.imageAspect)}
           height={1200}
           priority
-          sizes="(min-width: 768px) 40vw, 80vw"
+          sizes={imageSizes}
           className="mx-auto h-full w-auto object-contain"
         />
       )}
