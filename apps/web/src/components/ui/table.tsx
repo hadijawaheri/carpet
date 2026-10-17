@@ -18,7 +18,7 @@ export function TableHeader({ className, ...props }: ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b-2 [&_tr]:border-foreground", className)}
+      className={cn("[&_tr]:border-b-2 [&_tr]:border-card-foreground", className)}
       {...props}
     />
   );

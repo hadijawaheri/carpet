@@ -1,95 +1,89 @@
 import { HubSection } from "./hub-section";
 
 const specimens = [
-  { token: "display-xl", size: "88 / 1.05", font: "font-display font-bold", sample: "تار و پود" },
+  {
+    token: "inscription",
+    size: "52–96 / 1.02",
+    className: "font-display text-inscription font-bold",
+    sample: "لطفاً دست بزنید.",
+  },
   {
     token: "display-l",
-    size: "56 / 1.1",
-    font: "font-display font-bold",
-    sample: "هر گره، یک تصمیم",
+    size: "40–64 / 1.08",
+    className: "font-display text-display-l font-bold",
+    sample: "مجموعه، به اندازه‌ی واقعی",
   },
   {
     token: "heading",
-    size: "30 / 1.3",
-    font: "font-display font-semibold",
+    size: "32 / 1.25",
+    className: "font-display text-heading font-bold",
     sample: "۱۰۰۰ شانه یعنی چه؟",
-  },
-  {
-    token: "latin-accent",
-    size: "40 / 1.1",
-    font: "font-latin italic text-brand-text",
-    sample: "Hand-knotted in Kashan",
-    latin: true,
   },
   {
     token: "lead",
     size: "20 / 1.9",
-    font: "",
+    className: "text-lead",
     sample:
       "فرش ابریشم سبک است و نور را مثل آب برمی‌گرداند؛ فرش ماشینی یکدست است و زود آرام می‌گیرد.",
   },
   {
     token: "body",
     size: "17 / 1.95",
-    font: "",
+    className: "text-body",
     sample:
       "در فرش دستباف تراکم را با رج می‌سنجند: تعداد گره‌هایی که در هفت سانتی‌متر از عرض فرش جا شده‌اند. هرچه رج بالاتر، نقش ریزتر و بافت آن طولانی‌تر.",
   },
-  { token: "label", size: "13 / 1.6", font: "font-semibold", sample: "ابعاد · جنس · تراکم" },
   {
-    token: "spec",
-    size: "14 / 1.5",
-    font: "font-mono",
-    sample: "1200 shaneh · 3600 takham",
+    token: "label",
+    size: "13 / 1.6",
+    className: "text-label font-semibold",
+    sample: "ابعاد · جنس · تراکم",
+  },
+  {
+    token: "accession",
+    size: "12 / 1.4",
+    className: "font-mono text-accession tracking-wider",
+    sample: "FR–01 · 150 × 225 cm",
     latin: true,
   },
-] as const;
-
-const textClass: Record<(typeof specimens)[number]["token"], string> = {
-  "display-xl": "text-display-l sm:text-display-xl",
-  "display-l": "text-heading sm:text-display-l",
-  heading: "text-heading",
-  "latin-accent": "text-latin-accent",
-  lead: "text-lead",
-  body: "text-body",
-  label: "text-label",
-  spec: "text-spec",
-};
+];
 
 const families = [
   {
-    name: "Reem Kufi",
-    role: "عنوان‌ها؛ کوفیِ هندسی، هم‌خانواده‌ی کتیبه‌ی حاشیه‌ی فرش",
-    className: "font-display",
+    name: "Markazi Text",
+    role: "کتیبه‌ها و عنوان‌ها؛ نسخ ایرانی با کنتراست قلم",
+    className: "font-display font-bold",
+    sample: "فرش",
   },
-  { name: "Vazirmatn", role: "متن؛ خوانا در اندازه‌های ریز و بلند", className: "font-sans" },
   {
-    name: "Fraunces Italic",
-    role: "چاشنی لاتین؛ نام شهرها و شماره‌ها",
-    className: "font-latin italic",
+    name: "Vazirmatn",
+    role: "متن و رابط؛ خوانا در اندازه‌های ریز",
+    className: "font-sans",
+    sample: "فرش",
   },
-  { name: "JetBrains Mono", role: "مشخصات فنی و توکن‌ها", className: "font-mono" },
+  {
+    name: "Azeret Mono",
+    role: "شماره‌ی اشیا و اندازه‌ها",
+    className: "font-mono",
+    sample: "FR–01",
+  },
 ];
 
 export function TypeSection() {
   return (
     <HubSection
       id="type"
-      index="02"
-      latin="Typography"
       title="حروف"
-      lead="فارسی ارتفاع خط بیشتری از لاتین می‌خواهد؛ برای همین فاصله‌ی سطرِ متن نزدیک به دو است. لاتین فقط چاشنی است، نه زبان دوم."
+      lead="کتیبه‌های تالار با نسخ ایرانی Markazi نوشته می‌شوند، مثل خط سردرها. متن با وزیرمتن و شماره‌ی اشیا با یک تک‌فاصله، مثل برچسب موزه."
     >
-      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="grid gap-4 sm:grid-cols-3">
         {families.map((f) => (
-          <li key={f.name} className="flex flex-col gap-2 rounded-lg bg-card p-5">
-            <span
-              className={`${f.className} text-4xl`}
-              dir={f.className.includes("display") ? "rtl" : "ltr"}
-            >
-              {f.className.includes("display") || f.className === "font-sans" ? "فرش" : "Aa"}
-            </span>
-            <span className="font-mono text-xs text-foreground" dir="ltr">
+          <li
+            key={f.name}
+            className="flex flex-col gap-2 bg-card p-5 text-card-foreground shadow-mount"
+          >
+            <span className={`${f.className} text-5xl leading-tight`}>{f.sample}</span>
+            <span dir="ltr" className="self-end font-mono text-accession">
               {f.name}
             </span>
             <span className="text-label text-muted-foreground">{f.role}</span>
@@ -100,18 +94,15 @@ export function TypeSection() {
         {specimens.map((s) => (
           <div
             key={s.token}
-            className="grid items-baseline gap-2 border-b border-border py-6 sm:grid-cols-[10rem_1fr] sm:gap-10"
+            className="grid items-baseline gap-2 border-b border-on-wall-muted/25 py-6 sm:grid-cols-[10rem_1fr] sm:gap-10"
           >
-            <dt className="flex gap-3 font-mono text-xs text-muted-foreground sm:flex-col sm:items-start sm:gap-1">
+            <dt className="flex gap-3 font-mono text-accession text-on-wall-muted sm:flex-col sm:items-start sm:gap-1">
               <span dir="ltr" className="text-foreground">
                 text-{s.token}
               </span>
               <span dir="ltr">{s.size}</span>
             </dt>
-            <dd
-              className={`${textClass[s.token]} ${s.font} max-w-3xl`}
-              dir={"latin" in s ? "ltr" : undefined}
-            >
+            <dd className={`${s.className} max-w-3xl`} dir={"latin" in s ? "ltr" : undefined}>
               {s.sample}
             </dd>
           </div>

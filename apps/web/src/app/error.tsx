@@ -11,8 +11,10 @@ export default function ErrorPage({
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col items-start justify-center gap-4 px-4">
       <h1 className="font-display text-4xl font-bold">مشکلی پیش آمد</h1>
-      <p className="text-muted-foreground">صفحه بارگذاری نشد. دوباره تلاش کنید.</p>
-      <Button onClick={reset}>تلاش دوباره</Button>
+      <p className="text-on-wall-muted">صفحه بارگذاری نشد. دوباره تلاش کنید.</p>
+      <Button variant="mount" onClick={reset}>
+        تلاش دوباره
+      </Button>
     </main>
   );
 }

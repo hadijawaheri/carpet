@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Fraunces, JetBrains_Mono, Reem_Kufi, Vazirmatn } from "next/font/google";
+import { Azeret_Mono, Markazi_Text, Vazirmatn } from "next/font/google";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { defaultMetadata } from "@/lib/seo";
@@ -12,22 +12,13 @@ const vazirmatn = Vazirmatn({
   variable: "--font-vazirmatn",
   display: "swap",
 });
-const reemKufi = Reem_Kufi({
+// Markazi is a Naskh serif drawn by an Iranian type designer; it sets the gallery inscriptions.
+const markazi = Markazi_Text({
   subsets: ["arabic", "latin"],
-  variable: "--font-reem-kufi",
+  variable: "--font-markazi",
   display: "swap",
 });
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  style: ["italic"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-  display: "swap",
-});
+const azeret = Azeret_Mono({ subsets: ["latin"], variable: "--font-azeret", display: "swap" });
 
 export const metadata: Metadata = defaultMetadata;
 
@@ -36,14 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html
       lang="fa"
       dir="rtl"
-      suppressHydrationWarning
-      className={cn(
-        "antialiased",
-        vazirmatn.variable,
-        reemKufi.variable,
-        fraunces.variable,
-        jetbrainsMono.variable,
-      )}
+      className={cn("antialiased", vazirmatn.variable, markazi.variable, azeret.variable)}
     >
       <body className="min-h-dvh bg-background font-sans text-foreground">
         <AppProviders>{children}</AppProviders>

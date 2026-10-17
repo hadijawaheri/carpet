@@ -30,28 +30,28 @@ export function MaterialLab({ carpet }: { carpet: Carpet }) {
   const [material, setMaterial] = useState<PileMaterial>("silk");
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+    <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] [&>*]:min-w-0">
       <div className="flex flex-col gap-4">
         <CarpetStage
           carpet={carpet}
           material={material}
-          className="h-[60dvh] min-h-80 w-full rounded-lg bg-muted"
+          className="h-[60dvh] min-h-80 w-full bg-wall-deep shadow-mount"
         />
         <MaterialToggle value={material} onValueChange={setMaterial} />
       </div>
-      <table className="w-full self-start text-spec">
-        <caption className="mb-4 text-start text-label text-muted-foreground">
+      <table className="w-full self-start bg-card text-spec text-card-foreground shadow-mount [&_td]:px-3 [&_th]:px-3">
+        <caption className="mb-4 caption-top text-start text-label text-on-wall-muted">
           پیش‌تنظیم‌ها با دست و چشم تنظیم شده‌اند، نه با اندازه‌گیری فرش واقعی.
         </caption>
         <thead>
-          <tr className="border-b-2 border-foreground">
+          <tr className="border-b-2 border-card-foreground">
             <th className="py-2 pe-3 text-start font-semibold">ویژگی</th>
             {order.map((m) => (
               <th
                 key={m}
                 className={cn(
                   "py-2 pe-3 text-start font-semibold transition-colors",
-                  m === material ? "text-brand-text" : "text-muted-foreground",
+                  m === material ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 {materialLabels[m]}
@@ -74,7 +74,7 @@ export function MaterialLab({ carpet }: { carpet: Carpet }) {
                   dir="ltr"
                   className={cn(
                     "py-2.5 pe-3 text-end font-mono tabular-nums transition-colors",
-                    m === material ? "font-semibold text-foreground" : "text-muted-foreground",
+                    m === material ? "font-semibold text-card-foreground" : "text-muted-foreground",
                   )}
                 >
                   {r.value(m)}

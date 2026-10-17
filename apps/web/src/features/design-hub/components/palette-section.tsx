@@ -1,103 +1,63 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { contrastRatio } from "@/lib/contrast";
-import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/format";
 
 import { palette, swatches, textPairs } from "../data/palette";
 import { HubSection } from "./hub-section";
 
-function ThemePanel({ theme }: { theme: "light" | "dark" }) {
-  return (
-    <div
-      className={cn(
-        theme,
-        "flex flex-col gap-5 rounded-lg border border-border bg-background p-6 text-foreground sm:p-8",
-      )}
-    >
-      <p className="font-mono text-xs tracking-widest text-muted-foreground">
-        <span dir="ltr">{theme.toUpperCase()}</span>
-      </p>
-      <p className="font-display text-heading font-semibold">
-        نقش <span className="text-brand-text">ترنج</span> روی زمینه‌ی{" "}
-        <span className="text-gold-text">کرم</span>
-      </p>
-      <p className="text-body text-muted-foreground">
-        قرمز روناس، لاجورد و زعفرانی همان سه رنگی‌اند که بیشترِ فرش‌های کلاسیک ایرانی با آن‌ها رنگ
-        شده‌اند.
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <Button size="sm">مشاهده‌ی فرش</Button>
-        <Button size="sm" variant="secondary">
-          مقایسه‌ی جنس
-        </Button>
-        <Badge variant="muted" className="self-center">
-          ابریشم
-        </Badge>
-      </div>
-    </div>
-  );
-}
+const ratio = (n: number) => formatNumber(Math.round(n * 10) / 10);
 
 export function PaletteSection() {
   return (
     <HubSection
       id="color"
-      index="01"
-      latin="Colour"
       title="رنگ"
-      lead="روناس روی کرمِ پشمِ رنگ‌نشده، با لاجورد و زعفرانی به‌عنوان چاشنی. هر جفت متن و زمینه در هر دو حالت دست‌کم ۴٫۵ به ۱ کنتراست دارد."
+      lead="تالارهای فرش را معمولاً قرمز تیره رنگ می‌کنند تا رنگ‌های فرش روشن‌تر دیده شوند. اینجا هم دیوار روناس است و هر چیزی که باید خوانده شود روی مقوای کرم می‌نشیند."
     >
       <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {swatches.map((s) => (
           <li key={s.token} className="flex flex-col gap-3">
             <div
-              className="flex aspect-[4/5] flex-col justify-end rounded-lg border border-border p-4"
+              className="flex aspect-[4/5] flex-col justify-end p-4 shadow-mount"
               style={{ backgroundColor: `var(--${s.token})`, color: `var(--${s.on})` }}
             >
-              <span className="font-display text-2xl font-semibold">{s.name}</span>
-              <span className="text-label opacity-80">{s.role}</span>
+              <span className="font-display text-2xl font-bold">{s.name}</span>
+              <span className="text-label">{s.role}</span>
             </div>
-            <dl
-              className="grid grid-cols-[auto_1fr] gap-x-3 font-mono text-xs text-muted-foreground"
-              dir="ltr"
-            >
-              <dt className="text-foreground">--{s.token}</dt>
-              <dd />
-              <dt>light</dt>
-              <dd>{palette[s.token].light}</dd>
-              <dt>dark</dt>
-              <dd>{palette[s.token].dark}</dd>
-            </dl>
+            <p className="flex justify-between gap-2 font-mono text-accession text-on-wall-muted">
+              <span dir="ltr">--{s.token}</span>
+              <span dir="ltr">{palette[s.token]}</span>
+            </p>
           </li>
         ))}
       </ul>
 
-      <div className="mt-12 grid gap-4 md:grid-cols-2">
-        <ThemePanel theme="light" />
-        <ThemePanel theme="dark" />
-      </div>
-
-      <details className="group mt-10">
-        <summary className="cursor-pointer text-sm font-semibold text-brand-text">
-          جدول کنتراست همه‌ی جفت‌های متن
-        </summary>
-        <ul className="mt-4 grid gap-x-8 gap-y-2 font-mono text-xs sm:grid-cols-2" dir="ltr">
+      <div className="mt-12 bg-card p-6 text-card-foreground shadow-mount sm:p-8">
+        <h3 className="mb-4 font-display text-heading font-bold">کنتراست متن</h3>
+        <ul className="grid gap-x-10 sm:grid-cols-2">
           {textPairs.map(([text, surface]) => (
             <li
               key={`${text}-${surface}`}
-              className="flex justify-between gap-4 border-b border-border py-1.5"
+              className="flex items-center justify-between gap-4 border-b border-border py-2"
             >
-              <span>
-                {text} / {surface}
+              <span className="flex items-center gap-3 text-spec">
+                <span
+                  aria-hidden
+                  className="grid size-8 place-items-center font-display text-lg font-bold"
+                  style={{ backgroundColor: `var(--${surface})`, color: `var(--${text})` }}
+                >
+                  ف
+                </span>
+                <span dir="ltr" className="font-mono text-accession">
+                  {text} / {surface}
+                </span>
               </span>
-              <span className="text-muted-foreground tabular-nums">
-                {contrastRatio(palette[text].light, palette[surface].light).toFixed(1)} ·{" "}
-                {contrastRatio(palette[text].dark, palette[surface].dark).toFixed(1)}
+              <span className="tabular-nums">
+                {ratio(contrastRatio(palette[text], palette[surface]))} به ۱
               </span>
             </li>
           ))}
         </ul>
-      </details>
+      </div>
     </HubSection>
   );
 }

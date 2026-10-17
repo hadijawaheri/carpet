@@ -2,39 +2,39 @@ import Link from "next/link";
 
 import { paths } from "@/lib/paths";
 
-import { ThemeToggle } from "./theme-toggle";
-
 const nav = [
-  { href: paths.home, label: "خانه" },
-  { href: paths.designHub, label: "دیزاین هاب" },
+  { href: paths.hall, label: "تالار" },
+  { href: paths.study, label: "ذره‌بین" },
+  { href: paths.collection, label: "مجموعه" },
+  { href: paths.research, label: "پژوهش" },
+  { href: paths.designHub, label: "راهنمای طراحی" },
 ];
 
+/** Gallery wayfinding: the wordmark is painted on the wall, the links are the room signs. */
 export function SiteHeader() {
   return (
-    <header className="flex items-center justify-between gap-4 px-4 py-6 sm:px-10">
+    <header className="relative z-20 flex flex-wrap items-baseline justify-between gap-x-10 gap-y-3 px-4 pt-6 sm:px-10">
       <Link
         href={paths.home}
-        className="flex items-baseline gap-2 rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex items-baseline gap-3 rounded-sm focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
       >
-        <span className="font-display text-3xl font-bold text-brand-text">فرش</span>
-        <span className="font-latin text-lg text-muted-foreground italic" dir="ltr">
-          Farsh
-        </span>
+        <span className="font-display text-4xl leading-none font-bold">فرش</span>
+        <span className="text-label text-on-wall-muted">تالار لمسی فرش ایرانی</span>
       </Link>
-      <div className="flex items-center gap-5">
-        <nav aria-label="اصلی" className="flex gap-5 text-sm font-semibold">
+      <nav aria-label="تالارها">
+        <ul className="flex flex-wrap gap-x-6 gap-y-1 text-sm font-semibold">
           {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-sm underline-offset-8 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {item.label}
-            </Link>
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="rounded-sm decoration-saffron underline-offset-8 hover:underline focus-visible:ring-2 focus-visible:ring-saffron focus-visible:outline-none"
+              >
+                {item.label}
+              </Link>
+            </li>
           ))}
-        </nav>
-        <ThemeToggle />
-      </div>
+        </ul>
+      </nav>
     </header>
   );
 }

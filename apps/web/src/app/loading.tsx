@@ -5,7 +5,7 @@ export default function Loading() {
       role="status"
       aria-label="در حال بارگذاری"
     >
-      <span className="font-display text-3xl text-brand-text">فرش</span>
+      <span className="font-display text-3xl text-saffron">فرش</span>
     </div>
   );
 }

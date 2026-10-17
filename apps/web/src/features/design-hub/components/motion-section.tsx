@@ -14,19 +14,17 @@ export function MotionSection() {
   return (
     <HubSection
       id="motion"
-      index="05"
-      latin="Motion & material"
       title="حرکت و جنس"
       lead="حرکت در این سایت از خود فرش می‌آید. گوشه‌ی فرش را بگیرید و تکان دهید، بعد جنس را عوض کنید: ابریشم دیرتر آرام می‌گیرد و برق جهت‌دار دارد، ماشینی سفت و یکدست است."
     >
       {carpet ? <MaterialLab carpet={carpet} /> : null}
       <ul className="mt-12 grid gap-4 sm:grid-cols-3">
         {easings.map((e) => (
-          <li key={e.token} className="flex flex-col gap-1 border-t-2 border-foreground pt-3">
+          <li key={e.token} className="flex flex-col gap-1 border-t-2 border-saffron pt-3">
             <span className="font-mono text-xs">
               <span dir="ltr">{e.token}</span>
             </span>
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-xs text-on-wall-muted">
               <span dir="ltr">{e.value}</span>
             </span>
             <span className="text-label">{e.use}</span>

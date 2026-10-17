@@ -51,4 +51,17 @@ describe("ClothSolver", () => {
     };
     expect(ripple("machine")).toBeLessThan(ripple("silk"));
   });
+
+  it("keeps the top row on the rod while the hanging carpet is lifted", () => {
+    const cloth = new ClothSolver(1, 1.5, 12);
+    cloth.setHanging(true);
+    const last = cloth.particleCount - 1;
+    cloth.grabNearest(cloth.positions[last * 3]!, cloth.positions[last * 3 + 1]!, 0);
+    cloth.moveTarget(0.2, 0.2, 0.8);
+    for (let i = 0; i < 60; i++) cloth.step(STEP, i * STEP, materialPresets.silk.physics, true);
+    for (let c = 0; c < cloth.cols; c++) {
+      expect(cloth.positions[c * 3 + 1]).toBeCloseTo(0.75, 5);
+      expect(cloth.positions[c * 3 + 2]).toBeCloseTo(0, 5);
+    }
+  });
 });

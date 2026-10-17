@@ -6,7 +6,6 @@ const radii = [
   { token: "md", label: "۲ پیکسل" },
   { token: "lg", label: "۴ پیکسل" },
   { token: "xl", label: "۸ پیکسل" },
-  { token: "full", label: "دکمه‌ی انتخاب" },
 ] as const;
 
 const radiusClass: Record<(typeof radii)[number]["token"], string> = {
@@ -14,39 +13,36 @@ const radiusClass: Record<(typeof radii)[number]["token"], string> = {
   md: "rounded-md",
   lg: "rounded-lg",
   xl: "rounded-xl",
-  full: "rounded-full",
 };
 
 export function SpaceSection() {
   return (
     <HubSection
       id="space"
-      index="03"
-      latin="Space & edge"
       title="فاصله و لبه"
-      lead="فاصله‌ها مضرب چهار پیکسل‌اند، مثل شبکه‌ی نقشه‌ی فرش. گوشه‌ها تقریباً تیزند، چون لبه‌ی فرش تیز است؛ فقط دکمه‌های انتخاب گرد می‌شوند."
+      lead="فاصله‌ها مضرب چهار پیکسل‌اند، مثل شبکه‌ی نقشه‌ی فرش. گوشه‌ها تقریباً تیزند، چون لبه‌ی فرش و مقوای برچسب تیز است."
     >
       <div className="grid gap-12 lg:grid-cols-2">
         <ul className="flex flex-col gap-3">
           {steps.map((n) => (
             <li key={n} className="grid grid-cols-[4rem_1fr] items-center gap-4">
-              <span className="font-mono text-xs text-muted-foreground" dir="ltr">
+              <span className="font-mono text-xs text-on-wall-muted" dir="ltr">
                 {n * 4}px
               </span>
-              <span className="h-3 bg-primary" style={{ width: `calc(var(--spacing) * ${n})` }} />
+              <span className="h-3 bg-saffron" style={{ width: `calc(var(--spacing) * ${n})` }} />
             </li>
           ))}
         </ul>
-        <ul className="grid grid-cols-3 gap-4 sm:grid-cols-5">
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {radii.map((r) => (
             <li key={r.token} className="flex flex-col gap-2">
               <span
-                className={`${radiusClass[r.token]} aspect-square border-2 border-foreground bg-card`}
+                className={`${radiusClass[r.token]} aspect-square border-2 border-saffron bg-card`}
               />
               <span className="font-mono text-xs" dir="ltr">
                 rounded-{r.token}
               </span>
-              <span className="text-label text-muted-foreground">{r.label}</span>
+              <span className="text-label text-on-wall-muted">{r.label}</span>
             </li>
           ))}
         </ul>

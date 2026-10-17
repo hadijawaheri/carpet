@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useSyncExternalStore } from "react";
 
+import type { CarpetSceneVariant } from "./carpet-scene";
+
 const CarpetScene = dynamic(() => import("./carpet-scene").then((m) => m.CarpetScene), {
   ssr: false,
   loading: () => null,
@@ -30,11 +32,12 @@ interface CarpetStageProps {
   carpet: Carpet;
   material: PileMaterial;
   className?: string;
+  variant?: CarpetSceneVariant;
   onGrab?: () => void;
 }
 
 /** The 3D carpet, or its photo when WebGL is missing (and during server render). */
-export function CarpetStage({ carpet, material, className, onGrab }: CarpetStageProps) {
+export function CarpetStage({ carpet, material, className, variant, onGrab }: CarpetStageProps) {
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     () => window.matchMedia(reducedMotionQuery).matches,
@@ -57,6 +60,7 @@ export function CarpetStage({ carpet, material, className, onGrab }: CarpetStage
           carpet={carpet}
           material={material}
           reducedMotion={reducedMotion}
+          variant={variant}
           onGrab={onGrab}
         />
       ) : (

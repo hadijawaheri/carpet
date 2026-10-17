@@ -22,6 +22,9 @@ export class ClothSolver {
   private readonly linkKind: Uint8Array;
   private readonly linkLength: Float32Array;
 
+  /** When true the top row stays on its rest points, like a carpet hung from a gallery rod. */
+  private hanging = false;
+
   /** Index of the particle held by the pointer, or -1. */
   private grabbed = -1;
   private readonly target = { x: 0, y: 0, z: 0 };
@@ -87,6 +90,10 @@ export class ClothSolver {
       }
     }
     this.indices = Uint32Array.from(tris);
+  }
+
+  setHanging(hanging: boolean) {
+    this.hanging = hanging;
   }
 
   get isGrabbing() {
@@ -168,12 +175,13 @@ export class ClothSolver {
     const stiffness = [1, physics.shearStiffness, physics.bendStiffness];
     const g = this.grabbed;
     for (let it = 0; it < physics.iterations; it++) {
+      this.pinTopRow();
       this.pinGrabbed();
       for (let k = 0; k < this.linkLength.length; k++) {
         const a = this.linkA[k]!;
         const b = this.linkB[k]!;
-        const wa = a === g ? 0 : 1;
-        const wb = b === g ? 0 : 1;
+        const wa = a === g || this.isPinned(a) ? 0 : 1;
+        const wb = b === g || this.isPinned(b) ? 0 : 1;
         if (wa + wb === 0) continue;
         const a3 = a * 3;
         const b3 = b * 3;
@@ -190,7 +198,25 @@ export class ClothSolver {
         pos[b3 + 2] = pos[b3 + 2]! - dz * corr * wb;
       }
     }
+    this.pinTopRow();
     this.pinGrabbed();
+  }
+
+  private isPinned(i: number) {
+    return this.hanging && i < this.cols;
+  }
+
+  private pinTopRow() {
+    if (!this.hanging) return;
+    for (let c = 0; c < this.cols; c++) {
+      const c3 = c * 3;
+      this.positions[c3] = this.rest[c3]!;
+      this.positions[c3 + 1] = this.rest[c3 + 1]!;
+      this.positions[c3 + 2] = this.rest[c3 + 2]!;
+      this.previous[c3] = this.rest[c3]!;
+      this.previous[c3 + 1] = this.rest[c3 + 1]!;
+      this.previous[c3 + 2] = this.rest[c3 + 2]!;
+    }
   }
 
   private pinGrabbed() {
