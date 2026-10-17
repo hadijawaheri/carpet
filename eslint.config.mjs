@@ -17,6 +17,12 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "error",
     },
   },
+  {
+    // PM2 only reads CommonJS config files
+    files: ["**/*.cjs"],
+    languageOptions: { sourceType: "commonjs", globals: { ...globals.commonjs } },
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
   ...nextVitals.map((config) => ({ ...config, files: ["apps/web/**/*.{ts,tsx}"] })),
   { settings: { next: { rootDir: "apps/web" } } },
 );
