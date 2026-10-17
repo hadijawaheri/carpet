@@ -3,7 +3,7 @@
 import type { Carpet, PileMaterial } from "@farsh/contracts";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import type { PointerTilt } from "../pointer-tilt";
 import type { CarpetSceneVariant } from "./carpet-scene";
@@ -60,9 +60,22 @@ export function CarpetStage({
     canUseWebGL,
     () => false,
   );
+  // An off-screen carpet stops simulating, so the room preview below gets the whole GPU.
+  const box = useRef<HTMLDivElement>(null);
+  const [onScreen, setOnScreen] = useState(true);
+  useEffect(() => {
+    const node = box.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) =>
+      setOnScreen(entry?.isIntersecting ?? true),
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div
+      ref={box}
       className={className}
       role="img"
       aria-label={`فرش ${carpet.name}؛ با موس یا انگشت گوشه‌ی فرش را بگیرید و تکان دهید`}
@@ -74,6 +87,7 @@ export function CarpetStage({
           reducedMotion={reducedMotion}
           variant={variant}
           tilt={tilt}
+          active={onScreen}
           onGrab={onGrab}
         />
       ) : (

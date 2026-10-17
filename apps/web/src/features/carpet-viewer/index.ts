@@ -1,3 +1,9 @@
 export { CarpetStage } from "./components/carpet-stage";
+export type { RoomView } from "./components/room/room-scene";
+export { RoomStage } from "./components/room/room-stage";
 export { materialLabels } from "./material-labels";
 export { PointerTilt } from "./pointer-tilt";
+export * from "./room/room-config";
+export { layoutRoom, type RoomLayout } from "./room/room-layout";
+export { assessFit, type FitAssessment, type FitStatus } from "./room/rug-fit";
+export { RugPlacement } from "./room/rug-placement";

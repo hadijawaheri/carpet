@@ -18,6 +18,8 @@ interface CarpetSceneProps {
   variant?: CarpetSceneVariant;
   /** Pointer position over the hero, read every frame; the carpet leans towards it. */
   tilt?: PointerTilt;
+  /** False while scrolled out of view: the simulation and rendering pause. */
+  active?: boolean;
   onGrab?: () => void;
 }
 
@@ -27,11 +29,13 @@ export function CarpetScene({
   reducedMotion,
   variant = "studio",
   tilt,
+  active = true,
   onGrab,
 }: CarpetSceneProps) {
   const gallery = variant === "gallery";
   return (
     <Canvas
+      frameloop={active ? "always" : "never"}
       shadows={{ type: PCFShadowMap }}
       dpr={[1, 2]}
       camera={{ position: [0, 0, gallery ? 6 : 5.4], fov: gallery ? 30 : 32 }}

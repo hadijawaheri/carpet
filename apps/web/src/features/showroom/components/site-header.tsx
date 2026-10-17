@@ -4,6 +4,7 @@ import { Heart, Search, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Monogram } from "@/components/shared/monogram";
+import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { useShowroom } from "./showroom-store";
@@ -36,7 +37,11 @@ export function SiteHeader() {
           scrolled ? "bg-card/85 shadow-lift" : "border-transparent bg-card/50",
         )}
       >
-        <a href="#top" className="flex items-center gap-3 rounded-full">
+        <a
+          href="#top"
+          aria-label="فرش، بازگشت به بالای صفحه"
+          className="flex items-center gap-3 rounded-full"
+        >
           <Monogram />
           <span className="hidden font-display text-2xl sm:block">
             فرش{" "}
@@ -72,7 +77,7 @@ export function SiteHeader() {
           </label>
           <button
             type="button"
-            aria-label={`برگزیده‌ها، ${wishlist.length} فرش`}
+            aria-label={`برگزیده‌ها، ${formatNumber(wishlist.length)} فرش`}
             disabled={wishlist.length === 0}
             onClick={() => {
               setFilter("wishlist");
@@ -85,7 +90,7 @@ export function SiteHeader() {
           </button>
           <button
             type="button"
-            aria-label={`فهرست استعلام، ${selection.length} فرش`}
+            aria-label={`فهرست استعلام، ${formatNumber(selection.length)} فرش`}
             onClick={() => setDrawerOpen(true)}
             className="relative rounded-full p-2 transition-colors hover:bg-muted"
           >
