@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "pnpm -r --parallel dev",
-    "build": "pnpm --filter @farsh/contracts build && pnpm -r --filter '!@farsh/contracts' build",
+    "build": "pnpm --filter @farsh/contracts build && pnpm --filter @farsh/web build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
     "test": "pnpm -r test",

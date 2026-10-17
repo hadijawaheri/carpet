@@ -28,11 +28,12 @@ export function Hall({ carpets, index, material, onIndexChange, onMaterialChange
       {/* The gallery spot pools on the wall behind the carpet and falls off towards the skirting. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_48%_58%_at_64%_34%,var(--wall-lit),transparent_74%),linear-gradient(to_bottom,transparent_82%,var(--wall-deep))]"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_48%_58%_at_36%_34%,var(--wall-lit),transparent_74%),linear-gradient(to_bottom,transparent_82%,var(--wall-deep))]"
       />
       <SiteHeader />
 
-      <div className="grid min-h-[calc(100svh-5rem)] grid-cols-[minmax(0,1fr)] [grid-template-areas:'title'_'stage'_'label'] lg:grid-cols-[minmax(0,1fr)_minmax(20rem,25rem)] lg:grid-rows-[1fr_auto] lg:gap-x-10 lg:pe-10 lg:[grid-template-areas:'stage_title'_'stage_label']">
+      {/* RTL reading starts at the right, so the inscription and label lead there and the carpet hangs to their left. */}
+      <div className="grid min-h-[calc(100svh-5rem)] grid-cols-[minmax(0,1fr)] [grid-template-areas:'title'_'stage'_'label'] lg:grid-cols-[minmax(20rem,25rem)_minmax(0,1fr)] lg:grid-rows-[1fr_auto] lg:gap-x-10 lg:ps-10 lg:[grid-template-areas:'title_stage'_'label_stage']">
         <div className="relative min-h-[66svh] [grid-area:stage] lg:min-h-0">
           <CarpetStage
             carpet={carpet}
@@ -43,7 +44,7 @@ export function Hall({ carpets, index, material, onIndexChange, onMaterialChange
           />
           <p
             className={cn(
-              "pointer-events-none absolute start-4 bottom-6 flex items-center gap-2 text-label text-on-wall-muted transition-opacity duration-700 ease-settle sm:start-10",
+              "pointer-events-none absolute inset-x-4 bottom-6 flex items-center justify-center gap-2 text-label text-on-wall-muted transition-opacity duration-700 ease-settle",
               touched && "opacity-0",
             )}
           >
