@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import type { PointerTilt } from "../pointer-tilt";
 import type { CarpetSceneVariant } from "./carpet-scene";
+import { SceneBoundary } from "./scene-boundary";
 
 const CarpetScene = dynamic(() => import("./carpet-scene").then((m) => m.CarpetScene), {
   ssr: false,
@@ -73,6 +74,18 @@ export function CarpetStage({
     return () => observer.disconnect();
   }, []);
 
+  const photo = (
+    <Image
+      src={carpet.image}
+      alt=""
+      width={Math.round(1200 * carpet.imageAspect)}
+      height={1200}
+      priority
+      sizes={imageSizes}
+      className="mx-auto h-full w-auto object-contain"
+    />
+  );
+
   return (
     <div
       ref={box}
@@ -81,25 +94,19 @@ export function CarpetStage({
       aria-label={`فرش ${carpet.name}؛ با موس یا انگشت گوشه‌ی فرش را بگیرید و تکان دهید`}
     >
       {webgl ? (
-        <CarpetScene
-          carpet={carpet}
-          material={material}
-          reducedMotion={reducedMotion}
-          variant={variant}
-          tilt={tilt}
-          active={onScreen}
-          onGrab={onGrab}
-        />
+        <SceneBoundary fallback={photo}>
+          <CarpetScene
+            carpet={carpet}
+            material={material}
+            reducedMotion={reducedMotion}
+            variant={variant}
+            tilt={tilt}
+            active={onScreen}
+            onGrab={onGrab}
+          />
+        </SceneBoundary>
       ) : (
-        <Image
-          src={carpet.image}
-          alt=""
-          width={Math.round(1200 * carpet.imageAspect)}
-          height={1200}
-          priority
-          sizes={imageSizes}
-          className="mx-auto h-full w-auto object-contain"
-        />
+        photo
       )}
     </div>
   );

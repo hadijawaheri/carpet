@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useSyncExternalStore } from "react";
 
+import { SceneBoundary } from "../scene-boundary";
 import { RoomPlan } from "./room-plan";
 import type { RoomSceneProps } from "./room-scene";
 
@@ -50,15 +51,18 @@ export function RoomStage(props: RoomStageProps) {
     () => false,
   );
   if (webgl === null) return <StageLoading />;
-  if (!webgl) {
-    return (
-      <RoomPlan
-        config={props.config}
-        layout={props.layout}
-        carpet={props.carpet}
-        placement={props.placement}
-      />
-    );
-  }
-  return <RoomScene {...props} reducedMotion={reducedMotion} />;
+  const plan = (
+    <RoomPlan
+      config={props.config}
+      layout={props.layout}
+      carpet={props.carpet}
+      placement={props.placement}
+    />
+  );
+  if (!webgl) return plan;
+  return (
+    <SceneBoundary fallback={plan}>
+      <RoomScene {...props} reducedMotion={reducedMotion} />
+    </SceneBoundary>
+  );
 }
