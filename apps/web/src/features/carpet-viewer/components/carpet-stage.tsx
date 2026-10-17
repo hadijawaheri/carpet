@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import type { PointerTilt } from "../pointer-tilt";
+import { webglSupport } from "../webgl-support";
 import type { CarpetSceneVariant } from "./carpet-scene";
 import { SceneBoundary } from "./scene-boundary";
 
@@ -20,15 +21,6 @@ const subscribeReducedMotion = (onChange: () => void) => {
   mql.addEventListener("change", onChange);
   return () => mql.removeEventListener("change", onChange);
 };
-
-function canUseWebGL() {
-  try {
-    const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
-  } catch {
-    return false;
-  }
-}
 
 interface CarpetStageProps {
   carpet: Carpet;
@@ -58,7 +50,12 @@ export function CarpetStage({
   );
   const webgl = useSyncExternalStore(
     () => () => {},
-    canUseWebGL,
+    () => webglSupport().version > 0,
+    () => false,
+  );
+  const software = useSyncExternalStore(
+    () => () => {},
+    () => webglSupport().software,
     () => false,
   );
   // An off-screen carpet stops simulating, so the room preview below gets the whole GPU.
@@ -102,6 +99,7 @@ export function CarpetStage({
             variant={variant}
             tilt={tilt}
             active={onScreen}
+            software={software}
             onGrab={onGrab}
           />
         </SceneBoundary>

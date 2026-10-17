@@ -43,6 +43,8 @@ test.describe("accessibility", () => {
   test("keyboard users can reach the room controls in order", async ({ page, isMobile }) => {
     test.skip(isMobile, "Keyboard walk is a desktop concern.");
     await openHome(page);
+    // Focus only once the scene has mounted; until then the stage is still being replaced.
+    await expect(page.getByTestId("room-stage").locator("canvas")).toBeVisible();
     await page.getByTestId("room-stage").focus();
     await expect(page.getByTestId("room-stage")).toBeFocused();
     await page.keyboard.press("Tab");

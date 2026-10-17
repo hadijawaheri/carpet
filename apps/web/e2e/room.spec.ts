@@ -46,6 +46,8 @@ test.describe("room preview", () => {
   });
 
   test("switches rooms, including the formal salon with its own size limits", async ({ page }) => {
+    // Builds six rooms in turn; on a software renderer each one takes seconds.
+    test.slow();
     const { section, stage } = await openRoom(page);
     for (const room of ["سالن پذیرایی", "اتاق خواب", "ناهارخوری", "اتاق کار", "نشیمن"]) {
       await section.getByRole("button", { name: room }).click();

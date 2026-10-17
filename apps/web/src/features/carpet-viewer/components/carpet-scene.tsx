@@ -2,8 +2,8 @@
 
 import type { Carpet, PileMaterial } from "@farsh/contracts";
 import { AdaptiveDpr, Environment, Lightformer } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { type PropsWithChildren, Suspense, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { type PropsWithChildren, Suspense, useEffect, useRef } from "react";
 import { type Group, NeutralToneMapping, PCFShadowMap } from "three";
 
 import type { PointerTilt } from "../pointer-tilt";
@@ -20,6 +20,8 @@ interface CarpetSceneProps {
   tilt?: PointerTilt;
   /** False while scrolled out of view: the simulation and rendering pause. */
   active?: boolean;
+  /** Rendering on the processor (no GPU): fewer pixels and frames, so the page stays responsive. */
+  software?: boolean;
   onGrab?: () => void;
 }
 
@@ -30,17 +32,19 @@ export function CarpetScene({
   variant = "studio",
   tilt,
   active = true,
+  software = false,
   onGrab,
 }: CarpetSceneProps) {
   const gallery = variant === "gallery";
+  const frameloop = !active ? "never" : software ? "demand" : "always";
   return (
     <Canvas
-      frameloop={active ? "always" : "never"}
+      frameloop={frameloop}
       shadows={{ type: PCFShadowMap }}
-      dpr={[1, 2]}
+      dpr={software ? 1 : [1, 2]}
       camera={{ position: [0, 0, gallery ? 6 : 5.4], fov: gallery ? 30 : 32 }}
       gl={{
-        antialias: true,
+        antialias: !software,
         alpha: true,
         // Neutral keeps the photo's madder true on both the cream page and the red hall; ACES browned it.
         toneMapping: NeutralToneMapping,
@@ -49,6 +53,7 @@ export function CarpetScene({
       style={{ touchAction: "none" }}
     >
       <AdaptiveDpr pixelated={false} />
+      {software && active ? <SteadyFrames fps={24} /> : null}
       {/* Local light rig instead of an HDR preset: presets download from a third-party CDN at runtime. */}
       <Environment resolution={256} environmentIntensity={gallery ? 0.45 : 0.6}>
         <Lightformer
@@ -155,4 +160,14 @@ function TiltRig({ tilt, children }: PropsWithChildren<{ tilt?: PointerTilt }>) 
     group.rotation.y += (tilt.x * TILT_Y - group.rotation.y) * ease;
   });
   return <group ref={ref}>{children}</group>;
+}
+
+/** A capped frame rate for software rendering: input events get the processor between frames. */
+function SteadyFrames({ fps }: { fps: number }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    const timer = window.setInterval(() => invalidate(), 1000 / fps);
+    return () => window.clearInterval(timer);
+  }, [fps, invalidate]);
+  return null;
 }

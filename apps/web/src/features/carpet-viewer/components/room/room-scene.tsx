@@ -12,7 +12,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { EffectComposer, N8AO, ToneMapping } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
 import { type ComponentRef, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Color, PCFShadowMap } from "three";
+import { Color, NeutralToneMapping, PCFShadowMap } from "three";
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 
 import { floorKinds, type LightMode, type RoomConfig } from "../../room/room-config";
@@ -37,20 +37,29 @@ export interface RoomSceneProps {
   /** Bumped to replay the camera move to the chosen view. */
   viewToken: number;
   onCaptureReady?: (capture: () => string) => void;
+  /** Rendering on the processor (no GPU): no ambient occlusion and fewer pixels. */
+  software: boolean;
 }
 
 const BACKDROP = "#efe8df";
 
 export function RoomScene(props: RoomSceneProps) {
   const [ambientOcclusion, setAmbientOcclusion] = useState(true);
+  const { software } = props;
   return (
     <Canvas
       // Renders only when something changes: an idle room costs no battery.
       frameloop="demand"
       shadows={{ type: PCFShadowMap }}
-      dpr={[1, 2]}
+      dpr={software ? 1 : [1, 2]}
       camera={{ position: [6, 6, 8], fov: 40, near: 0.05, far: 120 }}
-      gl={{ antialias: false, preserveDrawingBuffer: true, toneMappingExposure: 1 }}
+      gl={{
+        antialias: false,
+        preserveDrawingBuffer: true,
+        // Without the composer the renderer tone-maps itself, with the same Neutral curve.
+        toneMapping: NeutralToneMapping,
+        toneMappingExposure: 1,
+      }}
       style={{ touchAction: "none" }}
     >
       <color attach="background" args={[BACKDROP]} />
@@ -58,18 +67,20 @@ export function RoomScene(props: RoomSceneProps) {
       {/* Slow devices drop ambient occlusion before the frame rate drops. */}
       <PerformanceMonitor onDecline={() => setAmbientOcclusion(false)} />
       <SceneContent {...props} />
-      <EffectComposer multisampling={4}>
-        <N8AO
-          enabled={ambientOcclusion}
-          aoRadius={0.55}
-          distanceFalloff={0.5}
-          intensity={2.4}
-          quality="medium"
-          halfRes
-          color="#1b120c"
-        />
-        <ToneMapping mode={ToneMappingMode.NEUTRAL} />
-      </EffectComposer>
+      {software ? null : (
+        <EffectComposer multisampling={4}>
+          <N8AO
+            enabled={ambientOcclusion}
+            aoRadius={0.55}
+            distanceFalloff={0.5}
+            intensity={2.4}
+            quality="medium"
+            halfRes
+            color="#1b120c"
+          />
+          <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+        </EffectComposer>
+      )}
     </Canvas>
   );
 }
@@ -84,6 +95,7 @@ function SceneContent({
   viewToken,
   reducedMotion,
   onCaptureReady,
+  software,
 }: RoomSceneProps) {
   const gl = useThree((s) => s.gl);
   useEffect(() => {
@@ -101,7 +113,7 @@ function SceneContent({
         token={viewToken}
         reducedMotion={reducedMotion}
       />
-      <RoomLights config={config} windows={layout.windows} />
+      <RoomLights config={config} windows={layout.windows} software={software} />
       <RoomShell
         room={room}
         wall={config.wall}
@@ -227,7 +239,15 @@ const recipes: Record<LightMode, LightRecipe> = {
  * Daylight that enters the way it does in a real room: a sun through the window (walls block it
  * everywhere else), soft sky light from each opening, and bounce tinted by the walls and floor.
  */
-function RoomLights({ config, windows }: { config: RoomConfig; windows: WindowOpening[] }) {
+function RoomLights({
+  config,
+  windows,
+  software,
+}: {
+  config: RoomConfig;
+  windows: WindowOpening[];
+  software: boolean;
+}) {
   const recipe = recipes[config.light];
   const { width, length, height } = config;
   const span = Math.max(width, length) * 0.75 + height;
@@ -247,7 +267,7 @@ function RoomLights({ config, windows }: { config: RoomConfig; windows: WindowOp
         color={recipe.sun.color}
         intensity={recipe.sun.intensity}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={software ? [1024, 1024] : [2048, 2048]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.025}
         shadow-radius={4}

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useSyncExternalStore } from "react";
 
+import { webglSupport } from "../../webgl-support";
 import { SceneBoundary } from "../scene-boundary";
 import { RoomPlan } from "./room-plan";
 import type { RoomSceneProps } from "./room-scene";
@@ -12,15 +13,6 @@ const RoomScene = dynamic(() => import("./room-scene").then((m) => m.RoomScene),
   loading: () => <StageLoading />,
 });
 
-function canUseWebGL() {
-  try {
-    const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2"));
-  } catch {
-    return false;
-  }
-}
-
 function StageLoading() {
   return (
     <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
@@ -29,7 +21,7 @@ function StageLoading() {
   );
 }
 
-type RoomStageProps = Omit<RoomSceneProps, "reducedMotion">;
+type RoomStageProps = Omit<RoomSceneProps, "reducedMotion" | "software">;
 
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 const subscribeReducedMotion = (onChange: () => void) => {
@@ -42,8 +34,13 @@ const subscribeReducedMotion = (onChange: () => void) => {
 export function RoomStage(props: RoomStageProps) {
   const webgl = useSyncExternalStore(
     () => () => {},
-    canUseWebGL,
+    () => webglSupport().version === 2,
     () => null,
+  );
+  const software = useSyncExternalStore(
+    () => () => {},
+    () => webglSupport().software,
+    () => false,
   );
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
@@ -62,7 +59,7 @@ export function RoomStage(props: RoomStageProps) {
   if (!webgl) return plan;
   return (
     <SceneBoundary fallback={plan}>
-      <RoomScene {...props} reducedMotion={reducedMotion} />
+      <RoomScene {...props} reducedMotion={reducedMotion} software={software} />
     </SceneBoundary>
   );
 }
