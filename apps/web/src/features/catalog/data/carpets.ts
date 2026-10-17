@@ -34,6 +34,28 @@ const placeholderCarpets = [
     imageAspect: 0.6431,
     isPlaceholder: true,
   },
+  {
+    slug: "navy-medallion",
+    name: "ترنج سرمه‌ای",
+    material: "silk",
+    widthCm: 150,
+    lengthCm: 245,
+    density: { unit: "raj", value: 70 },
+    image: "/carpets/navy-medallion.jpg",
+    imageAspect: 0.6093,
+    isPlaceholder: true,
+  },
+  {
+    slug: "kashan-red",
+    name: "کاشان سرخ",
+    material: "wool",
+    widthCm: 200,
+    lengthCm: 345,
+    density: { unit: "raj", value: 50 },
+    image: "/carpets/kashan-red.jpg",
+    imageAspect: 0.5768,
+    isPlaceholder: true,
+  },
 ] satisfies Carpet[];
 
 export const carpets: Carpet[] = placeholderCarpets.map((c) => carpetSchema.parse(c));
