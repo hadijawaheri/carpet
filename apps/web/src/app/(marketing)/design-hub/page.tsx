@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { DesignHub } from "@/features/design-hub";
 
 export const metadata: Metadata = {
-  title: "دیزاین هاب",
+  title: "راهنمای طراحی",
   description: "رنگ، حروف، فاصله، اجزا و حرکتِ سایت فرش در یک صفحه.",
 };
 

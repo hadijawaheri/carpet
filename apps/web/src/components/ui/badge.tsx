@@ -9,7 +9,8 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "border-transparent bg-primary text-primary-foreground",
-        outline: "border-input text-foreground",
+        // Inherits so it reads on both the wall and a cream mount.
+        outline: "border-input text-current",
         muted: "border-transparent bg-muted text-muted-foreground",
       },
     },
