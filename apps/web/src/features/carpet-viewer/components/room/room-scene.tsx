@@ -144,12 +144,15 @@ function CameraRig({
 }) {
   const controls = useRef<ComponentRef<typeof CameraControls>>(null);
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
+  const invalidate = useThree((s) => s.invalidate);
   const { width, length, height } = config;
 
   useEffect(() => {
     const rig = controls.current;
     if (!rig) return;
     const animate = !reducedMotion;
+    // setLookAt only flags the controls; with an on-demand frame loop nothing would apply it.
+    invalidate();
     if (view === "eye") {
       // Standing by the side wall at eye height, looking across the carpet rather than over chairs.
       const standZ = Math.min(length / 2 - 0.45, Math.max(-length / 2 + 0.45, placement.z + 1.3));
@@ -177,7 +180,7 @@ function CameraRig({
       animate,
     );
     // Placement is read when a view is chosen; the camera does not chase the carpet afterwards.
-  }, [view, token, width, length, height, aspect, reducedMotion, placement]);
+  }, [view, token, width, length, height, aspect, reducedMotion, placement, invalidate]);
 
   return (
     <CameraControls
