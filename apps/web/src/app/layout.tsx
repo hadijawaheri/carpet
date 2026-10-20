@@ -2,6 +2,7 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost, Markazi_Text, Vazirmatn } from "next/font/google";
+import { connection } from "next/server";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { defaultMetadata } from "@/lib/seo";
@@ -41,7 +42,10 @@ const vazirmatn = Vazirmatn({
 
 export const metadata: Metadata = defaultMetadata;
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Every page renders per request so Next can stamp the CSP nonce from proxy.ts on its scripts;
+  // the carpets fetch keeps its own 60 s cache
+  await connection();
   return (
     <html
       lang="fa"

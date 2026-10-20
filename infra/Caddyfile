@@ -14,7 +14,13 @@
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 	}
 
+	# JSON lines with timestamps; Caddy rolls the file itself, so no logrotate rule is needed
 	log {
-		output file /var/log/caddy/farsh.log
+		output file /var/log/caddy/farsh.log {
+			roll_size 20MiB
+			roll_keep 14
+			roll_keep_for 336h
+		}
+		format json
 	}
 }
