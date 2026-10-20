@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "seed": "nest build && node dist/cli/seed.js",
-    "db:indexes": "node dist/cli/seed.js --indexes-only"
+    "db:indexes": "node dist/cli/seed.js --indexes-only",
+    "db:migrate": "node dist/cli/migrate.js"
   },
   "dependencies": {
     "@farsh/contracts": "workspace:*",
