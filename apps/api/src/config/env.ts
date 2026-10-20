@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const emptyToUndefined = (value: unknown): unknown => (value === "" ? undefined : value);
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -19,9 +21,14 @@ const envSchema = z
           .filter(Boolean),
       ),
     SMS_PROVIDER: z.enum(["console", "melipayamak"]).default("console"),
+    MELIPAYAMAK_API_KEY: z.preprocess(emptyToUndefined, z.string().min(8).optional()),
+    MELIPAYAMAK_BODY_ID: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().positive().optional(),
+    ),
     // An empty value in .env means "not set", not "a zero-length code"
     OTP_FIXED_CODE: z.preprocess(
-      (value) => (value === "" ? undefined : value),
+      emptyToUndefined,
       z
         .string()
         .regex(/^\d{6}$/)
@@ -36,6 +43,12 @@ const envSchema = z
     (env) =>
       env.NODE_ENV !== "production" || (!env.OTP_FIXED_CODE && env.SMS_PROVIDER !== "console"),
     { message: "OTP_FIXED_CODE and the console SMS provider are forbidden in production" },
+  )
+  .refine(
+    (env) =>
+      env.SMS_PROVIDER !== "melipayamak" ||
+      (env.MELIPAYAMAK_API_KEY !== undefined && env.MELIPAYAMAK_BODY_ID !== undefined),
+    { message: "SMS_PROVIDER=melipayamak needs MELIPAYAMAK_API_KEY and MELIPAYAMAK_BODY_ID" },
   );
 
 export type Env = z.infer<typeof envSchema>;
