@@ -1,27 +1,38 @@
-# Optional local MongoDB: a single-node replica set on 127.0.0.1:27018 (transactions need a replica set).
+# MongoDB as a single-node replica set on 127.0.0.1:27018 (transactions need a replica set), with auth on.
+# The API connects as `farsh_app`, which can only read and write the `farsh` database; root is for
+# backups and admin work.
+#   cp infra/.env.example infra/.env   # then set both passwords
 #   docker compose -f infra/docker-compose.yml up -d
 services:
   mongo:
     image: mongo:8
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    restart: unless-stopped
+    entrypoint: ["/bin/bash", "/farsh/mongo-entrypoint.sh"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set MONGO_ROOT_PASSWORD in infra/.env}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?set MONGO_APP_PASSWORD in infra/.env}
     ports:
+      # Loopback only: the database must never be reachable from outside the machine
       - "127.0.0.1:27018:27018"
     volumes:
       - mongo-data:/data/db
+      - mongo-config:/data/configdb
+      - ./mongo:/farsh:ro
+      - ./mongo/init-app-user.sh:/docker-entrypoint-initdb.d/init-app-user.sh:ro
     healthcheck:
       # Initiates the replica set on first start; the member address must be reachable from the host
       test:
-        - CMD
-        - mongosh
-        - --port
-        - "27018"
-        - --quiet
-        - --eval
-        - "try { rs.status().ok } catch { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: '127.0.0.1:27018' }] }).ok }"
+        - CMD-SHELL
+        - >-
+          mongosh --port 27018 --quiet -u root -p "$$MONGO_INITDB_ROOT_PASSWORD"
+          --authenticationDatabase admin --eval
+          "try { rs.status().ok } catch { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: '127.0.0.1:27018' }] }).ok }"
       interval: 5s
       timeout: 10s
       retries: 10
-      start_period: 5s
+      start_period: 10s
 
 volumes:
   mongo-data:
+  mongo-config:

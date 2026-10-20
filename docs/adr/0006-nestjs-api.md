@@ -15,4 +15,4 @@ Deviations from the blueprint:
 - **Refresh only reads the cookie.** Bearer access tokens are accepted, but a non-browser client cannot refresh yet.
 - **The seed keeps admin edits** (`$setOnInsert`); `--overwrite` resets catalogue carpets to the contracts values. `--admin 09…` promotes a mobile.
 - `mongodb-memory-server` stays out of `onlyBuiltDependencies` (listed in `ignoredBuiltDependencies`), so it downloads mongod on the first test run; offline runs use `MONGOMS_SYSTEM_BINARY`.
-- No real `SmsProvider` yet: `SMS_PROVIDER=melipayamak` fails at boot, and production refuses the console provider, so the API cannot start in production until one is written.
+- OTPs go out through a Melipayamak pattern (`MELIPAYAMAK_API_KEY`, `MELIPAYAMAK_BODY_ID`); a failed send answers 503 `SMS_UNAVAILABLE` and clears the code so the cooldown does not trap the visitor.

@@ -6,13 +6,14 @@ NestJS 12 (ESM) API for Farsh on port 7781. MongoDB (replica set) via Mongoose, 
 
 ```bash
 pnpm --filter @farsh/contracts build
-docker compose -f infra/docker-compose.yml up -d   # or any replica set on 127.0.0.1:27018
-cp apps/api/.env.example apps/api/.env             # then fill both secrets: openssl rand -base64 48
+cp infra/.env.example infra/.env                   # set MONGO_ROOT_PASSWORD and MONGO_APP_PASSWORD
+docker compose -f infra/docker-compose.yml up -d   # replica set with auth on 127.0.0.1:27018
+cp apps/api/.env.example apps/api/.env             # MONGO_APP_PASSWORD in DATABASE_URL, both secrets: openssl rand -base64 48
 pnpm --filter @farsh/api seed                      # indexes + the 5 catalogue carpets
 pnpm --filter @farsh/api dev                       # http://127.0.0.1:7781
 ```
 
-With `SMS_PROVIDER=console` the OTP is printed in the API log. Set `OTP_FIXED_CODE=123456` for automated tests (both are refused when `NODE_ENV=production`).
+The API connects as `farsh_app`, created on the first start with `readWrite` on the `farsh` database only; `root` is for backups and admin work. With `SMS_PROVIDER=console` the OTP is printed in the API log. Set `OTP_FIXED_CODE=123456` for automated tests (both are refused when `NODE_ENV=production`).
 
 ## Seed and admin
 
