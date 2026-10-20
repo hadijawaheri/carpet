@@ -36,6 +36,7 @@ test.describe("account", () => {
     await page.goto("/account");
     await page.getByLabel("شماره موبایل").fill("۰۹۱۲۳۴۵۶۷۸۹");
     await page.getByRole("button", { name: "دریافت کد تأیید" }).click();
+    await expect(page.getByLabel("کد تأیید")).toBeVisible();
     expect(requested).toEqual({ mobile: "09123456789" });
 
     await page.getByRole("button", { name: "ورود" }).click();
