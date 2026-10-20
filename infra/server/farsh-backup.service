@@ -1,0 +1,12 @@
+[Unit]
+Description=Farsh MongoDB backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=@USER@
+WorkingDirectory=@ROOT@
+ExecStart=@ROOT@/scripts/backup-db.sh
+# BACKUP_REMOTE=user@host:/backups/farsh copies each backup off the server
+EnvironmentFile=-/etc/default/farsh-backup

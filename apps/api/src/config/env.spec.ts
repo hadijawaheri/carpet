@@ -31,4 +31,16 @@ describe("validateEnv", () => {
     ).toThrow();
     expect(() => validateEnv({ ...base, NODE_ENV: "production" })).toThrow();
   });
+
+  it("needs a key and pattern id for Melipayamak", () => {
+    expect(() => validateEnv({ ...base, SMS_PROVIDER: "melipayamak" })).toThrow(/MELIPAYAMAK/);
+    const env = validateEnv({
+      ...base,
+      NODE_ENV: "production",
+      SMS_PROVIDER: "melipayamak",
+      MELIPAYAMAK_API_KEY: "key-12345678",
+      MELIPAYAMAK_BODY_ID: "42",
+    });
+    expect(env.MELIPAYAMAK_BODY_ID).toBe(42);
+  });
 });

@@ -3,4 +3,5 @@ export const paths = {
   collection: "/#collection",
   visualizer: "/#visualizer",
   heritage: "/#heritage",
+  account: "/account",
 } as const;

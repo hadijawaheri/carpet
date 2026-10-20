@@ -6,13 +6,14 @@ NestJS 12 (ESM) API for Farsh on port 7781. MongoDB (replica set) via Mongoose, 
 
 ```bash
 pnpm --filter @farsh/contracts build
-docker compose -f infra/docker-compose.yml up -d   # or any replica set on 127.0.0.1:27018
-cp apps/api/.env.example apps/api/.env             # then fill both secrets: openssl rand -base64 48
+cp infra/.env.example infra/.env                   # set MONGO_ROOT_PASSWORD and MONGO_APP_PASSWORD
+docker compose -f infra/docker-compose.yml up -d   # replica set with auth on 127.0.0.1:27018
+cp apps/api/.env.example apps/api/.env             # MONGO_APP_PASSWORD in DATABASE_URL, both secrets: openssl rand -base64 48
 pnpm --filter @farsh/api seed                      # indexes + the 5 catalogue carpets
 pnpm --filter @farsh/api dev                       # http://127.0.0.1:7781
 ```
 
-With `SMS_PROVIDER=console` the OTP is printed in the API log. Set `OTP_FIXED_CODE=123456` for automated tests (both are refused when `NODE_ENV=production`).
+The API connects as `farsh_app`, created on the first start with `readWrite` on the `farsh` database only; `root` is for backups and admin work. With `SMS_PROVIDER=console` the OTP is printed in the API log. Set `OTP_FIXED_CODE=123456` for automated tests (both are refused when `NODE_ENV=production`).
 
 ## Seed and admin
 
@@ -29,28 +30,30 @@ With `SMS_PROVIDER=console` the OTP is printed in the API log. Set `OTP_FIXED_CO
 
 Base path `/v1` (URI versioning). In production the browser reaches them through the web app's `/api/*` rewrite.
 
-| Method | Path                            | Access                    | Notes                                                                                                         |
-| ------ | ------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| POST   | `/v1/auth/otp/request`          | public, 3/min/IP          | `{ mobile }` → 204 for any number; 2 min cooldown per mobile                                                  |
-| POST   | `/v1/auth/otp/verify`           | public, 10/min/IP         | `{ mobile, code }` → sets `access_token` (15 min) and `refresh_token` (30 days) cookies, `{ data: { user } }` |
-| GET    | `/v1/auth/me`                   | signed in                 | `{ data: { user } }`                                                                                          |
-| POST   | `/v1/auth/refresh`              | refresh cookie, 30/min/IP | 204 + rotated cookies; reuse of a rotated token after 10 s revokes the family                                 |
-| POST   | `/v1/auth/logout`               | public                    | 204, revokes the family, clears cookies                                                                       |
-| PATCH  | `/v1/users/me`                  | signed in                 | `{ firstName?, lastName? }` → `{ data: user }`                                                                |
-| DELETE | `/v1/users/me`                  | signed in                 | 204, soft delete; the mobile can register again                                                               |
-| GET    | `/v1/carpets`                   | public                    | `?page&limit&search&material=silk\|wool\|machine` → `{ data: Carpet[], meta }`                                |
-| GET    | `/v1/carpets/:slug`             | public                    | `{ data: Carpet }` or 404                                                                                     |
-| POST   | `/v1/carpets`                   | admin                     | `Carpet` body → 201 `{ data }`; 409 on a taken slug                                                           |
-| PATCH  | `/v1/carpets/:slug`             | admin                     | partial `Carpet` (slug cannot change)                                                                         |
-| DELETE | `/v1/carpets/:slug`             | admin                     | 204, soft delete                                                                                              |
-| POST   | `/v1/inquiries`                 | public, 5/min/IP          | `createInquirySchema` → 201 `{ data: InquiryDto }`; 400 if a slug is not a live carpet                        |
-| GET    | `/v1/inquiries`                 | admin                     | `?page&limit&search&status` newest first; mobiles masked                                                      |
-| GET    | `/v1/inquiries/:id`             | admin                     | full mobile, for calling the visitor back                                                                     |
-| PATCH  | `/v1/inquiries/:id/status`      | admin                     | `{ status: new\|contacted\|closed }`                                                                          |
-| POST   | `/v1/newsletter/subscriptions`  | public, 5/min/IP          | `{ email }` → 204, idempotent                                                                                 |
-| GET    | `/health/live`, `/health/ready` | public, unversioned       | Terminus; `ready` pings Mongo                                                                                 |
+| Method | Path                            | Access                    | Notes                                                                                                          |
+| ------ | ------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| POST   | `/v1/auth/otp/request`          | public, 3/min/IP          | `{ mobile }` → 204 for any number; 2 min cooldown per mobile                                                   |
+| POST   | `/v1/auth/otp/verify`           | public, 10/min/IP         | `{ mobile, code }` → sets `access_token` (15 min) and `refresh_token` (30 days) cookies, `{ data: { user } }`  |
+| GET    | `/v1/auth/me`                   | signed in                 | `{ data: { user } }`                                                                                           |
+| POST   | `/v1/auth/refresh`              | refresh cookie, 30/min/IP | 204 + rotated cookies; reuse of a rotated token after 10 s revokes the family; no session outlives 90 days     |
+| POST   | `/v1/auth/logout`               | public                    | 204, revokes the family, clears cookies                                                                        |
+| PATCH  | `/v1/users/me`                  | signed in                 | `{ firstName?, lastName? }` → `{ data: user }`                                                                 |
+| DELETE | `/v1/users/me`                  | signed in, 10/min/IP      | `{ code }` from a fresh `otp/request` → 204, soft delete, revokes every session; the mobile can register again |
+| GET    | `/v1/carpets`                   | public                    | `?page&limit&search&material=silk\|wool\|machine` → `{ data: Carpet[], meta }`                                 |
+| GET    | `/v1/carpets/:slug`             | public                    | `{ data: Carpet }` or 404                                                                                      |
+| POST   | `/v1/carpets`                   | admin                     | `Carpet` body → 201 `{ data }`; 409 on a taken slug                                                            |
+| PATCH  | `/v1/carpets/:slug`             | admin                     | partial `Carpet` (slug cannot change)                                                                          |
+| DELETE | `/v1/carpets/:slug`             | admin                     | 204, soft delete                                                                                               |
+| POST   | `/v1/inquiries`                 | public, 5/min/IP          | `createInquirySchema` → 201 `{ data: InquiryDto }`; 400 if a slug is not a live carpet                         |
+| GET    | `/v1/inquiries`                 | admin                     | `?page&limit&search&status` newest first; mobiles masked                                                       |
+| GET    | `/v1/inquiries/:id`             | admin                     | full mobile, for calling the visitor back                                                                      |
+| PATCH  | `/v1/inquiries/:id/status`      | admin                     | `{ status: new\|contacted\|closed }`                                                                           |
+| POST   | `/v1/newsletter/subscriptions`  | public, 5/min/IP          | `{ email }` → 204, idempotent                                                                                  |
+| GET    | `/health/live`, `/health/ready` | public, unversioned       | Terminus; `ready` pings Mongo                                                                                  |
 
 A Bearer token in `Authorization` is accepted wherever the access cookie is.
+
+Writes (`POST`, `PATCH`, `PUT`, `DELETE`) whose `Origin` (or `Referer`) is not in `CORS_ORIGINS` get 403, on top of `SameSite=Lax` cookies; requests with neither header pass, since they come from no browser page.
 
 ## Tests
 

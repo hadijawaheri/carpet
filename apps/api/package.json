@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "seed": "nest build && node dist/cli/seed.js",
-    "db:indexes": "node dist/cli/seed.js --indexes-only"
+    "db:indexes": "node dist/cli/seed.js --indexes-only",
+    "db:migrate": "node dist/cli/migrate.js"
   },
   "dependencies": {
     "@farsh/contracts": "workspace:*",
@@ -24,6 +25,7 @@
     "@nestjs/throttler": "^6.7.1",
     "cookie-parser": "^1.4.7",
     "helmet": "^8.3.0",
+    "ioredis": "^5.11.1",
     "mongoose": "^9.11.2",
     "nestjs-pino": "^5.3.1",
     "pino": "^10.4.0",

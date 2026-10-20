@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 
 import { UsersModule } from "../users/users.module.js";
+import { AccountController } from "./account.controller.js";
 import { AuthController } from "./auth.controller.js";
 import { AuthService } from "./auth.service.js";
 import { Otp, OtpSchema } from "./schemas/otp.schema.js";
@@ -15,7 +16,7 @@ import { RefreshToken, RefreshTokenSchema } from "./schemas/refresh-token.schema
     ]),
     UsersModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AccountController],
   providers: [AuthService],
 })
 export class AuthModule {}

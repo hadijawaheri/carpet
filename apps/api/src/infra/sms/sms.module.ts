@@ -3,15 +3,24 @@ import { ConfigService } from "@nestjs/config";
 
 import type { Env } from "../../config/env.js";
 import { ConsoleSmsProvider } from "./console-sms.provider.js";
+import { MelipayamakSmsProvider } from "./melipayamak-sms.provider.js";
 import { SmsProvider } from "./sms.provider.js";
 
-export function createSmsProvider(name: Env["SMS_PROVIDER"]): SmsProvider {
-  switch (name) {
+type SmsEnv = Pick<Env, "SMS_PROVIDER" | "MELIPAYAMAK_API_KEY" | "MELIPAYAMAK_BODY_ID">;
+
+export function createSmsProvider(env: SmsEnv): SmsProvider {
+  switch (env.SMS_PROVIDER) {
     case "console":
       return new ConsoleSmsProvider();
-    default:
-      // Fails at boot: silently falling back to the console provider once hid a broken production setup
-      throw new Error(`SMS provider "${name}" is not implemented yet`);
+    case "melipayamak":
+      // env.ts already refuses to boot without both; this keeps the types honest
+      if (!env.MELIPAYAMAK_API_KEY || !env.MELIPAYAMAK_BODY_ID) {
+        throw new Error("Melipayamak needs MELIPAYAMAK_API_KEY and MELIPAYAMAK_BODY_ID");
+      }
+      return new MelipayamakSmsProvider({
+        apiKey: env.MELIPAYAMAK_API_KEY,
+        bodyId: env.MELIPAYAMAK_BODY_ID,
+      });
   }
 }
 
@@ -22,7 +31,11 @@ export function createSmsProvider(name: Env["SMS_PROVIDER"]): SmsProvider {
       provide: SmsProvider,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) =>
-        createSmsProvider(config.get("SMS_PROVIDER", { infer: true })),
+        createSmsProvider({
+          SMS_PROVIDER: config.get("SMS_PROVIDER", { infer: true }),
+          MELIPAYAMAK_API_KEY: config.get("MELIPAYAMAK_API_KEY", { infer: true }),
+          MELIPAYAMAK_BODY_ID: config.get("MELIPAYAMAK_BODY_ID", { infer: true }),
+        }),
     },
   ],
   exports: [SmsProvider],

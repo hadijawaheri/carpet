@@ -17,6 +17,10 @@ export const verifyOtpSchema = z.object({
 });
 export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
 
+/** Deleting an account asks for a fresh code sent to the account's own mobile. */
+export const deleteAccountSchema = verifyOtpSchema.pick({ code: true });
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
+
 export const userDtoSchema = z.object({
   id: z.string(),
   mobile: z.string(),

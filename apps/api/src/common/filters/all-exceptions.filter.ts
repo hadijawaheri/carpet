@@ -64,7 +64,11 @@ export function toErrorBody(exception: unknown, requestId?: string): ApiErrorBod
     return {
       statusCode,
       code: exception.code,
-      message: persianMessage(statusCode, messageOf(exception)),
+      // Our own exceptions carry a message written for the visitor, even for a 5xx
+      message:
+        statusCode >= 500 && exception.code !== "INTERNAL" && PERSIAN.test(exception.message)
+          ? exception.message
+          : persianMessage(statusCode, messageOf(exception)),
       ...(exception.details === undefined ? {} : { details: exception.details }),
       requestId,
     };

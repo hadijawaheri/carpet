@@ -9,9 +9,9 @@ module.exports = {
       name: "farsh-api",
       cwd: path.join(root, "apps/api"), // the API reads its secrets from apps/api/.env
       script: "dist/main.js",
-      // One worker keeps the in-memory rate limits exact (OTP 3/min, inquiries 5/min); cluster x2
-      // would double them. Costs ~0.5s of downtime per deploy, which Caddy's lb_try_duration hides.
-      // Move the throttler storage to Redis before raising instances.
+      // Without REDIS_URL the rate limits (OTP 3/min, inquiries 5/min) live in this process's memory,
+      // so one worker keeps them exact. With REDIS_URL set in apps/api/.env they are shared, and this
+      // can become exec_mode "cluster" with 2 instances for zero-downtime reloads.
       exec_mode: "fork",
       instances: 1,
       env: { NODE_ENV: "production" },

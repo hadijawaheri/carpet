@@ -3,10 +3,13 @@ import type { CookieOptions, Response } from "express";
 
 export const ACCESS_TTL_MS = 15 * 60 * 1000;
 export const REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+/** Absolute cap: rotation slides the 30-day window, so without it an active session never ends. */
+export const SESSION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
 export interface SessionTokens {
   accessToken: string;
   refreshToken: string;
+  refreshExpiresAt: Date;
 }
 
 /** `secure` is off only in local development, which runs on plain http. */
@@ -21,7 +24,7 @@ export function setSessionCookies(res: Response, tokens: SessionTokens, secure: 
   });
   res.cookie(COOKIE_NAMES.refresh, tokens.refreshToken, {
     ...baseOptions(secure),
-    maxAge: REFRESH_TTL_MS,
+    maxAge: Math.max(0, tokens.refreshExpiresAt.getTime() - Date.now()),
   });
 }
 

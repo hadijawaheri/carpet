@@ -15,7 +15,7 @@ pnpm --filter @farsh/contracts build
 pnpm dev            # web http://localhost:7782, api http://127.0.0.1:7781
 ```
 
-The API needs MongoDB and `apps/api/.env`; see [apps/api/README.md](apps/api/README.md) (`docker compose -f infra/docker-compose.yml up -d`, then `pnpm --filter @farsh/api seed`).
+The API needs MongoDB and `apps/api/.env`; see [apps/api/README.md](apps/api/README.md) (`cp infra/.env.example infra/.env`, `docker compose -f infra/docker-compose.yml up -d`, then `pnpm --filter @farsh/api seed`).
 
 Checks: `pnpm typecheck && pnpm lint && pnpm test && pnpm build`.
 
@@ -33,10 +33,18 @@ apps/web/src/
   features/showroom/      the Heritage Loom page: header, hero, gallery, room preview, drawer
   features/inquiry/       inquiry form → POST /api/inquiries
   features/newsletter/    newsletter form → POST /api/newsletter/subscriptions
-apps/api/src/             NestJS: config, common (guards, pipe, filter), infra/sms, health,
-                          modules/{auth,users,carpets,inquiries,newsletter}
+  features/account/       /account: OTP sign-in, profile, logout, delete with a fresh code
+  proxy.ts                per-request CSP nonce
+apps/api/src/             NestJS: config, common (guards, pipe, filter, origin check), infra/{sms,redis},
+                          database (migrations), health, modules/{auth,users,carpets,inquiries,newsletter}
 packages/contracts/       Zod schemas shared by web and api, carpet catalogue, material presets
-infra/                    PM2 ecosystem, Caddyfile, docker-compose (dev Mongo)
-scripts/deploy.sh         pull → install → build → indexes → pm2 reload
+infra/                    PM2 ecosystem, Caddyfile, docker-compose (Mongo with auth, Redis, optional app
+                          profile), docker/ (web and api images), server/ (firewall, backups, pm2 boot)
+scripts/deploy.sh         pull → install → build → migrations → indexes → pm2 reload
+scripts/backup-db.sh      daily mongodump archive (restore-db.sh puts one back)
 docs/adr/                 decisions
 ```
+
+## Production server
+
+Once, as root: `infra/server/setup.sh <deploy-user>` (ufw, daily backup timer, `pm2 startup`, `pm2-logrotate`). Fill `infra/.env` and `apps/api/.env` (`NODE_ENV=production`, `SMS_PROVIDER=melipayamak`, `CORS_ORIGINS=https://<domain>`, optional `REDIS_URL`), set `SITE_ADDRESS` for Caddy, then `docker compose -f infra/docker-compose.yml up -d` and `scripts/deploy.sh`. See docs/adr/0009.

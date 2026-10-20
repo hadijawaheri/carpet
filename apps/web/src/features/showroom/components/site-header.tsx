@@ -1,10 +1,12 @@
 "use client";
 
-import { Heart, Search, ShoppingBag } from "lucide-react";
+import { Heart, Search, ShoppingBag, UserRound } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Monogram } from "@/components/shared/monogram";
 import { formatNumber } from "@/lib/format";
+import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
 
 import { useShowroom } from "./showroom-store";
@@ -97,6 +99,13 @@ export function SiteHeader() {
             <ShoppingBag className="size-5" aria-hidden />
             {selection.length > 0 ? <CountBadge count={selection.length} /> : null}
           </button>
+          <Link
+            href={paths.account}
+            aria-label="حساب کاربری"
+            className="rounded-full p-2 transition-colors hover:bg-muted"
+          >
+            <UserRound className="size-5" aria-hidden />
+          </Link>
         </div>
       </div>
     </header>

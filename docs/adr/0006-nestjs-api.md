@@ -8,11 +8,11 @@ Modules: auth, users, carpets (public list/detail, admin CRUD with soft delete),
 
 Deviations from the blueprint:
 
-- **API runs as one PM2 fork process, not cluster ×2.** The in-memory throttler is per worker, and the inquiry/OTP limits are the main abuse guard; Caddy's `lb_try_duration` hides the ~0.5 s restart. Move the throttler storage to Redis before adding workers.
-- **No migrations tool yet.** Production boots with `autoIndex` off as the blueprint says; indexes are built by `pnpm --filter @farsh/api db:indexes` (`connection.syncIndexes()`), which `scripts/deploy.sh` runs before the reload. Add `migrate-mongo` when the first data migration is needed.
+- **API runs as one PM2 fork process by default.** Without `REDIS_URL` the throttler is per worker, and the inquiry/OTP limits are the main abuse guard. With `REDIS_URL` the counters live in Redis (`infra/redis/redis-throttler.storage.ts`, one Lua script per hit) and the API can run in cluster mode.
+- **Migrations are a small in-repo runner, not `migrate-mongo`** (`src/database/migrator.ts`): forward-only, applied in id order, recorded in `migrations`, guarded by a lock document. `scripts/deploy.sh` runs `db:migrate` then `db:indexes` (`connection.syncIndexes()`) before the reload; production boots with `autoIndex` off.
 - **Persian messages are enforced in the exception filter**: an exception whose message has no Persian letters (Nest's "Cannot GET /x", throttler, body-parser) gets a Persian default for its status, and every 5xx answers with the generic Persian message. Health checks therefore return 503 without Terminus details in the body.
 - **Admin inquiry lists mask the mobile** (`maskMobile`); the single-inquiry endpoint carries the full number so the owner can call back.
 - **Refresh only reads the cookie.** Bearer access tokens are accepted, but a non-browser client cannot refresh yet.
 - **The seed keeps admin edits** (`$setOnInsert`); `--overwrite` resets catalogue carpets to the contracts values. `--admin 09…` promotes a mobile.
 - `mongodb-memory-server` stays out of `onlyBuiltDependencies` (listed in `ignoredBuiltDependencies`), so it downloads mongod on the first test run; offline runs use `MONGOMS_SYSTEM_BINARY`.
-- No real `SmsProvider` yet: `SMS_PROVIDER=melipayamak` fails at boot, and production refuses the console provider, so the API cannot start in production until one is written.
+- OTPs go out through a Melipayamak pattern (`MELIPAYAMAK_API_KEY`, `MELIPAYAMAK_BODY_ID`); a failed send answers 503 `SMS_UNAVAILABLE` and clears the code so the cooldown does not trap the visitor.
