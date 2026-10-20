@@ -1,6 +1,6 @@
 # 0005 · One visual world: the carpet museum gallery
 
-Date: 2026-10-09 · Status: accepted
+Date: 2026-10-09 · Status: superseded by 0007 (the owner chose the Heritage Loom design; the museum home, design hub and their tokens were removed in the merge)
 
 - Stage 2 read as a neutral design-system document, not a portfolio piece; the owner chose the "museum hall" direction for a full redesign.
 - Madder-red walls, cream mount boards for every label and reading surface, saffron rails and focus on the wall, indigo focus on the mount. `bg-background` is the wall, `bg-card` the mount.

@@ -32,6 +32,8 @@ interface CarpetClothProps {
   reducedMotion: boolean;
   /** Pins the top edge, as on a gallery rod; lifting a lower corner shows the knotted back. */
   hanging?: boolean;
+  /** Softer wind, for a carpet that floats as a page centrepiece rather than one being studied. */
+  calm?: boolean;
   onGrab?: () => void;
 }
 
@@ -40,6 +42,7 @@ export function CarpetCloth({
   material,
   reducedMotion,
   hanging = false,
+  calm = false,
   onGrab,
 }: CarpetClothProps) {
   const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy());
@@ -61,6 +64,10 @@ export function CarpetCloth({
     return g;
   }, [solver]);
   const preset = materialPresets[material];
+  const physics = useMemo(
+    () => (calm ? { ...preset.physics, wind: preset.physics.wind * 0.4 } : preset.physics),
+    [calm, preset.physics],
+  );
   const surface = preset.surface;
   const normalMap = useMemo(() => {
     const map = createKnotNormalMap(surface.handKnotted);
@@ -97,7 +104,7 @@ export function CarpetCloth({
     accumulated.current += Math.min(delta, 0.05);
     while (accumulated.current >= STEP) {
       elapsed.current += STEP;
-      solver.step(STEP, elapsed.current, preset.physics, !reducedMotion);
+      solver.step(STEP, elapsed.current, physics, !reducedMotion);
       accumulated.current -= STEP;
     }
     const position = geometry.getAttribute("position");
@@ -151,8 +158,8 @@ export function CarpetCloth({
           side={FrontSide}
           envMapIntensity={0.7}
           roughness={surface.roughness}
-          // Under the gallery spot full silk sheen washes the photo milky; cap it so the colours stay true.
-          sheen={hanging ? Math.min(surface.sheen, 0.35) : surface.sheen}
+          // Full silk sheen washes the photo gold on cream and milky under the spot; cap it so colours stay true.
+          sheen={Math.min(surface.sheen, 0.35)}
           sheenRoughness={surface.sheenRoughness}
           sheenColor={hanging ? "#f4e8d5" : surface.sheenColor}
           anisotropy={surface.anisotropy}

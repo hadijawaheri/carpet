@@ -3,9 +3,12 @@
 import type { Carpet, PileMaterial } from "@farsh/contracts";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
+import type { PointerTilt } from "../pointer-tilt";
+import { webglSupport } from "../webgl-support";
 import type { CarpetSceneVariant } from "./carpet-scene";
+import { SceneBoundary } from "./scene-boundary";
 
 const CarpetScene = dynamic(() => import("./carpet-scene").then((m) => m.CarpetScene), {
   ssr: false,
@@ -19,32 +22,27 @@ const subscribeReducedMotion = (onChange: () => void) => {
   return () => mql.removeEventListener("change", onChange);
 };
 
-// useSyncExternalStore reads the snapshot on every render; probing each time opened a new WebGL context per render.
-let webglSupport: boolean | undefined;
-
-function canUseWebGL() {
-  if (webglSupport !== undefined) return webglSupport;
-  try {
-    const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-    gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    webglSupport = Boolean(gl);
-  } catch {
-    webglSupport = false;
-  }
-  return webglSupport;
-}
-
 interface CarpetStageProps {
   carpet: Carpet;
   material: PileMaterial;
   className?: string;
   variant?: CarpetSceneVariant;
+  tilt?: PointerTilt;
+  /** Shown while the 3D scene loads and when WebGL is missing. */
+  imageSizes?: string;
   onGrab?: () => void;
 }
 
 /** The 3D carpet, or its photo when WebGL is missing (and during server render). */
-export function CarpetStage({ carpet, material, className, variant, onGrab }: CarpetStageProps) {
+export function CarpetStage({
+  carpet,
+  material,
+  className,
+  variant,
+  tilt,
+  imageSizes = "(min-width: 768px) 40vw, 80vw",
+  onGrab,
+}: CarpetStageProps) {
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     () => window.matchMedia(reducedMotionQuery).matches,
@@ -52,34 +50,61 @@ export function CarpetStage({ carpet, material, className, variant, onGrab }: Ca
   );
   const webgl = useSyncExternalStore(
     () => () => {},
-    canUseWebGL,
+    () => webglSupport().version > 0,
     () => false,
+  );
+  const software = useSyncExternalStore(
+    () => () => {},
+    () => webglSupport().software,
+    () => false,
+  );
+  // An off-screen carpet stops simulating, so the room preview below gets the whole GPU.
+  const box = useRef<HTMLDivElement>(null);
+  const [onScreen, setOnScreen] = useState(true);
+  useEffect(() => {
+    const node = box.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) =>
+      setOnScreen(entry?.isIntersecting ?? true),
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const photo = (
+    <Image
+      src={carpet.image}
+      alt=""
+      width={Math.round(1200 * carpet.imageAspect)}
+      height={1200}
+      priority
+      sizes={imageSizes}
+      className="mx-auto h-full w-auto object-contain"
+    />
   );
 
   return (
     <div
+      ref={box}
       className={className}
       role="img"
       aria-label={`فرش ${carpet.name}؛ با موس یا انگشت گوشه‌ی فرش را بگیرید و تکان دهید`}
     >
       {webgl ? (
-        <CarpetScene
-          carpet={carpet}
-          material={material}
-          reducedMotion={reducedMotion}
-          variant={variant}
-          onGrab={onGrab}
-        />
+        <SceneBoundary fallback={photo}>
+          <CarpetScene
+            carpet={carpet}
+            material={material}
+            reducedMotion={reducedMotion}
+            variant={variant}
+            tilt={tilt}
+            active={onScreen}
+            software={software}
+            onGrab={onGrab}
+          />
+        </SceneBoundary>
       ) : (
-        <Image
-          src={carpet.image}
-          alt=""
-          width={Math.round(1200 * carpet.imageAspect)}
-          height={1200}
-          priority
-          sizes="(min-width: 768px) 40vw, 80vw"
-          className="mx-auto h-full w-auto object-contain"
-        />
+        photo
       )}
     </div>
   );

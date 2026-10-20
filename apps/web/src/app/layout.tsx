@@ -1,24 +1,43 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Azeret_Mono, Markazi_Text, Vazirmatn } from "next/font/google";
+import { Cormorant_Garamond, Jost, Markazi_Text, Vazirmatn } from "next/font/google";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { defaultMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
-const vazirmatn = Vazirmatn({
-  subsets: ["arabic", "latin"],
-  variable: "--font-vazirmatn",
+// The design's Latin pair; neither has Persian glyphs, so each falls back to its closest Persian match.
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
   display: "swap",
+  // Next's metric fallback (a local serif) has Arabic glyphs and would win over Markazi Text.
+  adjustFontFallback: false,
+  fallback: [],
 });
-// Markazi is a Naskh serif drawn by an Iranian type designer; it sets the gallery inscriptions.
+const jost = Jost({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-jost",
+  display: "swap",
+  adjustFontFallback: false,
+  fallback: [],
+});
 const markazi = Markazi_Text({
   subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600"],
   variable: "--font-markazi",
   display: "swap",
 });
-const azeret = Azeret_Mono({ subsets: ["latin"], variable: "--font-azeret", display: "swap" });
+const vazirmatn = Vazirmatn({
+  subsets: ["arabic", "latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-vazirmatn",
+  display: "swap",
+});
 
 export const metadata: Metadata = defaultMetadata;
 
@@ -27,7 +46,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html
       lang="fa"
       dir="rtl"
-      className={cn("antialiased", vazirmatn.variable, markazi.variable, azeret.variable)}
+      className={cn(
+        "scroll-smooth antialiased",
+        cormorant.variable,
+        jost.variable,
+        markazi.variable,
+        vazirmatn.variable,
+      )}
     >
       <body className="min-h-dvh bg-background font-sans text-foreground">
         <AppProviders>{children}</AppProviders>

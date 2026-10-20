@@ -1,11 +1,5 @@
-import { carpets } from "@/features/catalog";
-import { Closing, GalleryExperience, ResearchCatalogue } from "@/features/gallery";
+import { ShowroomPage } from "@/features/showroom";
 
 export default function HomePage() {
-  return (
-    <>
-      <GalleryExperience carpets={carpets} after={<ResearchCatalogue />} />
-      <Closing />
-    </>
-  );
+  return <ShowroomPage />;
 }

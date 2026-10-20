@@ -17,8 +17,13 @@ export const knotDensitySchema = z.discriminatedUnion("unit", [
 ]);
 export type KnotDensity = z.infer<typeof knotDensitySchema>;
 
+export const carpetSlugSchema = z
+  .string()
+  .regex(/^[a-z0-9-]+$/)
+  .max(80);
+
 export const carpetSchema = z.object({
-  slug: z.string().regex(/^[a-z0-9-]+$/),
+  slug: carpetSlugSchema,
   name: z.string().min(1),
   material: pileMaterialSchema,
   widthCm: z.number().int().positive(),
@@ -28,6 +33,8 @@ export const carpetSchema = z.object({
   image: z.string().startsWith("/"),
   /** Pixel aspect of the cropped photo (width / height); the 3D mesh uses it. */
   imageAspect: z.number().positive(),
+  /** Integer rials, never a float; absent means "price on request". */
+  priceRial: z.number().int().positive().optional(),
   /** True while the photo is a stand-in until the owner supplies the final one. */
   isPlaceholder: z.boolean().default(false),
 });
