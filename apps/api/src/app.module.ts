@@ -6,6 +6,7 @@ import { APP_FILTER, APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import type { Redis } from "ioredis";
 import { LoggerModule } from "nestjs-pino";
 
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter.js";
@@ -15,6 +16,8 @@ import { ZodValidationPipe } from "./common/zod/zod-validation.pipe.js";
 import type { Env } from "./config/env.js";
 import { validateEnv } from "./config/env.js";
 import { HealthModule } from "./health/health.module.js";
+import { REDIS, RedisModule } from "./infra/redis/redis.module.js";
+import { RedisThrottlerStorage } from "./infra/redis/redis-throttler.storage.js";
 import { SmsModule } from "./infra/sms/sms.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { CarpetsModule } from "./modules/carpets/carpets.module.js";
@@ -61,11 +64,13 @@ const REQUEST_ID = /^[\w-]{1,64}$/;
         autoIndex: config.get("NODE_ENV", { infer: true }) !== "production",
       }),
     }),
+    RedisModule,
     ThrottlerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService<Env, true>) => ({
+      inject: [ConfigService, REDIS],
+      useFactory: (config: ConfigService<Env, true>, redis: Redis | null) => ({
         throttlers: [{ ttl: 60_000, limit: 100 }],
         skipIf: () => !config.get("THROTTLE_ENABLED", { infer: true }),
+        ...(redis ? { storage: new RedisThrottlerStorage(redis) } : {}),
       }),
     }),
     JwtModule.register({ global: true }),

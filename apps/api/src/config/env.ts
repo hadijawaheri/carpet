@@ -34,6 +34,8 @@ const envSchema = z
         .regex(/^\d{6}$/)
         .optional(),
     ),
+    // Shared rate-limit counters; required before running more than one API process
+    REDIS_URL: z.preprocess(emptyToUndefined, z.string().startsWith("redis").optional()),
     THROTTLE_ENABLED: z
       .enum(["true", "false"])
       .default("true")
