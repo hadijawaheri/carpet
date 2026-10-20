@@ -57,6 +57,35 @@ services:
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
 
+  # Optional alternative to PM2: docker compose -f infra/docker-compose.yml --profile app up -d --build
+  # Host networking keeps everything on 127.0.0.1, where Caddy, the replica set's member address
+  # and the firewall rules already expect it.
+  api:
+    profiles: ["app"]
+    build: { context: .., dockerfile: infra/docker/api.Dockerfile }
+    restart: unless-stopped
+    network_mode: host
+    env_file: ../apps/api/.env
+    environment:
+      NODE_ENV: production
+      HOST: 127.0.0.1
+    depends_on:
+      mongo: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  web:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: infra/docker/web.Dockerfile
+      args: { INTERNAL_API_URL: "http://127.0.0.1:7781" }
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      HOSTNAME: 127.0.0.1
+      INTERNAL_API_URL: http://127.0.0.1:7781
+    depends_on: [api]
+
 volumes:
   mongo-data:
   mongo-config:
