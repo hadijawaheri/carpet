@@ -147,6 +147,27 @@ describe("session", () => {
       .expect(401);
   });
 
+  it("ends a session 90 days after sign-in however often it was refreshed", async () => {
+    const session = await signIn(t, "09120000013");
+    const day = 24 * 60 * 60 * 1000;
+    const signedInAt = Date.now();
+
+    // Refreshing every 29 days keeps the 30-day window alive, but not past the 90-day cap
+    let cookie = session.cookie;
+    for (const days of [29, 58, 87]) {
+      vi.useFakeTimers({ toFake: ["Date"], now: signedInAt + days * day });
+      const res = await request(t.http).post("/v1/auth/refresh").set("Cookie", cookie).expect(204);
+      cookie = [`${COOKIE_NAMES.refresh}=${cookieValue(res, COOKIE_NAMES.refresh) ?? ""}`];
+    }
+    const last = await t.connection
+      .collection("refreshtokens")
+      .findOne({}, { sort: { createdAt: -1 } });
+    expect(last?.expiresAt.getTime()).toBeLessThanOrEqual(signedInAt + 90 * day + 1000);
+
+    vi.useFakeTimers({ toFake: ["Date"], now: signedInAt + 91 * day });
+    await request(t.http).post("/v1/auth/refresh").set("Cookie", cookie).expect(401);
+  });
+
   it("logs out by revoking the family and clearing cookies", async () => {
     const session = await signIn(t, "09120000013");
     const res = await request(t.http)
@@ -169,9 +190,27 @@ describe("users/me", () => {
     expect(res.body.data).toMatchObject({ firstName: "هادی", role: "user" });
   });
 
+  it("refuses to delete the account without a fresh code", async () => {
+    const session = await signIn(t, "09120000022");
+    await request(t.http).delete("/v1/users/me").set("Cookie", session.cookie).expect(400);
+    // The sign-in code was used up, so replaying it fails until a new one is requested
+    const replay = await request(t.http)
+      .delete("/v1/users/me")
+      .set("Cookie", session.cookie)
+      .send({ code: OTP_CODE })
+      .expect(400);
+    expect(replay.body).toMatchObject({ code: "OTP_EXPIRED" });
+    await request(t.http).get("/v1/auth/me").set("Cookie", session.cookie).expect(200);
+  });
+
   it("soft-deletes the account, and the same mobile can register again", async () => {
     const session = await signIn(t, "09120000021");
-    await request(t.http).delete("/v1/users/me").set("Cookie", session.cookie).expect(204);
+    await request(t.http).post("/v1/auth/otp/request").send({ mobile: "09120000021" }).expect(204);
+    await request(t.http)
+      .delete("/v1/users/me")
+      .set("Cookie", session.cookie)
+      .send({ code: OTP_CODE })
+      .expect(204);
     await request(t.http).get("/v1/auth/me").set("Cookie", session.cookie).expect(401);
     await request(t.http).post("/v1/auth/refresh").set("Cookie", session.cookie).expect(401);
 

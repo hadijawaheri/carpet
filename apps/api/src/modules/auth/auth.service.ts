@@ -20,7 +20,7 @@ import type { Env } from "../../config/env.js";
 import { SmsProvider } from "../../infra/sms/sms.provider.js";
 import { UsersService } from "../users/users.service.js";
 import type { SessionTokens } from "./auth.cookies.js";
-import { ACCESS_TTL_MS, REFRESH_TTL_MS } from "./auth.cookies.js";
+import { ACCESS_TTL_MS, REFRESH_TTL_MS, SESSION_MAX_AGE_MS } from "./auth.cookies.js";
 import type { OtpDocument } from "./schemas/otp.schema.js";
 import { Otp } from "./schemas/otp.schema.js";
 import type { RefreshTokenDocument } from "./schemas/refresh-token.schema.js";
@@ -79,6 +79,23 @@ export class AuthService {
   }
 
   async verifyOtp(mobile: string, code: string): Promise<{ user: UserDto; tokens: SessionTokens }> {
+    await this.consumeOtp(mobile, code);
+    const user = await this.usersService.findOrCreateByMobile(mobile);
+    return { user, tokens: await this.issueSession(user, randomUUID(), new Date()) };
+  }
+
+  /** Deletes the account only with a fresh code, so a stolen session alone cannot erase it. */
+  async deleteAccount(userId: string, code: string): Promise<void> {
+    const user = await this.usersService.getById(userId);
+    await this.consumeOtp(user.mobile, code);
+    await this.usersService.softDelete(userId);
+    await this.refreshModel.updateMany(
+      { userId },
+      { $set: { familyRevoked: true, revokedAt: new Date() } },
+    );
+  }
+
+  private async consumeOtp(mobile: string, code: string): Promise<void> {
     // Increment first so concurrent guesses cannot exceed the attempt limit
     const otp = await this.otpModel
       .findOneAndUpdate({ mobile }, { $inc: { attempts: 1 } }, { returnDocument: "after" })
@@ -94,8 +111,6 @@ export class AuthService {
     }
 
     await this.otpModel.deleteOne({ mobile });
-    const user = await this.usersService.findOrCreateByMobile(mobile);
-    return { user, tokens: await this.issueSession(user, randomUUID()) };
   }
 
   async refresh(refreshToken: string | undefined): Promise<SessionTokens> {
@@ -117,10 +132,13 @@ export class AuthService {
 
     let userId: string;
     let familyId: string;
+    let familyStartedAt: Date;
 
     if (rotated) {
       userId = rotated.userId.toString();
       familyId = rotated.familyId;
+      // Tokens issued before the absolute cap existed start their 90 days now
+      familyStartedAt = rotated.familyStartedAt ?? now;
     } else {
       const previous = await this.refreshModel.findOne({ tokenHash }).lean<RefreshToken>();
       if (!previous || previous.expiresAt < now || previous.familyRevoked) throw unauthenticated();
@@ -135,12 +153,13 @@ export class AuthService {
       }
       userId = previous.userId.toString();
       familyId = previous.familyId;
+      familyStartedAt = previous.familyStartedAt ?? now;
     }
 
     const user = await this.usersService.getById(userId).catch(() => {
       throw unauthenticated();
     });
-    return this.issueSession(user, familyId);
+    return this.issueSession(user, familyId, familyStartedAt);
   }
 
   async logout(refreshToken: string | undefined): Promise<void> {
@@ -158,7 +177,11 @@ export class AuthService {
     );
   }
 
-  private async issueSession(user: UserDto, familyId: string): Promise<SessionTokens> {
+  private async issueSession(
+    user: UserDto,
+    familyId: string,
+    familyStartedAt: Date,
+  ): Promise<SessionTokens> {
     const payload: JwtPayload = { sub: user.id, role: user.role };
     const accessToken = await this.jwt.signAsync(payload, {
       secret: this.config.get("JWT_ACCESS_SECRET", { infer: true }),
@@ -166,13 +189,17 @@ export class AuthService {
     });
 
     const refreshToken = randomBytes(32).toString("base64url");
+    const refreshExpiresAt = new Date(
+      Math.min(Date.now() + REFRESH_TTL_MS, familyStartedAt.getTime() + SESSION_MAX_AGE_MS),
+    );
     await this.refreshModel.create({
       userId: user.id,
       familyId,
+      familyStartedAt,
       tokenHash: sha256(refreshToken),
-      expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
+      expiresAt: refreshExpiresAt,
     });
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, refreshExpiresAt };
   }
 
   private hashOtp(mobile: string, code: string): string {

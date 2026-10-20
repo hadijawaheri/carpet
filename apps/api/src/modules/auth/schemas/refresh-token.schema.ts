@@ -15,6 +15,10 @@ export class RefreshToken {
   @Prop({ type: String, required: true, unique: true })
   tokenHash!: string;
 
+  /** When the family's sign-in happened; no rotation outlives it by more than SESSION_MAX_AGE_MS. */
+  @Prop({ type: Date, required: true })
+  familyStartedAt!: Date;
+
   @Prop({ type: Date, required: true })
   expiresAt!: Date;
 
