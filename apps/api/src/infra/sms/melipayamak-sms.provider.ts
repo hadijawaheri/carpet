@@ -2,19 +2,19 @@ import { maskMobile } from "@farsh/contracts";
 import { Logger } from "@nestjs/common";
 
 import { AppException } from "../../common/app-exception.js";
-import { SmsProvider } from "./sms.provider.js";
+import { SmsProvider, type SmsTemplate } from "./sms.provider.js";
 
 const BASE_URL = "https://console.melipayamak.com/api/send/shared";
 const TIMEOUT_MS = 5000;
 
 export interface MelipayamakConfig {
   apiKey: string;
-  /** Id of the approved pattern ("خدماتی") whose only argument is the code. */
-  bodyId: number;
+  /** Id of the approved pattern ("خدماتی") for each template; the OTP pattern's only argument is the code. */
+  patterns: Record<SmsTemplate, number>;
 }
 
 /**
- * Sends the code through a pre-approved Melipayamak pattern. Patterns skip the operator's ad filter
+ * Sends through pre-approved Melipayamak patterns. Patterns skip the operator's ad filter
  * and the "لغو۱۱" footer, so the code arrives quickly even on numbers that blocked marketing SMS.
  */
 export class MelipayamakSmsProvider extends SmsProvider {
@@ -27,17 +27,20 @@ export class MelipayamakSmsProvider extends SmsProvider {
     super();
   }
 
-  async sendOtp(mobile: string, code: string): Promise<void> {
+  async send(mobile: string, template: SmsTemplate, args: string[]): Promise<void> {
     let res: Response;
     try {
       res = await this.fetchImpl(`${BASE_URL}/${encodeURIComponent(this.config.apiKey)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bodyId: this.config.bodyId, to: mobile, args: [code] }),
+        body: JSON.stringify({ bodyId: this.config.patterns[template], to: mobile, args }),
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
     } catch (e: unknown) {
-      this.logger.error({ err: e, mobile: maskMobile(mobile) }, "Melipayamak unreachable");
+      this.logger.error(
+        { err: e, template, mobile: maskMobile(mobile) },
+        "Melipayamak unreachable",
+      );
       throw this.unavailable();
     }
 
@@ -53,9 +56,10 @@ export class MelipayamakSmsProvider extends SmsProvider {
           httpStatus: res.status,
           recId: body?.recId,
           status: body?.status,
+          template,
           mobile: maskMobile(mobile),
         },
-        "Melipayamak rejected the OTP",
+        "Melipayamak rejected the message",
       );
       throw this.unavailable();
     }

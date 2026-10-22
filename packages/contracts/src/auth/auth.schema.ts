@@ -2,7 +2,8 @@ import { z } from "zod";
 
 import { digitsString, mobileSchema } from "../common/iran";
 
-export const ROLES = ["user", "admin"] as const;
+// business: shops and designers buying for clients (blueprint §8); no endpoint treats it specially yet
+export const ROLES = ["user", "business", "admin"] as const;
 export const roleSchema = z.enum(ROLES);
 export type Role = z.infer<typeof roleSchema>;
 

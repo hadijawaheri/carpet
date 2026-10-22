@@ -19,7 +19,7 @@ export function createSmsProvider(env: SmsEnv): SmsProvider {
       }
       return new MelipayamakSmsProvider({
         apiKey: env.MELIPAYAMAK_API_KEY,
-        bodyId: env.MELIPAYAMAK_BODY_ID,
+        patterns: { otp: env.MELIPAYAMAK_BODY_ID },
       });
   }
 }

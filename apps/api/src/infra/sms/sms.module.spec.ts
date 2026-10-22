@@ -25,13 +25,13 @@ describe("createSmsProvider", () => {
 });
 
 describe("MelipayamakSmsProvider", () => {
-  const config = { apiKey: "key-12345678", bodyId: 42 };
+  const config = { apiKey: "key-12345678", patterns: { otp: 42 } };
 
   it("sends the code as the pattern's only argument", async () => {
     const fetchMock = vi.fn<typeof fetch>(() =>
       Promise.resolve(Response.json({ recId: 4_003_920_112, status: "ارسال موفق بود" })),
     );
-    await new MelipayamakSmsProvider(config, fetchMock).sendOtp("09121234567", "654321");
+    await new MelipayamakSmsProvider(config, fetchMock).send("09121234567", "otp", ["654321"]);
 
     const [url, init] = fetchMock.mock.calls[0] ?? [];
     expect(url).toBe("https://console.melipayamak.com/api/send/shared/key-12345678");
@@ -46,7 +46,9 @@ describe("MelipayamakSmsProvider", () => {
     const fetchMock = vi.fn<typeof fetch>(() =>
       Promise.resolve(Response.json({ recId: 11, status: "اعتبار کافی نیست" })),
     );
-    const sending = new MelipayamakSmsProvider(config, fetchMock).sendOtp("09121234567", "654321");
+    const sending = new MelipayamakSmsProvider(config, fetchMock).send("09121234567", "otp", [
+      "654321",
+    ]);
     await expect(sending).rejects.toBeInstanceOf(AppException);
     await expect(sending).rejects.toMatchObject({ code: "SMS_UNAVAILABLE" });
   });
@@ -54,7 +56,7 @@ describe("MelipayamakSmsProvider", () => {
   it("throws a 503 when the network fails", async () => {
     const fetchMock = vi.fn<typeof fetch>(() => Promise.reject(new TypeError("fetch failed")));
     await expect(
-      new MelipayamakSmsProvider(config, fetchMock).sendOtp("09121234567", "654321"),
+      new MelipayamakSmsProvider(config, fetchMock).send("09121234567", "otp", ["654321"]),
     ).rejects.toMatchObject({ code: "SMS_UNAVAILABLE" });
   });
 });

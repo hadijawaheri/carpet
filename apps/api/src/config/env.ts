@@ -34,8 +34,8 @@ const envSchema = z
         .regex(/^\d{6}$/)
         .optional(),
     ),
-    // Shared rate-limit counters; required before running more than one API process
-    REDIS_URL: z.preprocess(emptyToUndefined, z.string().startsWith("redis").optional()),
+    // Read by instrument.ts before Nest starts; listed here so a malformed value fails the boot
+    SENTRY_DSN: z.preprocess(emptyToUndefined, z.url().optional()),
     THROTTLE_ENABLED: z
       .enum(["true", "false"])
       .default("true")

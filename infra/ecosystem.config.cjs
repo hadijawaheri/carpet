@@ -9,9 +9,8 @@ module.exports = {
       name: "farsh-api",
       cwd: path.join(root, "apps/api"), // the API reads its secrets from apps/api/.env
       script: "dist/main.js",
-      // Without REDIS_URL the rate limits (OTP 3/min, inquiries 5/min) live in this process's memory,
-      // so one worker keeps them exact. With REDIS_URL set in apps/api/.env they are shared, and this
-      // can become exec_mode "cluster" with 2 instances for zero-downtime reloads.
+      // The rate limits (OTP 3/min, inquiries 5/min) live in this process's memory, so one worker
+      // keeps them exact. A second instance is the entry condition for Redis (blueprint appendix).
       exec_mode: "fork",
       instances: 1,
       env: { NODE_ENV: "production" },

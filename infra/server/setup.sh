@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # One-time (and safe to re-run) hardening of an Ubuntu server for Farsh. Run as root from the repo:
 #   sudo infra/server/setup.sh <deploy-user>
+# Install MongoDB first with infra/server/setup-mongo.sh.
 # - ufw: deny everything incoming except SSH, HTTP and HTTPS
 # - systemd timer: daily MongoDB backup (scripts/backup-db.sh)
 # - PM2: start on boot, rotate its logs (Caddy rolls its own, see infra/Caddyfile)
@@ -26,9 +27,8 @@ ufw allow 443/tcp comment "https"
 ufw allow 443/udp comment "http/3"
 ufw --force enable
 ufw status verbose
-# Docker writes its own iptables rules and bypasses ufw for published ports. Mongo is published on
-# 127.0.0.1 only (infra/docker-compose.yml), and the API and web bind to 127.0.0.1, so nothing
-# besides Caddy listens publicly; check with: ss -tlnp | grep -v 127.0.0.1
+# MongoDB (infra/mongo/mongod.conf), the API and web all bind to 127.0.0.1, so nothing besides
+# Caddy listens publicly; check with: ss -tlnp | grep -v 127.0.0.1
 
 echo "== Daily database backup"
 sed -e "s#@ROOT@#$root#g" -e "s#@USER@#$deploy_user#g" \
@@ -37,7 +37,6 @@ cp "$root/infra/server/farsh-backup.timer" /etc/systemd/system/farsh-backup.time
 mkdir -p /var/backups/farsh
 chown "$deploy_user" /var/backups/farsh
 chmod 700 /var/backups/farsh
-usermod -aG docker "$deploy_user"
 systemctl daemon-reload
 systemctl enable --now farsh-backup.timer
 
