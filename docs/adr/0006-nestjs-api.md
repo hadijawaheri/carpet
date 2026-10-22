@@ -8,7 +8,7 @@ Modules: auth, users, carpets (public list/detail, admin CRUD with soft delete),
 
 Deviations from the blueprint:
 
-- **API runs as one PM2 fork process by default.** Without `REDIS_URL` the throttler is per worker, and the inquiry/OTP limits are the main abuse guard. With `REDIS_URL` the counters live in Redis (`infra/redis/redis-throttler.storage.ts`, one Lua script per hit) and the API can run in cluster mode.
+- (Redis and migration points superseded by 0010.) **API runs as one PM2 fork process by default.** Without `REDIS_URL` the throttler is per worker, and the inquiry/OTP limits are the main abuse guard. With `REDIS_URL` the counters live in Redis (`infra/redis/redis-throttler.storage.ts`, one Lua script per hit) and the API can run in cluster mode.
 - **Migrations are a small in-repo runner, not `migrate-mongo`** (`src/database/migrator.ts`): forward-only, applied in id order, recorded in `migrations`, guarded by a lock document. `scripts/deploy.sh` runs `db:migrate` then `db:indexes` (`connection.syncIndexes()`) before the reload; production boots with `autoIndex` off.
 - **Persian messages are enforced in the exception filter**: an exception whose message has no Persian letters (Nest's "Cannot GET /x", throttler, body-parser) gets a Persian default for its status, and every 5xx answers with the generic Persian message. Health checks therefore return 503 without Terminus details in the body.
 - **Admin inquiry lists mask the mobile** (`maskMobile`); the single-inquiry endpoint carries the full number so the owner can call back.

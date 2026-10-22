@@ -3,40 +3,35 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { deleteAccount, getMe, logout, requestOtp, updateProfile, verifyOtp } from "./api";
 
-const meKey = ["auth", "me"] as const;
+export const sessionKey = ["auth", "session"] as const;
 
-export const useMe = () => useQuery({ queryKey: meKey, queryFn: getMe, retry: 1 });
+/** The session, seeded by the server render (lib/auth/dal.ts) so the first paint needs no fetch. */
+export const useSession = (initialData?: UserDto | null) =>
+  useQuery({ queryKey: sessionKey, queryFn: getMe, initialData });
 
 export const useRequestOtp = () => useMutation({ mutationFn: requestOtp });
 
-export function useVerifyOtp() {
+function useSetSession() {
   const client = useQueryClient();
-  return useMutation({
-    mutationFn: verifyOtp,
-    onSuccess: (user) => client.setQueryData<UserDto | null>(meKey, user),
-  });
+  return (user: UserDto | null) => client.setQueryData<UserDto | null>(sessionKey, user);
+}
+
+export function useVerifyOtp() {
+  const setSession = useSetSession();
+  return useMutation({ mutationFn: verifyOtp, onSuccess: setSession });
 }
 
 export function useUpdateProfile() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: updateProfile,
-    onSuccess: (user) => client.setQueryData<UserDto | null>(meKey, user),
-  });
+  const setSession = useSetSession();
+  return useMutation({ mutationFn: updateProfile, onSuccess: setSession });
 }
 
 export function useLogout() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: logout,
-    onSettled: () => client.setQueryData<UserDto | null>(meKey, null),
-  });
+  const setSession = useSetSession();
+  return useMutation({ mutationFn: logout, onSettled: () => setSession(null) });
 }
 
 export function useDeleteAccount() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: deleteAccount,
-    onSuccess: () => client.setQueryData<UserDto | null>(meKey, null),
-  });
+  const setSession = useSetSession();
+  return useMutation({ mutationFn: deleteAccount, onSuccess: () => setSession(null) });
 }

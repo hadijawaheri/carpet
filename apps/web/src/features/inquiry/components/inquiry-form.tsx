@@ -1,13 +1,21 @@
 "use client";
 
 import { createInquirySchema } from "@farsh/contracts";
-import { CheckCircle2, LoaderCircle } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle2 } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
 
-import { getErrorMessage } from "@/lib/api/parse";
-import { fieldErrors } from "@/lib/field-errors";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
+import { showServerError } from "@/lib/form-errors";
 
 import { useCreateInquiry } from "../queries";
+
+// The carpets come from the drawer, not from an input
+const formSchema = createInquirySchema.omit({ carpetSlugs: true });
 
 interface InquiryFormProps {
   carpetSlugs: string[];
@@ -16,24 +24,21 @@ interface InquiryFormProps {
 
 export function InquiryForm({ carpetSlugs, onSent }: InquiryFormProps) {
   const mutation = useCreateInquiry();
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    mode: "onTouched",
+    defaultValues: { name: "", mobile: "", message: "" },
+  });
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const parsed = createInquirySchema.safeParse({
-      name: form.get("name"),
-      mobile: form.get("mobile"),
-      message: String(form.get("message") ?? "").trim() || undefined,
-      carpetSlugs,
-    });
-    if (!parsed.success) {
-      setErrors(fieldErrors(parsed.error));
-      return;
+  const onSubmit = form.handleSubmit(async (values) => {
+    try {
+      await mutation.mutateAsync({ ...values, carpetSlugs });
+      onSent();
+    } catch (e: unknown) {
+      // The form sits in the selection drawer, a modal: a toast there would be hidden from AT
+      showServerError(e, form.setError, ["name", "mobile", "message"], { inline: true });
     }
-    setErrors({});
-    mutation.mutate(parsed.data, { onSuccess: onSent });
-  };
+  });
 
   if (mutation.isSuccess) {
     return (
@@ -47,88 +52,75 @@ export function InquiryForm({ carpetSlugs, onSent }: InquiryFormProps) {
     );
   }
 
-  const disabled = carpetSlugs.length === 0 || mutation.isPending;
   return (
-    <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-      <Field label="نام" name="name" error={errors.name} autoComplete="name" />
-      <Field
-        label="شماره موبایل"
-        name="mobile"
-        error={errors.mobile}
-        autoComplete="tel"
-        inputMode="tel"
-        dir="ltr"
-        placeholder="09xxxxxxxxx"
-      />
-      <Field label="پیام (اختیاری)" name="message" error={errors.message} multiline />
-      {errors.carpetSlugs ? <p className="text-sm text-destructive">{errors.carpetSlugs}</p> : null}
-      {mutation.isError ? (
-        <p role="alert" className="text-sm text-destructive">
-          {getErrorMessage(mutation.error)}
-        </p>
-      ) : null}
-      <button
-        type="submit"
-        disabled={disabled}
-        className="flex w-full items-center justify-center gap-2 bg-primary py-3.5 text-sm text-primary-foreground transition disabled:opacity-40"
-      >
-        {mutation.isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : null}
-        {mutation.isPending ? "در حال ثبت…" : "ثبت درخواست استعلام"}
-      </button>
+    <form noValidate onSubmit={onSubmit}>
+      <FieldGroup className="gap-4">
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="inquiry-name">نام</FieldLabel>
+              <Input
+                {...field}
+                id="inquiry-name"
+                autoComplete="name"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="mobile"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="inquiry-mobile">شماره موبایل</FieldLabel>
+              <Input
+                {...field}
+                id="inquiry-mobile"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                dir="ltr"
+                placeholder="09xxxxxxxxx"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="message"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="inquiry-message">پیام (اختیاری)</FieldLabel>
+              <Textarea
+                {...field}
+                value={field.value ?? ""}
+                id="inquiry-message"
+                rows={2}
+                maxLength={1000}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        {form.formState.errors.root?.server && (
+          <FieldError errors={[form.formState.errors.root.server]} />
+        )}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={carpetSlugs.length === 0 || mutation.isPending}
+        >
+          {mutation.isPending && <Spinner aria-label="در حال ثبت" />}
+          {mutation.isPending ? "در حال ثبت…" : "ثبت درخواست استعلام"}
+        </Button>
+      </FieldGroup>
     </form>
-  );
-}
-
-function Field({
-  label,
-  name,
-  error,
-  multiline = false,
-  ...input
-}: {
-  label: string;
-  name: string;
-  error?: string;
-  multiline?: boolean;
-  autoComplete?: string;
-  inputMode?: "tel";
-  dir?: "ltr";
-  placeholder?: string;
-}) {
-  const id = `inquiry-${name}`;
-  const errorId = `${id}-error`;
-  const className =
-    "w-full border-b border-foreground/40 bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground aria-invalid:border-destructive";
-  return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="eyebrow text-muted-foreground">
-        {label}
-      </label>
-      {multiline ? (
-        <textarea
-          id={id}
-          name={name}
-          rows={2}
-          maxLength={1000}
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? errorId : undefined}
-          className={`${className} resize-none`}
-        />
-      ) : (
-        <input
-          id={id}
-          name={name}
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? errorId : undefined}
-          className={`${className} text-start`}
-          {...input}
-        />
-      )}
-      {error ? (
-        <p id={errorId} className="text-xs text-destructive">
-          {error}
-        </p>
-      ) : null}
-    </div>
   );
 }

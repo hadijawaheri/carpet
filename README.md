@@ -33,13 +33,15 @@ apps/web/src/
   features/showroom/      the Heritage Loom page: header, hero, gallery, room preview, drawer
   features/inquiry/       inquiry form → POST /api/inquiries
   features/newsletter/    newsletter form → POST /api/newsletter/subscriptions
-  features/account/       /account: OTP sign-in, profile, logout, delete with a fresh code
-  proxy.ts                per-request CSP nonce
-apps/api/src/             NestJS: config, common (guards, pipe, filter, origin check), infra/{sms,redis},
-                          database (migrations), health, modules/{auth,users,carpets,inquiries,newsletter}
+  features/account/       /sign-in (OTP), /dashboard/profile: profile, logout, delete with a fresh code
+  lib/auth/dal.ts         getSession / requireSession for Server Components (server-only)
+  proxy.ts                per-request CSP nonce, sign-in redirect and access-cookie refresh
+apps/api/src/             NestJS: config, common (guards, pipe, filter, origin check), infra/sms, health,
+                          modules/{auth,users,carpets,inquiries,newsletter}
+apps/api/migrations/      migrate-mongo migrations (db:migrate, db:migrate:status, db:migrate:create)
 packages/contracts/       Zod schemas shared by web and api, carpet catalogue, material presets
-infra/                    PM2 ecosystem, Caddyfile, docker-compose (Mongo with auth, Redis, optional app
-                          profile), docker/ (web and api images), server/ (firewall, backups, pm2 boot)
+infra/                    PM2 ecosystem, Caddyfile, mongo/ (production mongod.conf, replica set init),
+                          docker-compose (dev Mongo only), server/ (MongoDB install, firewall, backups, pm2)
 scripts/deploy.sh         pull → install → build → migrations → indexes → pm2 reload
 scripts/backup-db.sh      daily mongodump archive (restore-db.sh puts one back)
 docs/adr/                 decisions
@@ -47,4 +49,8 @@ docs/adr/                 decisions
 
 ## Production server
 
-Once, as root: `infra/server/setup.sh <deploy-user>` (ufw, daily backup timer, `pm2 startup`, `pm2-logrotate`). Fill `infra/.env` and `apps/api/.env` (`NODE_ENV=production`, `SMS_PROVIDER=melipayamak`, `CORS_ORIGINS=https://<domain>`, optional `REDIS_URL`), set `SITE_ADDRESS` for Caddy, then `docker compose -f infra/docker-compose.yml up -d` and `scripts/deploy.sh`. See docs/adr/0009.
+No Docker in production (docs/adr/0010). Once, as root: fill `infra/.env`, then `infra/server/setup-mongo.sh` (MongoDB 8 on 127.0.0.1:27017, replica set, auth) and `infra/server/setup.sh <deploy-user>` (ufw, daily backup timer, `pm2 startup`, `pm2-logrotate`). Fill `apps/api/.env` (`NODE_ENV=production`, `DATABASE_URL` as printed by setup-mongo, `SMS_PROVIDER=melipayamak`, `CORS_ORIGINS=https://<domain>`, optional `SENTRY_DSN`) and `apps/web/.env.local` (see `.env.example`), set `SITE_ADDRESS` for Caddy, then `scripts/deploy.sh`. See docs/adr/0009 and 0010.
+
+## Git
+
+Trunk-based: short branches (`feat/…`, `fix/…`) → PR → squash merge into `main`, which is always deployable. Conventional Commits, checked by commitlint.

@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const port = 7782;
+const mockApiPort = 7799;
 // Containers without a GPU still render WebGL through SwiftShader, so the 3D room is tested too.
 const webgl = ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"];
 const launchOptions = {
@@ -34,11 +35,21 @@ export default defineConfig({
       use: { ...devices["Pixel 7"], launchOptions },
     },
   ],
-  webServer: {
-    // The production build, so tests see what visitors get; the API is mocked per test.
-    command: `pnpm start --port ${port}`,
-    port,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: "node e2e/mock-api.ts",
+      port: mockApiPort,
+      env: { MOCK_API_PORT: String(mockApiPort) },
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      // The standalone server PM2 runs in production (`next start` skips proxy.ts with standalone
+      // output), so tests see what visitors get. Browser API calls are mocked per test.
+      command: "pnpm start",
+      port,
+      env: { PORT: String(port), INTERNAL_API_URL: `http://127.0.0.1:${mockApiPort}` },
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
 });

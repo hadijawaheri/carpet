@@ -7,7 +7,7 @@ NestJS 12 (ESM) API for Farsh on port 7781. MongoDB (replica set) via Mongoose, 
 ```bash
 pnpm --filter @farsh/contracts build
 cp infra/.env.example infra/.env                   # set MONGO_ROOT_PASSWORD and MONGO_APP_PASSWORD
-docker compose -f infra/docker-compose.yml up -d   # replica set with auth on 127.0.0.1:27018
+docker compose -f infra/docker-compose.yml up -d   # dev replica set with auth on 127.0.0.1:27018
 cp apps/api/.env.example apps/api/.env             # MONGO_APP_PASSWORD in DATABASE_URL, both secrets: openssl rand -base64 48
 pnpm --filter @farsh/api seed                      # indexes + the 5 catalogue carpets
 pnpm --filter @farsh/api dev                       # http://127.0.0.1:7781
@@ -23,6 +23,9 @@ The API connects as `farsh_app`, created on the first start with `readWrite` on 
 | `pnpm --filter @farsh/api seed -- --overwrite`         | Same, but resets existing catalogue carpets to the values in `packages/contracts/src/carpet/carpet-catalog.ts`.          |
 | `pnpm --filter @farsh/api seed -- --admin 09xxxxxxxxx` | Also makes that mobile an admin (creates the user if needed). The role is in the JWT, so the person signs in again.      |
 | `pnpm --filter @farsh/api db:indexes`                  | Only syncs indexes (needs a prior build). `scripts/deploy.sh` runs it, since production boots with `autoIndex` off.      |
+| `pnpm --filter @farsh/api db:migrate`                  | Applies pending migrate-mongo migrations from `migrations/` (reads `apps/api/.env`). Deploy runs it before indexes.      |
+| `pnpm --filter @farsh/api db:migrate:status`           | Lists migrations and when each was applied.                                                                              |
+| `pnpm --filter @farsh/api db:migrate:create <name>`    | Adds `migrations/<timestamp>-<name>.js`. Write `up`; keep `down` a no-op (forward only, docs/adr/0010).                  |
 
 `seed` builds first, then runs `dist/cli/seed.js` with `apps/api/.env`.
 

@@ -1,9 +1,18 @@
 "use client";
 
-import type { Carpet, PileMaterial } from "@farsh/contracts";
+import { type Carpet, pileMaterialSchema } from "@farsh/contracts";
+import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { createContext, type PropsWithChildren, useContext, useState } from "react";
 
-export type GalleryFilter = PileMaterial | "all" | "wishlist";
+const GALLERY_FILTERS = ["all", ...pileMaterialSchema.options, "wishlist"] as const;
+export type GalleryFilter = (typeof GALLERY_FILTERS)[number];
+
+// Search and filter live in the URL (?q=…&filter=silk) so a filtered gallery can be shared and
+// survives a reload; replace keeps typing out of the back-button history
+const searchParam = parseAsString.withDefault("").withOptions({ history: "replace" });
+const filterParam = parseAsStringLiteral(GALLERY_FILTERS)
+  .withDefault("all")
+  .withOptions({ history: "replace" });
 
 interface ShowroomState {
   carpets: Carpet[];
@@ -28,8 +37,8 @@ interface ShowroomState {
 const ShowroomContext = createContext<ShowroomState | null>(null);
 
 export function ShowroomProvider({ carpets, children }: PropsWithChildren<{ carpets: Carpet[] }>) {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<GalleryFilter>("all");
+  const [search, setSearchParam] = useQueryState("q", searchParam);
+  const [filter, setFilterParam] = useQueryState("filter", filterParam);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [selection, setSelection] = useState<Carpet[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -38,9 +47,9 @@ export function ShowroomProvider({ carpets, children }: PropsWithChildren<{ carp
   const value: ShowroomState = {
     carpets,
     search,
-    setSearch,
+    setSearch: (value) => void setSearchParam(value || null),
     filter,
-    setFilter,
+    setFilter: (value) => void setFilterParam(value === "all" ? null : value),
     wishlist,
     toggleWish: (slug) =>
       setWishlist((w) => (w.includes(slug) ? w.filter((s) => s !== slug) : [...w, slug])),

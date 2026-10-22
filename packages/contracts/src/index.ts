@@ -8,6 +8,7 @@ export * from "./common/digits";
 export * from "./common/errors";
 export * from "./common/iran";
 export * from "./common/pagination";
+export * from "./common/text";
 export * from "./inquiry/inquiry.schema";
 export * from "./inquiry/inquiry-query.schema";
 export * from "./newsletter/newsletter.schema";

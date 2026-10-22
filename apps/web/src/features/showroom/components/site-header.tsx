@@ -100,7 +100,7 @@ export function SiteHeader() {
             {selection.length > 0 ? <CountBadge count={selection.length} /> : null}
           </button>
           <Link
-            href={paths.account}
+            href={paths.dashboard}
             aria-label="حساب کاربری"
             className="rounded-full p-2 transition-colors hover:bg-muted"
           >
