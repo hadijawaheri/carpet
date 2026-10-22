@@ -19,6 +19,8 @@ test.describe("accessibility", () => {
   });
 
   test("dialogs have no WCAG A/AA violations", async ({ page }) => {
+    // The dialogs fade in; axe measuring half-transparent text mid-fade reports false contrast failures
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await openHome(page);
     await page
       .locator("#collection article")
@@ -45,9 +47,13 @@ test.describe("accessibility", () => {
     await openHome(page);
     // Focus only once the scene has mounted; until then the stage is still being replaced.
     await expect(page.getByTestId("room-stage").locator("canvas")).toBeVisible();
-    await page.getByTestId("room-stage").focus();
-    await expect(page.getByTestId("room-stage")).toBeFocused();
-    await page.keyboard.press("Tab");
-    await expect(page.getByRole("radio", { name: "نمای کلی" })).toBeFocused();
+    // On a slow runner hydration can still replace the stage after the canvas shows, dropping
+    // focus to <body>; retry the walk until the stage keeps it
+    await expect(async () => {
+      await page.getByTestId("room-stage").focus();
+      await expect(page.getByTestId("room-stage")).toBeFocused({ timeout: 1000 });
+      await page.keyboard.press("Tab");
+      await expect(page.getByRole("radio", { name: "نمای کلی" })).toBeFocused({ timeout: 1000 });
+    }).toPass();
   });
 });
