@@ -1,6 +1,7 @@
 import type { ApiErrorBody, ErrorCode } from "@farsh/contracts";
 import type { ArgumentsHost, ExceptionFilter } from "@nestjs/common";
 import { Catch, HttpException } from "@nestjs/common";
+import * as Sentry from "@sentry/nestjs";
 import type { Request, Response } from "express";
 import { PinoLogger } from "nestjs-pino";
 
@@ -95,7 +96,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const res = http.getResponse<Response>();
 
     const body = toErrorBody(exception, req.id === undefined ? undefined : String(req.id));
-    if (body.statusCode >= 500) this.logger.error({ err: exception }, "Unhandled exception");
+    if (body.statusCode >= 500) {
+      this.logger.error({ err: exception }, "Unhandled exception");
+      // The same requestId the visitor sees in the error body, so a report can be traced
+      Sentry.captureException(exception, { tags: { requestId: body.requestId } });
+    }
 
     res.status(body.statusCode).json(body);
   }

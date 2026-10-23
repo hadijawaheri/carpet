@@ -3,6 +3,8 @@
 # the server. Installed as a systemd timer by infra/server/setup.sh.
 #   BACKUP_DIR (default /var/backups/farsh), KEEP_DAYS (default 14),
 #   BACKUP_REMOTE (optional rsync target such as user@host:/backups/farsh)
+#   MONGO_PORT (default 27017, the native server from infra/server/setup-mongo.sh; 27018 for the
+#   dev compose Mongo). Needs mongodump on the host (mongodb-database-tools).
 # Reads MONGO_ROOT_PASSWORD from infra/.env; the app user cannot read users and roles.
 set -euo pipefail
 
@@ -20,10 +22,9 @@ archive="$backup_dir/farsh-$stamp.archive.gz"
 mkdir -p "$backup_dir"
 chmod 700 "$backup_dir"
 
-# The dump runs inside the container, so no mongo tools are needed on the host
-docker compose -f "$root/infra/docker-compose.yml" exec -T mongo \
-  mongodump --port 27018 --username root --password "$MONGO_ROOT_PASSWORD" \
-  --authenticationDatabase admin --db farsh --archive --gzip > "$archive.partial"
+mongodump --host 127.0.0.1 --port "${MONGO_PORT:-27017}" --username root \
+  --password "$MONGO_ROOT_PASSWORD" --authenticationDatabase admin --db farsh \
+  --archive="$archive.partial" --gzip
 mv "$archive.partial" "$archive"
 chmod 600 "$archive"
 

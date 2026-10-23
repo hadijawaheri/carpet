@@ -3,5 +3,7 @@ export const paths = {
   collection: "/#collection",
   visualizer: "/#visualizer",
   heritage: "/#heritage",
-  account: "/account",
+  signIn: "/sign-in",
+  dashboard: "/dashboard",
+  profile: "/dashboard/profile",
 } as const;

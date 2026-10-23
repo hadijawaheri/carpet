@@ -1,7 +1,7 @@
 [Unit]
 Description=Farsh MongoDB backup
-Requires=docker.service
-After=docker.service
+Requires=mongod.service
+After=mongod.service
 
 [Service]
 Type=oneshot

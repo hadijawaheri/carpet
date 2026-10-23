@@ -1,3 +1,6 @@
+// Must stay the first import: Sentry instruments modules as they load
+import "./instrument.js";
+
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";

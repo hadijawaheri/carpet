@@ -1,0 +1,27 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "timezone": "Asia/Tehran",
+  "schedule": ["before 6am on monday"],
+  "minimumReleaseAge": "3 days",
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on monday"] },
+  "packageRules": [
+    {
+      "description": "Pinned in the pnpm catalog on purpose: TS 7 and ESLint 10 break the toolchain (CLAUDE.md)",
+      "matchPackageNames": ["typescript", "eslint", "@eslint/js"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "One PR for the 3D stack, which has to move together",
+      "matchPackageNames": ["three", "@types/three", "@react-three/{/,}**", "postprocessing"],
+      "groupName": "3d stack"
+    },
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "groupName": "minor and patch updates"
+    }
+  ]
+}

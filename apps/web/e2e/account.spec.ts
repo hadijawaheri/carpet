@@ -1,73 +1,84 @@
-import type { Page } from "@playwright/test";
+import type { BrowserContext } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
+import { E2E_USER as user } from "./mock-api";
 
-const user = {
-  id: "6650f0c2a1b2c3d4e5f60718",
-  mobile: "09123456789",
-  firstName: "هادی",
-  lastName: null,
-  role: "user",
-  createdAt: new Date().toISOString(),
-};
+const signedIn = { name: "access_token", value: "e2e-valid" };
 
-const unauthenticated = {
-  status: 401,
-  json: { statusCode: 401, code: "UNAUTHENTICATED", message: "لطفاً وارد حساب خود شوید" },
-};
-
-async function mockSignedOut(page: Page) {
-  await page.route("**/api/auth/me", (route) => route.fulfill(unauthenticated));
-  await page.route("**/api/auth/refresh", (route) => route.fulfill(unauthenticated));
+async function setCookies(context: BrowserContext, cookies: { name: string; value: string }[]) {
+  await context.addCookies(
+    cookies.map((cookie) => ({ ...cookie, url: "http://localhost:7782", httpOnly: true })),
+  );
 }
 
 test.describe("account", () => {
   test("signs in with a code sent to the mobile", async ({ page, consoleProblems }) => {
-    await mockSignedOut(page);
     let requested: unknown = null;
     await page.route("**/api/auth/otp/request", async (route) => {
       requested = route.request().postDataJSON();
       await route.fulfill({ status: 204 });
     });
     await page.route("**/api/auth/otp/verify", (route) =>
-      route.fulfill({ status: 200, json: { data: { user } } }),
+      route.fulfill({
+        status: 200,
+        json: { data: { user } },
+        headers: { "set-cookie": "access_token=e2e-valid; Path=/; HttpOnly; SameSite=Lax" },
+      }),
     );
 
-    await page.goto("/account");
-    await page.getByLabel("شماره موبایل").fill("۰۹۱۲۳۴۵۶۷۸۹");
+    await page.goto("/sign-in?next=/dashboard/profile");
+    const mobile = page.getByLabel("شماره موبایل");
+    await expect(async () => {
+      await mobile.fill("۰۹۱۲۳۴۵۶۷۸۹");
+      await expect(mobile).toHaveValue("۰۹۱۲۳۴۵۶۷۸۹");
+    }).toPass();
     await page.getByRole("button", { name: "دریافت کد تأیید" }).click();
-    await expect(page.getByLabel("کد تأیید")).toBeVisible();
+    const code = page.getByLabel("کد تأیید");
+    await expect(code).toBeVisible();
     expect(requested).toEqual({ mobile: "09123456789" });
 
     await page.getByRole("button", { name: "ورود" }).click();
-    await expect(page.getByLabel("کد تأیید")).toHaveAttribute("aria-invalid", "true");
-    await page.getByLabel("کد تأیید").fill("۱۲۳۴۵۶");
-    await page.getByRole("button", { name: "ورود" }).click();
+    await expect(code).toHaveAttribute("aria-invalid", "true");
+    // Six Persian digits are normalised and submit on their own
+    await code.fill("۱۲۳۴۵۶");
+    await expect(page).toHaveURL(/\/dashboard\/profile$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("سلام هادی");
     await expect(page.getByRole("button", { name: "خروج از حساب" })).toBeVisible();
-    // 401s from the signed-out probe are expected network errors, not page defects
-    expect(consoleProblems.filter((p) => !/401/.test(p))).toEqual([]);
+    expect(consoleProblems).toEqual([]);
   });
 
-  test("renews an expired access cookie once before giving up", async ({ page }) => {
-    let meCalls = 0;
-    await page.route("**/api/auth/me", (route) => {
-      meCalls += 1;
-      return meCalls === 1
-        ? route.fulfill(unauthenticated)
-        : route.fulfill({ status: 200, json: { data: { user } } });
-    });
-    await page.route("**/api/auth/refresh", (route) => route.fulfill({ status: 204 }));
+  test("sends a visitor without a session to sign-in and back", async ({ page }) => {
+    await page.goto("/dashboard/profile");
+    await expect(page).toHaveURL(/\/sign-in\?next=%2Fdashboard%2Fprofile$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("ورود به حساب");
+  });
 
+  test("keeps old /account links working", async ({ page, context }) => {
+    await setCookies(context, [signedIn]);
     await page.goto("/account");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("سلام هادی");
-    expect(meCalls).toBe(2);
+    await expect(page).toHaveURL(/\/dashboard\/profile$/);
   });
 
-  test("asks for a fresh code before deleting the account", async ({ page }) => {
-    await page.route("**/api/auth/me", (route) =>
-      route.fulfill({ status: 200, json: { data: { user } } }),
-    );
+  test("renews an expired access cookie before rendering", async ({ page, context }) => {
+    await setCookies(context, [{ name: "refresh_token", value: "e2e-refresh" }]);
+    await page.goto("/dashboard/profile");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("سلام هادی");
+    const cookies = await context.cookies();
+    expect(cookies.find((c) => c.name === "access_token")?.value).toBe("e2e-valid");
+    expect(cookies.find((c) => c.name === "refresh_token")?.value).toBe("e2e-refresh-2");
+  });
+
+  test("skips sign-in for someone already signed in", async ({ page, context }) => {
+    await setCookies(context, [signedIn]);
+    await page.goto("/sign-in?next=https://evil.example");
+    await expect(page).toHaveURL(/\/dashboard\/profile$/);
+  });
+
+  test("confirms, then asks for a fresh code before deleting the account", async ({
+    page,
+    context,
+  }) => {
+    await setCookies(context, [signedIn]);
     await page.route("**/api/auth/otp/request", (route) => route.fulfill({ status: 204 }));
     let deleted: unknown = null;
     await page.route("**/api/users/me", async (route) => {
@@ -75,18 +86,23 @@ test.describe("account", () => {
       await route.fulfill({ status: 204 });
     });
 
-    await page.goto("/account");
-    await page.getByRole("button", { name: "ارسال کد برای حذف حساب" }).click();
+    await page.goto("/dashboard/profile");
+    await page.getByRole("button", { name: "حذف حساب" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "حساب حذف شود؟" });
+    await dialog.getByRole("button", { name: "انصراف" }).click();
+    await expect(dialog).toBeHidden();
+    expect(deleted).toBeNull();
+
+    await page.getByRole("button", { name: "حذف حساب" }).click();
+    await dialog.getByRole("button", { name: "ارسال کد حذف" }).click();
     await page.getByLabel("کد تأیید").fill("654321");
-    await page.getByRole("button", { name: "حذف همیشگی حساب" }).click();
-    await expect(page.getByRole("button", { name: "دریافت کد تأیید" })).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
     expect(deleted).toEqual({ code: "654321" });
   });
 
   test("sends a Content-Security-Policy with a fresh nonce", async ({ page }) => {
-    await mockSignedOut(page);
-    const first = await page.goto("/account");
-    const second = await page.goto("/account");
+    const first = await page.goto("/sign-in");
+    const second = await page.goto("/sign-in");
     const csp = (await first?.allHeaders())?.["content-security-policy"] ?? "";
     expect(csp).toMatch(/script-src 'self' 'nonce-[^']+' 'strict-dynamic'/);
     expect(csp).not.toContain("unsafe-eval");

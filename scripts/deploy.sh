@@ -9,9 +9,7 @@ corepack enable
 pnpm install --frozen-lockfile
 # INTERNAL_API_URL is baked into the Next rewrites at build time
 INTERNAL_API_URL="http://127.0.0.1:7781" pnpm build
-# The standalone server does not ship static assets; it serves them from beside itself
-cp -r apps/web/public apps/web/.next/standalone/apps/web/
-cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/
+# (apps/web's postbuild copies public/ and .next/static beside the standalone server.js)
 # Data migrations first (they may reshape what an index covers), then indexes; production boots
 # with autoIndex off
 pnpm --filter @farsh/api db:migrate

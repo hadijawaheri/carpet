@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { carpetSlugSchema } from "../carpet/carpet.schema";
 import { mobileSchema } from "../common/iran";
+import { optionalText } from "../common/text";
 
 export const INQUIRY_STATUSES = ["new", "contacted", "closed"] as const;
 export const inquiryStatusSchema = z.enum(INQUIRY_STATUSES);
@@ -16,7 +17,7 @@ export const createInquirySchema = z.object({
     .min(1, "دست‌کم یک فرش انتخاب کنید")
     .max(10)
     .refine((slugs) => new Set(slugs).size === slugs.length, "فرش تکراری انتخاب شده است"),
-  message: z.string().trim().max(1000).optional(),
+  message: optionalText(1000),
 });
 export type CreateInquiryInput = z.infer<typeof createInquirySchema>;
 

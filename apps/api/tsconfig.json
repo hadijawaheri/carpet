@@ -8,7 +8,9 @@
     "emitDecoratorMetadata": true,
     "sourceMap": true,
     "outDir": "dist",
-    "types": ["node"]
+    "types": ["node"],
+    "allowJs": true,
+    "checkJs": true
   },
-  "include": ["src", "test", "vitest.config.ts"]
+  "include": ["src", "test", "migrations", "migrate-mongo-config.js", "vitest.config.ts"]
 }

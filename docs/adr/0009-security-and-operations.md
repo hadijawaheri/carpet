@@ -1,6 +1,6 @@
 # 0009 · Security and operations baseline
 
-Date: 2026-10-20 · Status: accepted (owner asked to close the gaps found in the architecture and security checklists)
+Date: 2026-10-20 · Status: accepted, Redis, migration and Docker points superseded by 0010 (owner asked to close the gaps found in the architecture and security checklists)
 
 - **OTPs go out through a Melipayamak pattern.** Patterns skip the ad filter and arrive fast; a failed send answers 503 `SMS_UNAVAILABLE` in Persian and clears the code. The endpoint (`console.melipayamak.com/api/send/shared/{key}`) has only been tested against a mock; verify it with the real panel before launch.
 - **Every page renders per request, for a nonce CSP.** `src/proxy.ts` sets `script-src 'nonce-…' 'strict-dynamic'`; the root layout awaits `connection()` so Next can stamp the nonce. A static page would ship scripts the CSP blocks. The carpet list keeps its 60 s fetch cache, so the cost is server rendering, not API calls. Styles stay `'unsafe-inline'`: React and the 3D canvas write style attributes, which no nonce covers.

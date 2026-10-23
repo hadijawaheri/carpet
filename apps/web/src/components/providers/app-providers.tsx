@@ -1,18 +1,25 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { type PropsWithChildren, useState } from "react";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+import type { PropsWithChildren } from "react";
 
+import { QueryProvider } from "@/components/providers/query-provider";
 import { DirectionProvider } from "@/components/ui/direction";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
+// No ThemeProvider: one light theme by the owner's decision (docs/adr/0007)
 export function AppProviders({ children }: PropsWithChildren) {
-  // One client per browser session; a module-level client would be shared between server requests.
-  const [queryClient] = useState(
-    () => new QueryClient({ defaultOptions: { mutations: { retry: 0 } } }),
-  );
   return (
-    <QueryClientProvider client={queryClient}>
-      <DirectionProvider dir="rtl">{children}</DirectionProvider>
-    </QueryClientProvider>
+    <NuqsAdapter>
+      <DirectionProvider dir="rtl">
+        <QueryProvider>
+          <TooltipProvider>
+            {children}
+            <Toaster dir="rtl" position="top-center" closeButton />
+          </TooltipProvider>
+        </QueryProvider>
+      </DirectionProvider>
+    </NuqsAdapter>
   );
 }

@@ -70,7 +70,7 @@ export class AuthService {
     );
 
     try {
-      await this.sms.sendOtp(mobile, code);
+      await this.sms.send(mobile, "otp", [code]);
     } catch (error: unknown) {
       // Without this the visitor would wait out the cooldown for a code that never arrived
       await this.otpModel.deleteOne({ mobile });

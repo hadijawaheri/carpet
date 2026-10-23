@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 import { digitsString, mobileSchema } from "../common/iran";
+import { optionalText } from "../common/text";
 
-export const ROLES = ["user", "admin"] as const;
+// business: shops and designers buying for clients (blueprint §8); no endpoint treats it specially yet
+export const ROLES = ["user", "business", "admin"] as const;
 export const roleSchema = z.enum(ROLES);
 export type Role = z.infer<typeof roleSchema>;
 
@@ -32,7 +34,7 @@ export const userDtoSchema = z.object({
 export type UserDto = z.infer<typeof userDtoSchema>;
 
 export const updateProfileSchema = z.object({
-  firstName: z.string().trim().min(1).max(60).optional(),
-  lastName: z.string().trim().min(1).max(60).optional(),
+  firstName: optionalText(60),
+  lastName: optionalText(60),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
