@@ -1,10 +1,11 @@
 "use client";
 
 import type { PileMaterial } from "@farsh/contracts";
-import { Award, Feather, Hand } from "lucide-react";
-import { type PointerEvent, useMemo, useRef, useState } from "react";
+import { Award, ChevronLeft, ChevronRight, Feather, Hand } from "lucide-react";
+import { useState } from "react";
 
-import { CarpetStage, materialLabels, PointerTilt } from "@/features/carpet-viewer";
+import { Button } from "@/components/ui/button";
+import { CarpetRackStage, materialLabels } from "@/features/carpet-viewer";
 
 import { MaterialPills } from "./material-pills";
 import { useShowroom } from "./showroom-store";
@@ -17,32 +18,18 @@ const badges = [
 
 export function Hero() {
   const { carpets } = useShowroom();
-  const carpet = carpets[0];
+  const [current, setCurrent] = useState(0);
   const [material, setMaterial] = useState<PileMaterial | null>(null);
-  const tilt = useMemo(() => new PointerTilt(), []);
-  const sectionRef = useRef<HTMLElement>(null);
+  const carpet = carpets[current];
 
-  // CSS variables move the glow and floor shadow without re-rendering on every pointer move.
-  const onPointerMove = (event: PointerEvent<HTMLElement>) => {
-    if (event.pointerType !== "mouse") return;
-    tilt.track(event.clientX, event.clientY, event.currentTarget.getBoundingClientRect());
-    event.currentTarget.style.setProperty("--tx", String(tilt.x));
-    event.currentTarget.style.setProperty("--ty", String(tilt.y));
-  };
-  const onPointerLeave = () => {
-    tilt.reset();
-    sectionRef.current?.style.setProperty("--tx", "0");
-    sectionRef.current?.style.setProperty("--ty", "0");
+  // Turning to another carpet drops the pile override: each carpet first shows its own feel.
+  const turnTo = (index: number) => {
+    setCurrent((index + carpets.length) % carpets.length);
+    setMaterial(null);
   };
 
   return (
-    <section
-      id="top"
-      ref={sectionRef}
-      onPointerMove={onPointerMove}
-      onPointerLeave={onPointerLeave}
-      className="relative overflow-hidden pt-32 pb-20 [--tx:0] [--ty:0]"
-    >
+    <section id="top" className="relative overflow-hidden pt-32 pb-20">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2">
         <div className="animate-fade-up">
           <p className="eyebrow text-gold-text">فرش ایرانی · گره به گره</p>
@@ -79,29 +66,48 @@ export function Hero() {
 
         {carpet ? (
           <div className="flex flex-col items-center gap-4">
-            <div className="relative flex h-[440px] w-full items-center justify-center sm:h-[560px]">
+            <div className="relative flex h-[460px] w-full items-center justify-center sm:h-[580px]">
               <div
                 aria-hidden
                 className="absolute h-[70%] w-[70%] rounded-full bg-madder/10 blur-3xl"
-                style={{ transform: "translate(calc(var(--tx) * -40px), calc(var(--ty) * -40px))" }}
               />
-              <div
-                aria-hidden
-                className="absolute bottom-6 h-10 w-[55%] rounded-[50%] bg-foreground/25 blur-2xl transition-transform duration-300"
-                style={{ transform: "translateX(calc(var(--tx) * 30px))" }}
+              <CarpetRackStage
+                carpets={carpets}
+                current={current}
+                frontMaterial={material ?? carpet.material}
+                onSelect={turnTo}
+                imageSizes="(min-width: 1024px) 40vw, 80vw"
+                className="relative size-full"
               />
-              <div className="relative size-full animate-float">
-                <CarpetStage
-                  carpet={carpet}
-                  material={material ?? carpet.material}
-                  tilt={tilt}
-                  imageSizes="(min-width: 1024px) 40vw, 80vw"
-                  className="size-full"
-                />
-              </div>
+            </div>
+            <div className="flex w-full max-w-md items-center justify-between gap-4">
+              <Button
+                variant="secondary"
+                size="icon"
+                aria-label="فرش قبلی"
+                onClick={() => turnTo(current - 1)}
+              >
+                <ChevronRight className="rtl:rotate-180" aria-hidden />
+              </Button>
+              <p aria-live="polite" className="text-center text-sm">
+                {carpet.name}
+                <span className="text-muted-foreground">
+                  {" "}
+                  · {materialLabels[carpet.material]} · {(current + 1).toLocaleString("fa-IR")} از{" "}
+                  {carpets.length.toLocaleString("fa-IR")}
+                </span>
+              </p>
+              <Button
+                variant="secondary"
+                size="icon"
+                aria-label="فرش بعدی"
+                onClick={() => turnTo(current + 1)}
+              >
+                <ChevronLeft className="rtl:rotate-180" aria-hidden />
+              </Button>
             </div>
             <p className="text-center text-xs text-muted-foreground">
-              گوشه‌ی فرش را بگیرید و تکانش دهید · {carpet.name}
+              فرش‌ها را مثل رگال ورق بزنید · گوشه‌ی پایین فرش جلویی را بگیرید و تکانش دهید
             </p>
             <MaterialPills
               label="حس پرز"

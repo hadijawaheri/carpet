@@ -64,4 +64,26 @@ describe("ClothSolver", () => {
       expect(cloth.positions[c * 3 + 2]).toBeCloseTo(0, 5);
     }
   });
+
+  it("hangs from its own weight without stretching like rubber", () => {
+    const cloth = new ClothSolver(1.4, 2.2, 16);
+    cloth.setHanging(true);
+    for (let i = 0; i < 180; i++) cloth.step(STEP, i * STEP, materialPresets.silk.physics, false);
+    const last = cloth.particleCount - 1;
+    expect(cloth.positions[last * 3 + 1]).toBeGreaterThan(-1.1 - 0.01);
+  });
+
+  it("carries the whole carpet round the pole with its rack arm", () => {
+    const cloth = new ClothSolver(1, 2, 12);
+    cloth.setHanging(true);
+    cloth.setAnchor(Math.PI / 2, 0.6);
+    for (let i = 0; i < 240; i++) cloth.step(STEP, i * STEP, materialPresets.wool.physics, false);
+    // Swung a quarter turn, the carpet now runs straight back from the pole along -z.
+    const top = cloth.cols - 1;
+    expect(cloth.positions[0]).toBeCloseTo(0.6, 3);
+    expect(cloth.positions[2]).toBeCloseTo(-1.1, 3);
+    expect(cloth.positions[top * 3 + 2]).toBeCloseTo(-0.1, 3);
+    const last = cloth.particleCount - 1;
+    expect(cloth.positions[last * 3]).toBeCloseTo(0.6, 1);
+  });
 });

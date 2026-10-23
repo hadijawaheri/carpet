@@ -30,16 +30,17 @@ export interface MaterialPreset {
   surface: PileSurface;
 }
 
-// Hand-tuned in the Farsh Touch prototype; not measured from real carpets.
+// Hand-tuned by eye, not measured from real carpets. Even silk is a heavy knotted textile: it
+// drapes and keeps swinging longer than wool, but it must not ripple like liquid.
 export const materialPresets: Record<PileMaterial, MaterialPreset> = {
   silk: {
     physics: {
-      iterations: 4,
-      shearStiffness: 0.6,
-      bendStiffness: 0.025,
-      damping: 0.989,
-      restore: 0.0016,
-      wind: 1,
+      iterations: 10,
+      shearStiffness: 0.85,
+      bendStiffness: 0.07,
+      damping: 0.978,
+      restore: 0.0025,
+      wind: 0.3,
     },
     surface: {
       roughness: 0.36,
@@ -55,12 +56,12 @@ export const materialPresets: Record<PileMaterial, MaterialPreset> = {
   },
   wool: {
     physics: {
-      iterations: 8,
-      shearStiffness: 0.9,
-      bendStiffness: 0.18,
-      damping: 0.975,
-      restore: 0.0035,
-      wind: 0.5,
+      iterations: 12,
+      shearStiffness: 0.95,
+      bendStiffness: 0.16,
+      damping: 0.965,
+      restore: 0.0045,
+      wind: 0.16,
     },
     surface: {
       roughness: 0.9,
@@ -78,10 +79,10 @@ export const materialPresets: Record<PileMaterial, MaterialPreset> = {
     physics: {
       iterations: 14,
       shearStiffness: 1,
-      bendStiffness: 0.7,
-      damping: 0.93,
+      bendStiffness: 0.5,
+      damping: 0.94,
       restore: 0.011,
-      wind: 0.2,
+      wind: 0.06,
     },
     surface: {
       roughness: 0.74,

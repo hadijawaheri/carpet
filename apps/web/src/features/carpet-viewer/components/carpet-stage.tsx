@@ -3,24 +3,16 @@
 import type { Carpet, PileMaterial } from "@farsh/contracts";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import type { PointerTilt } from "../pointer-tilt";
-import { webglSupport } from "../webgl-support";
 import type { CarpetSceneVariant } from "./carpet-scene";
 import { SceneBoundary } from "./scene-boundary";
+import { useStageSupport } from "./use-stage-support";
 
 const CarpetScene = dynamic(() => import("./carpet-scene").then((m) => m.CarpetScene), {
   ssr: false,
   loading: () => null,
 });
-
-const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
-const subscribeReducedMotion = (onChange: () => void) => {
-  const mql = window.matchMedia(reducedMotionQuery);
-  mql.addEventListener("change", onChange);
-  return () => mql.removeEventListener("change", onChange);
-};
 
 interface CarpetStageProps {
   carpet: Carpet;
@@ -43,33 +35,7 @@ export function CarpetStage({
   imageSizes = "(min-width: 768px) 40vw, 80vw",
   onGrab,
 }: CarpetStageProps) {
-  const reducedMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    () => window.matchMedia(reducedMotionQuery).matches,
-    () => false,
-  );
-  const webgl = useSyncExternalStore(
-    () => () => {},
-    () => webglSupport().version > 0,
-    () => false,
-  );
-  const software = useSyncExternalStore(
-    () => () => {},
-    () => webglSupport().software,
-    () => false,
-  );
-  // An off-screen carpet stops simulating, so the room preview below gets the whole GPU.
-  const box = useRef<HTMLDivElement>(null);
-  const [onScreen, setOnScreen] = useState(true);
-  useEffect(() => {
-    const node = box.current;
-    if (!node) return;
-    const observer = new IntersectionObserver(([entry]) =>
-      setOnScreen(entry?.isIntersecting ?? true),
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+  const { reducedMotion, webgl, software, box, onScreen } = useStageSupport();
 
   const photo = (
     <Image
