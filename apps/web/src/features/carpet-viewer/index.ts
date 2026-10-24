@@ -1,3 +1,4 @@
+export { CarpetRackStage } from "./components/carpet-rack-stage";
 export { CarpetStage } from "./components/carpet-stage";
 export type { RoomView } from "./components/room/room-scene";
 export { RoomStage } from "./components/room/room-stage";

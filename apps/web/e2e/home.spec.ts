@@ -42,6 +42,18 @@ test.describe("home page", () => {
     await expect(page.locator("#top [role=img]").first()).toHaveAttribute("aria-label", /فرش/);
   });
 
+  test("the rack turns to the next carpet and wraps round", async ({ page }) => {
+    await openHome(page);
+    const hero = page.locator("#top");
+    const caption = hero.getByText(/از ۵/);
+    await expect(caption).toContainText("۱ از ۵");
+    await hero.getByRole("button", { name: "فرش بعدی" }).click();
+    await expect(caption).toContainText("۲ از ۵");
+    await hero.getByRole("button", { name: "فرش قبلی" }).click();
+    await hero.getByRole("button", { name: "فرش قبلی" }).click();
+    await expect(caption).toContainText("۵ از ۵");
+  });
+
   test("unknown pages show the Persian not-found page", async ({ page }) => {
     const response = await page.goto("/no-such-page");
     expect(response?.status()).toBe(404);

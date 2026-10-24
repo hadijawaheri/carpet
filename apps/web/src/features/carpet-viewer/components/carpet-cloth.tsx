@@ -19,10 +19,13 @@ import {
 
 import { ClothSolver } from "../cloth-solver";
 import { createKnotNormalMap, KNOTS_PER_NORMAL_TILE } from "../knot-normal-map";
+import type { RackArm } from "../rack-arm";
 
 const STEP = 1 / 60;
-const CARPET_HEIGHT = 2.2;
+export const CARPET_HEIGHT = 2.2;
 const GRID_COLUMNS = 34;
+/** Several carpets share a rack, so each gets a coarser grid. */
+const RACK_GRID_COLUMNS = 24;
 /** Lifts the held point towards the viewer, so a grab reads as picking the carpet up. */
 const GRAB_LIFT = 0.25;
 
@@ -34,6 +37,13 @@ interface CarpetClothProps {
   hanging?: boolean;
   /** Softer wind, for a carpet that floats as a page centrepiece rather than one being studied. */
   calm?: boolean;
+  /** Hangs the carpet from this rack arm instead of a fixed rod; the rack draws the arm itself. */
+  arm?: RackArm;
+  /** Distance from the carpet's centre to the rack pole, along its width. */
+  pivotX?: number;
+  /** False for carpets waiting on the rack: a press picks them instead of grabbing the cloth. */
+  grabbable?: boolean;
+  onSelect?: () => void;
   onGrab?: () => void;
 }
 
@@ -43,6 +53,10 @@ export function CarpetCloth({
   reducedMotion,
   hanging = false,
   calm = false,
+  arm,
+  pivotX = 0,
+  grabbable = true,
+  onSelect,
   onGrab,
 }: CarpetClothProps) {
   const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy());
@@ -54,7 +68,15 @@ export function CarpetCloth({
   const meshRef = useRef<Group>(null);
   const width = CARPET_HEIGHT * carpet.imageAspect;
 
-  const solver = useMemo(() => new ClothSolver(width, CARPET_HEIGHT, GRID_COLUMNS), [width]);
+  const solver = useMemo(() => {
+    const cloth = new ClothSolver(width, CARPET_HEIGHT, arm ? RACK_GRID_COLUMNS : GRID_COLUMNS);
+    if (arm) {
+      cloth.setHanging(true);
+      cloth.setAnchor(arm.angle, pivotX);
+      cloth.placeAtAnchor();
+    }
+    return cloth;
+  }, [width, arm, pivotX]);
   const geometry = useMemo(() => {
     const g = new BufferGeometry();
     g.setAttribute("position", new BufferAttribute(solver.positions, 3).setUsage(DynamicDrawUsage));
@@ -87,10 +109,14 @@ export function CarpetCloth({
   }, [surface.handKnotted, surface.knotsAcross, carpet.imageAspect, maxAnisotropy]);
 
   useEffect(() => {
-    solver.setHanging(hanging);
-  }, [solver, hanging]);
+    solver.setHanging(hanging || arm !== undefined);
+  }, [solver, hanging, arm]);
 
+  // A new pile is felt as a small shake; skipped on mount so carpets waiting on a rack hang still.
+  const shownMaterial = useRef(material);
   useEffect(() => {
+    if (shownMaterial.current === material) return;
+    shownMaterial.current = material;
     solver.impulse(material === "machine" ? 0.01 : 0.03);
   }, [solver, material]);
   useEffect(() => () => normalMap.dispose(), [normalMap]);
@@ -102,11 +128,22 @@ export function CarpetCloth({
   const elapsed = useRef(0);
   useFrame((_, delta) => {
     accumulated.current += Math.min(delta, 0.05);
+    let moved = false;
     while (accumulated.current >= STEP) {
       elapsed.current += STEP;
-      solver.step(STEP, elapsed.current, physics, !reducedMotion);
       accumulated.current -= STEP;
+      if (arm) {
+        arm.update(STEP);
+        if (reducedMotion) arm.snap();
+        solver.setAnchor(arm.angle, pivotX);
+        solver.setWedge(arm.wedgeLow, arm.wedgeHigh);
+        // A carpet resting on the rack costs nothing until its arm moves again.
+        if (!arm.active && !solver.isGrabbing) continue;
+      }
+      solver.step(STEP, elapsed.current, physics, !reducedMotion);
+      moved = true;
     }
+    if (!moved) return;
     const position = geometry.getAttribute("position");
     position.needsUpdate = true;
     geometry.computeVertexNormals();
@@ -120,6 +157,10 @@ export function CarpetCloth({
 
   const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
+    if (!grabbable) {
+      onSelect?.();
+      return;
+    }
     const local = toLocal(event.point);
     if (!local) return;
     solver.grabNearest(local.x, local.y, local.z);
@@ -149,7 +190,7 @@ export function CarpetCloth({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      onPointerOver={() => (document.body.style.cursor = "grab")}
+      onPointerOver={() => (document.body.style.cursor = grabbable ? "grab" : "pointer")}
       onPointerOut={() => !solver.isGrabbing && (document.body.style.cursor = "")}
     >
       <mesh geometry={geometry} castShadow>
@@ -159,9 +200,10 @@ export function CarpetCloth({
           envMapIntensity={0.7}
           roughness={surface.roughness}
           // Full silk sheen washes the photo gold on cream and milky under the spot; cap it so colours stay true.
-          sheen={Math.min(surface.sheen, 0.35)}
+          // On the rack the sheen is the point: silk has to flash against wool as it swings.
+          sheen={Math.min(surface.sheen, arm ? 0.6 : 0.35)}
           sheenRoughness={surface.sheenRoughness}
-          sheenColor={hanging ? "#f4e8d5" : surface.sheenColor}
+          sheenColor={hanging && !arm ? "#f4e8d5" : surface.sheenColor}
           anisotropy={surface.anisotropy}
           anisotropyRotation={Math.PI / 2}
           clearcoat={surface.clearcoat}
@@ -170,7 +212,7 @@ export function CarpetCloth({
           normalScale={[surface.normalScale, surface.normalScale]}
         />
       </mesh>
-      {hanging ? (
+      {hanging && !arm ? (
         // Brass gallery rod the top edge hangs from.
         <mesh
           position={[0, CARPET_HEIGHT / 2 + 0.03, 0.02]}

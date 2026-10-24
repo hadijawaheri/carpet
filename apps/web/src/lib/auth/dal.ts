@@ -1,6 +1,7 @@
 import "server-only";
 
-import type { ApiResponse, Role, UserDto } from "@farsh/contracts";
+import { type ApiResponse, COOKIE_NAMES, type Role, type UserDto } from "@farsh/contracts";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
@@ -10,6 +11,9 @@ import { paths } from "../paths";
 
 /** The signed-in user for this request, or null. One API call per render, however many callers. */
 export const getSession = cache(async (): Promise<UserDto | null> => {
+  // The API answers 401 without an access cookie anyway; skipping the call keeps anonymous pages
+  // like sign-in rendering while the API is down.
+  if (!(await cookies()).has(COOKIE_NAMES.access)) return null;
   try {
     const { data } = await serverApi<ApiResponse<{ user: UserDto }>>("/auth/me");
     return data.user;

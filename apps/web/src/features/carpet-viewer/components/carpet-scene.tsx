@@ -2,12 +2,13 @@
 
 import type { Carpet, PileMaterial } from "@farsh/contracts";
 import { AdaptiveDpr, Environment, Lightformer } from "@react-three/drei";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { type PropsWithChildren, Suspense, useEffect, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { type PropsWithChildren, Suspense, useRef } from "react";
 import { type Group, NeutralToneMapping, PCFShadowMap } from "three";
 
 import type { PointerTilt } from "../pointer-tilt";
 import { CarpetCloth } from "./carpet-cloth";
+import { SteadyFrames } from "./steady-frames";
 
 export type CarpetSceneVariant = "studio" | "gallery";
 
@@ -160,14 +161,4 @@ function TiltRig({ tilt, children }: PropsWithChildren<{ tilt?: PointerTilt }>) 
     group.rotation.y += (tilt.x * TILT_Y - group.rotation.y) * ease;
   });
   return <group ref={ref}>{children}</group>;
-}
-
-/** A capped frame rate for software rendering: input events get the processor between frames. */
-function SteadyFrames({ fps }: { fps: number }) {
-  const invalidate = useThree((s) => s.invalidate);
-  useEffect(() => {
-    const timer = window.setInterval(() => invalidate(), 1000 / fps);
-    return () => window.clearInterval(timer);
-  }, [fps, invalidate]);
-  return null;
 }

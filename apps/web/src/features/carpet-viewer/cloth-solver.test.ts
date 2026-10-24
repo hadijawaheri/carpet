@@ -64,4 +64,47 @@ describe("ClothSolver", () => {
       expect(cloth.positions[c * 3 + 2]).toBeCloseTo(0, 5);
     }
   });
+
+  it("hangs from its own weight without stretching like rubber", () => {
+    const cloth = new ClothSolver(1.4, 2.2, 16);
+    cloth.setHanging(true);
+    for (let i = 0; i < 180; i++) cloth.step(STEP, i * STEP, materialPresets.silk.physics, false);
+    const last = cloth.particleCount - 1;
+    expect(cloth.positions[last * 3 + 1]).toBeGreaterThan(-1.1 - 0.01);
+  });
+
+  it("carries the whole carpet round the pole with its rack arm", () => {
+    const cloth = new ClothSolver(1, 2, 12);
+    cloth.setHanging(true);
+    cloth.setAnchor(Math.PI / 2, 0.6);
+    for (let i = 0; i < 240; i++) cloth.step(STEP, i * STEP, materialPresets.wool.physics, false);
+    // Swung a quarter turn, the carpet now runs straight back from the pole along -z.
+    const top = cloth.cols - 1;
+    expect(cloth.positions[0]).toBeCloseTo(0.6, 3);
+    expect(cloth.positions[2]).toBeCloseTo(-1.1, 3);
+    expect(cloth.positions[top * 3 + 2]).toBeCloseTo(-0.1, 3);
+    const last = cloth.particleCount - 1;
+    expect(cloth.positions[last * 3]).toBeCloseTo(0.6, 1);
+  });
+
+  it("never swings a racked carpet past the edge of its wedge", () => {
+    const cloth = new ClothSolver(1, 2, 12);
+    cloth.setHanging(true);
+    cloth.setAnchor(0, 0.6);
+    cloth.setWedge(-1, 0.05);
+    // Push the lower corner hard towards the carpet behind (negative z), then let go.
+    const last = cloth.particleCount - 1;
+    cloth.grabNearest(cloth.positions[last * 3]!, cloth.positions[last * 3 + 1]!, 0);
+    cloth.moveTarget(cloth.positions[last * 3]!, cloth.positions[last * 3 + 1]!, -0.6);
+    for (let i = 0; i < 10; i++) cloth.step(STEP, i * STEP, materialPresets.silk.physics, false);
+    cloth.release();
+    for (let i = 0; i < 60; i++) {
+      cloth.step(STEP, i * STEP, materialPresets.silk.physics, false);
+      for (let k = cloth.cols; k < cloth.particleCount; k++) {
+        const vx = cloth.positions[k * 3]! - 0.6;
+        const vz = cloth.positions[k * 3 + 2]!;
+        expect(Math.atan2(-vz, -vx)).toBeLessThanOrEqual(0.05 + 1e-6);
+      }
+    }
+  });
 });

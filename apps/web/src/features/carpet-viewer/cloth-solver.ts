@@ -3,6 +3,10 @@ import type { ClothPhysics } from "@farsh/contracts";
 const STRUCTURAL = 0;
 const SHEAR = 1;
 const BEND = 2;
+/** m/s²; the grid is laid out in metres, so a hanging carpet falls and swings at real speed. */
+const GRAVITY = 9.81;
+/** Metres kept between neighbouring carpets on a rack: roughly one carpet's thickness. */
+const CLOTH_GAP = 0.012;
 
 /**
  * Verlet cloth on a cols × rows grid in the carpet's local XY plane; z is the carpet normal.
@@ -22,8 +26,21 @@ export class ClothSolver {
   private readonly linkKind: Uint8Array;
   private readonly linkLength: Float32Array;
 
-  /** When true the top row stays on its rest points, like a carpet hung from a gallery rod. */
+  /**
+   * When true the top row is pinned to the rod and gravity replaces the pull back to the flat
+   * pose: the carpet hangs from its own weight, so it drapes and swings like a heavy textile.
+   */
   private hanging = false;
+
+  /** The rod swings about a vertical pole at x = pivotX, z = 0, like the arm of a carpet rack. */
+  private pivotX = 0;
+  private anchorAngle = 0;
+  /**
+   * Angles about the pole the sheet may not swing past, halfway to its neighbours on the rack.
+   * Neighbouring wedges never overlap, so two carpets cannot pass through each other.
+   */
+  private wedgeLow = -Infinity;
+  private wedgeHigh = Infinity;
 
   /** Index of the particle held by the pointer, or -1. */
   private grabbed = -1;
@@ -96,6 +113,26 @@ export class ClothSolver {
     this.hanging = hanging;
   }
 
+  /** Swings the rod to `angle` (radians about the vertical pole at `pivotX`); 0 is the rest pose. */
+  setAnchor(angle: number, pivotX: number) {
+    this.anchorAngle = angle;
+    this.pivotX = pivotX;
+  }
+
+  /** Keeps the sheet between two angles about the pole; ±Infinity leaves that side open. */
+  setWedge(low: number, high: number) {
+    this.wedgeLow = low;
+    this.wedgeHigh = high;
+  }
+
+  /** Puts the whole sheet, at rest, on the current rod angle; for carpets that start swung aside. */
+  placeAtAnchor() {
+    for (let i = 0; i < this.particleCount; i++) {
+      this.swing(i, this.positions);
+      this.swing(i, this.previous);
+    }
+  }
+
   get isGrabbing() {
     return this.grabbed >= 0;
   }
@@ -136,11 +173,14 @@ export class ClothSolver {
 
   /** Kicks the sheet along its normal so a change of carpet or material is felt, not just seen. */
   impulse(strength: number) {
+    const nx = -Math.sin(this.anchorAngle);
+    const nz = Math.cos(this.anchorAngle);
     for (let i = 0; i < this.particleCount; i++) {
       const x = this.rest[i * 3]!;
       const y = this.rest[i * 3 + 1]!;
-      this.previous[i * 3 + 2] =
-        this.positions[i * 3 + 2]! - strength * Math.sin(y * 2.4 + x * 0.8);
+      const kick = strength * Math.sin(y * 2.4 + x * 0.8);
+      this.previous[i * 3] = this.positions[i * 3]! - kick * nx;
+      this.previous[i * 3 + 2] = this.positions[i * 3 + 2]! - kick * nz;
     }
   }
 
@@ -150,6 +190,11 @@ export class ClothSolver {
     const rest = this.rest;
     const dt2 = dt * dt;
     const windAmp = windEnabled ? physics.wind * 2.2 : 0;
+    // Wind and gravity act in the rack's frame; the restoring pull only exists for a floating sheet.
+    const nx = -Math.sin(this.anchorAngle);
+    const nz = Math.cos(this.anchorAngle);
+    const fall = this.hanging ? GRAVITY * dt2 : 0;
+    const restore = this.hanging ? 0 : physics.restore;
 
     for (let i = 0; i < this.particleCount; i++) {
       const i3 = i * 3;
@@ -160,21 +205,24 @@ export class ClothSolver {
       const ry = rest[i3 + 1]!;
       const wind =
         windAmp *
-        (0.55 * Math.sin(rx * 1.7 + time * 1.9) + 0.8 * Math.sin(ry * 1.2 - time * 1.4 + rx * 0.6));
-      pos[i3] = x + (x - prev[i3]!) * physics.damping;
-      pos[i3 + 1] = y + (y - prev[i3 + 1]!) * physics.damping;
-      pos[i3 + 2] = z + (z - prev[i3 + 2]!) * physics.damping + wind * dt2;
+        (0.55 * Math.sin(rx * 1.7 + time * 1.9) +
+          0.8 * Math.sin(ry * 1.2 - time * 1.4 + rx * 0.6)) *
+        dt2;
+      pos[i3] = x + (x - prev[i3]!) * physics.damping + wind * nx;
+      pos[i3 + 1] = y + (y - prev[i3 + 1]!) * physics.damping - fall;
+      pos[i3 + 2] = z + (z - prev[i3 + 2]!) * physics.damping + wind * nz;
       prev[i3] = x;
       prev[i3 + 1] = y;
       prev[i3 + 2] = z;
-      pos[i3] = pos[i3]! + (rx - pos[i3]!) * physics.restore;
-      pos[i3 + 1] = pos[i3 + 1]! + (ry - pos[i3 + 1]!) * physics.restore;
-      pos[i3 + 2] = pos[i3 + 2]! - pos[i3 + 2]! * physics.restore;
+      pos[i3] = pos[i3]! + (rx - pos[i3]!) * restore;
+      pos[i3 + 1] = pos[i3 + 1]! + (ry - pos[i3 + 1]!) * restore;
+      pos[i3 + 2] = pos[i3 + 2]! - pos[i3 + 2]! * restore;
     }
 
     const stiffness = [1, physics.shearStiffness, physics.bendStiffness];
     const g = this.grabbed;
     for (let it = 0; it < physics.iterations; it++) {
+      this.keepInWedge();
       this.pinTopRow();
       this.pinGrabbed();
       for (let k = 0; k < this.linkLength.length; k++) {
@@ -198,8 +246,74 @@ export class ClothSolver {
         pos[b3 + 2] = pos[b3 + 2]! - dz * corr * wb;
       }
     }
+    this.tether();
+    this.keepInWedge();
     this.pinTopRow();
     this.pinGrabbed();
+  }
+
+  /**
+   * Turns any particle that strayed out of its wedge back onto the wedge edge, at the same
+   * distance from the pole, leaving a cloth's thickness to the neighbour's side.
+   */
+  private keepInWedge() {
+    if (!this.hanging) return;
+    if (this.wedgeLow === -Infinity && this.wedgeHigh === Infinity) return;
+    const pos = this.positions;
+    const a = this.anchorAngle;
+    for (let i = this.cols; i < this.particleCount; i++) {
+      if (i === this.grabbed) continue;
+      const i3 = i * 3;
+      // The rod direction for angle φ is (-cos φ, -sin φ) in x/z, measured from the pole.
+      const vx = pos[i3]! - this.pivotX;
+      const vz = pos[i3 + 2]!;
+      const r = Math.hypot(vx, vz);
+      if (r < 1e-4) continue;
+      const margin = Math.min(0.5, CLOTH_GAP / r);
+      const low = this.wedgeLow - a + margin;
+      const high = this.wedgeHigh - a - margin;
+      // Relative to the rod, so a carpet turned past ±π does not wrap to the far side.
+      let delta = Math.atan2(-vz, -vx) - a;
+      delta -= Math.round(delta / (2 * Math.PI)) * 2 * Math.PI;
+      const clamped = low > high ? (low + high) / 2 : Math.min(high, Math.max(low, delta));
+      if (clamped === delta) continue;
+      const phi = a + clamped;
+      pos[i3] = this.pivotX - r * Math.cos(phi);
+      pos[i3 + 2] = -r * Math.sin(phi);
+    }
+  }
+
+  /**
+   * A hanging particle can be no further from its column's rod point than the cloth between them.
+   * Without this a few solver passes let gravity stretch the carpet like rubber.
+   */
+  private tether() {
+    if (!this.hanging) return;
+    const pos = this.positions;
+    for (let i = this.cols; i < this.particleCount; i++) {
+      if (i === this.grabbed) continue;
+      const i3 = i * 3;
+      const top3 = (i % this.cols) * 3;
+      const limit = this.rest[top3 + 1]! - this.rest[i3 + 1]!;
+      const dx = pos[i3]! - pos[top3]!;
+      const dy = pos[i3 + 1]! - pos[top3 + 1]!;
+      const dz = pos[i3 + 2]! - pos[top3 + 2]!;
+      const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (d <= limit) continue;
+      const k = limit / d;
+      pos[i3] = pos[top3]! + dx * k;
+      pos[i3 + 1] = pos[top3 + 1]! + dy * k;
+      pos[i3 + 2] = pos[top3 + 2]! + dz * k;
+    }
+  }
+
+  /** Writes particle i's rest point, swung about the pole by the rod angle, into `out`. */
+  private swing(i: number, out: Float32Array) {
+    const i3 = i * 3;
+    const reach = this.pivotX - this.rest[i3]!;
+    out[i3] = this.pivotX - reach * Math.cos(this.anchorAngle);
+    out[i3 + 1] = this.rest[i3 + 1]!;
+    out[i3 + 2] = this.rest[i3 + 2]! - reach * Math.sin(this.anchorAngle);
   }
 
   private isPinned(i: number) {
@@ -209,13 +323,8 @@ export class ClothSolver {
   private pinTopRow() {
     if (!this.hanging) return;
     for (let c = 0; c < this.cols; c++) {
-      const c3 = c * 3;
-      this.positions[c3] = this.rest[c3]!;
-      this.positions[c3 + 1] = this.rest[c3 + 1]!;
-      this.positions[c3 + 2] = this.rest[c3 + 2]!;
-      this.previous[c3] = this.rest[c3]!;
-      this.previous[c3 + 1] = this.rest[c3 + 1]!;
-      this.previous[c3 + 2] = this.rest[c3 + 2]!;
+      this.swing(c, this.positions);
+      this.swing(c, this.previous);
     }
   }
 
