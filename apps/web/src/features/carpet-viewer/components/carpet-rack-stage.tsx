@@ -53,6 +53,9 @@ export function CarpetRackStage({
     <div
       ref={box}
       className={className}
+      // The turned pile runs past the pole off the frame; fade it out instead of cutting it.
+      // Physical "right" on purpose: the 3D scene is not mirrored for RTL.
+      style={{ maskImage: "linear-gradient(to right, black 78%, transparent)" }}
       role="img"
       aria-label={`فرش ${front.name} روی رگال؛ با موس یا انگشت گوشه‌ی پایین فرش را بگیرید و تکان دهید`}
     >

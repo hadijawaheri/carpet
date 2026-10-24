@@ -86,4 +86,25 @@ describe("ClothSolver", () => {
     const last = cloth.particleCount - 1;
     expect(cloth.positions[last * 3]).toBeCloseTo(0.6, 1);
   });
+
+  it("never swings a racked carpet past the edge of its wedge", () => {
+    const cloth = new ClothSolver(1, 2, 12);
+    cloth.setHanging(true);
+    cloth.setAnchor(0, 0.6);
+    cloth.setWedge(-1, 0.05);
+    // Push the lower corner hard towards the carpet behind (negative z), then let go.
+    const last = cloth.particleCount - 1;
+    cloth.grabNearest(cloth.positions[last * 3]!, cloth.positions[last * 3 + 1]!, 0);
+    cloth.moveTarget(cloth.positions[last * 3]!, cloth.positions[last * 3 + 1]!, -0.6);
+    for (let i = 0; i < 10; i++) cloth.step(STEP, i * STEP, materialPresets.silk.physics, false);
+    cloth.release();
+    for (let i = 0; i < 60; i++) {
+      cloth.step(STEP, i * STEP, materialPresets.silk.physics, false);
+      for (let k = cloth.cols; k < cloth.particleCount; k++) {
+        const vx = cloth.positions[k * 3]! - 0.6;
+        const vz = cloth.positions[k * 3 + 2]!;
+        expect(Math.atan2(-vz, -vx)).toBeLessThanOrEqual(0.05 + 1e-6);
+      }
+    }
+  });
 });

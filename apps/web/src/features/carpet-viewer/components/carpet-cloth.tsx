@@ -136,6 +136,7 @@ export function CarpetCloth({
         arm.update(STEP);
         if (reducedMotion) arm.snap();
         solver.setAnchor(arm.angle, pivotX);
+        solver.setWedge(arm.wedgeLow, arm.wedgeHigh);
         // A carpet resting on the rack costs nothing until its arm moves again.
         if (!arm.active && !solver.isGrabbing) continue;
       }

@@ -20,6 +20,9 @@ export class RackArm {
   private settle = 0;
   /** The front carpet keeps simulating even at rest, so a grab answers at once. */
   front = false;
+  /** Arms on either side on the pole; their carpets bound how far this one may swing. */
+  private below: RackArm | null = null;
+  private above: RackArm | null = null;
 
   constructor(angle: number) {
     this.angle = angle;
@@ -32,6 +35,24 @@ export class RackArm {
     this.target = angle;
     this.delay = delay;
     this.settle = SETTLE_SECONDS;
+  }
+
+  /** Links the arms of one rack in angle order, lowest angle first. */
+  static chain(arms: RackArm[]) {
+    arms.forEach((arm, i) => {
+      arm.below = arms[i - 1] ?? null;
+      arm.above = arms[i + 1] ?? null;
+    });
+  }
+
+  /** Lowest angle this arm's carpet may swing to: halfway to the carpet below it. */
+  get wedgeLow() {
+    return this.below ? (this.below.angle + this.angle) / 2 : -Infinity;
+  }
+
+  /** Highest angle this arm's carpet may swing to: halfway to the carpet above it. */
+  get wedgeHigh() {
+    return this.above ? (this.above.angle + this.angle) / 2 : Infinity;
   }
 
   /** Jumps straight to the target, for reduced motion. */

@@ -5,6 +5,8 @@ const SHEAR = 1;
 const BEND = 2;
 /** m/s²; the grid is laid out in metres, so a hanging carpet falls and swings at real speed. */
 const GRAVITY = 9.81;
+/** Metres kept between neighbouring carpets on a rack: roughly one carpet's thickness. */
+const CLOTH_GAP = 0.012;
 
 /**
  * Verlet cloth on a cols × rows grid in the carpet's local XY plane; z is the carpet normal.
@@ -33,6 +35,12 @@ export class ClothSolver {
   /** The rod swings about a vertical pole at x = pivotX, z = 0, like the arm of a carpet rack. */
   private pivotX = 0;
   private anchorAngle = 0;
+  /**
+   * Angles about the pole the sheet may not swing past, halfway to its neighbours on the rack.
+   * Neighbouring wedges never overlap, so two carpets cannot pass through each other.
+   */
+  private wedgeLow = -Infinity;
+  private wedgeHigh = Infinity;
 
   /** Index of the particle held by the pointer, or -1. */
   private grabbed = -1;
@@ -109,6 +117,12 @@ export class ClothSolver {
   setAnchor(angle: number, pivotX: number) {
     this.anchorAngle = angle;
     this.pivotX = pivotX;
+  }
+
+  /** Keeps the sheet between two angles about the pole; ±Infinity leaves that side open. */
+  setWedge(low: number, high: number) {
+    this.wedgeLow = low;
+    this.wedgeHigh = high;
   }
 
   /** Puts the whole sheet, at rest, on the current rod angle; for carpets that start swung aside. */
@@ -208,6 +222,7 @@ export class ClothSolver {
     const stiffness = [1, physics.shearStiffness, physics.bendStiffness];
     const g = this.grabbed;
     for (let it = 0; it < physics.iterations; it++) {
+      this.keepInWedge();
       this.pinTopRow();
       this.pinGrabbed();
       for (let k = 0; k < this.linkLength.length; k++) {
@@ -232,8 +247,40 @@ export class ClothSolver {
       }
     }
     this.tether();
+    this.keepInWedge();
     this.pinTopRow();
     this.pinGrabbed();
+  }
+
+  /**
+   * Turns any particle that strayed out of its wedge back onto the wedge edge, at the same
+   * distance from the pole, leaving a cloth's thickness to the neighbour's side.
+   */
+  private keepInWedge() {
+    if (!this.hanging) return;
+    if (this.wedgeLow === -Infinity && this.wedgeHigh === Infinity) return;
+    const pos = this.positions;
+    const a = this.anchorAngle;
+    for (let i = this.cols; i < this.particleCount; i++) {
+      if (i === this.grabbed) continue;
+      const i3 = i * 3;
+      // The rod direction for angle φ is (-cos φ, -sin φ) in x/z, measured from the pole.
+      const vx = pos[i3]! - this.pivotX;
+      const vz = pos[i3 + 2]!;
+      const r = Math.hypot(vx, vz);
+      if (r < 1e-4) continue;
+      const margin = Math.min(0.5, CLOTH_GAP / r);
+      const low = this.wedgeLow - a + margin;
+      const high = this.wedgeHigh - a - margin;
+      // Relative to the rod, so a carpet turned past ±π does not wrap to the far side.
+      let delta = Math.atan2(-vz, -vx) - a;
+      delta -= Math.round(delta / (2 * Math.PI)) * 2 * Math.PI;
+      const clamped = low > high ? (low + high) / 2 : Math.min(high, Math.max(low, delta));
+      if (clamped === delta) continue;
+      const phi = a + clamped;
+      pos[i3] = this.pivotX - r * Math.cos(phi);
+      pos[i3 + 2] = -r * Math.sin(phi);
+    }
   }
 
   /**

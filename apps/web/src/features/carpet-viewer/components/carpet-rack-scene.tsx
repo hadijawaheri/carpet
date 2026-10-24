@@ -3,7 +3,7 @@
 import type { Carpet, PileMaterial } from "@farsh/contracts";
 import { AdaptiveDpr, Environment, Lightformer } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { type PropsWithChildren, Suspense, useEffect, useMemo, useRef } from "react";
 import { type Group, NeutralToneMapping, PCFShadowMap } from "three";
 
 import { rackAngle, RackArm } from "../rack-arm";
@@ -15,8 +15,10 @@ const POLE_GAP = 0.07;
 /** Arms are stacked up the pole, as on a real rack, so they never pass through each other. */
 const ARM_RISE = 0.028;
 const ARM_RADIUS = 0.016;
-const POLE_X = 0.3;
+const POLE_X = 0;
 const TOP = CARPET_HEIGHT / 2;
+/** Turns the rack so the front carpet's free edge comes forward and the turned pile recedes. */
+const RACK_TURN = 0.2;
 
 interface CarpetRackSceneProps {
   carpets: Carpet[];
@@ -45,7 +47,14 @@ export function CarpetRackScene({
   onGrab,
 }: CarpetRackSceneProps) {
   const frameloop = !active ? "never" : software ? "demand" : "always";
-  const arms = useMemo(() => carpets.map((_, i) => new RackArm(rackAngle(i, 0))), [carpets]);
+  const arms = useMemo(() => {
+    const list = carpets.map((_, i) => new RackArm(rackAngle(i, 0)));
+    RackArm.chain(list);
+    return list;
+  }, [carpets]);
+  const front = carpets[current];
+  // The front carpet stands in the middle of the frame; the pole sits off to its right.
+  const frontCentre = front ? CARPET_HEIGHT * front.imageAspect * 0.5 + POLE_GAP : 0;
 
   useEffect(() => {
     const previous = arms.findIndex((arm) => arm.front);
@@ -62,7 +71,7 @@ export function CarpetRackScene({
       frameloop={frameloop}
       shadows={{ type: PCFShadowMap }}
       dpr={software ? 1 : [1, 2]}
-      camera={{ position: [0.1, 0.05, 6.7], fov: 33 }}
+      camera={{ position: [0, 0.1, 5.5], fov: 33 }}
       gl={{
         antialias: !software,
         alpha: true,
@@ -92,7 +101,7 @@ export function CarpetRackScene({
         <Lightformer form="ring" intensity={0.8} color="#ffffff" position={[5, 0, 3]} scale={3} />
       </Environment>
       <RackLights />
-      <group rotation={[0, -0.22, 0]} position={[0, 0.12, 0]}>
+      <CentreOn offset={POLE_X - frontCentre} instant={reducedMotion}>
         <Pole />
         {carpets.map((carpet, i) => {
           const arm = arms[i]!;
@@ -117,8 +126,29 @@ export function CarpetRackScene({
             </group>
           );
         })}
-      </group>
+      </CentreOn>
     </Canvas>
+  );
+}
+
+/** Slides the turned rack sideways so the point at local x = `offset` sits in the middle. */
+function CentreOn({
+  offset,
+  instant,
+  children,
+}: PropsWithChildren<{ offset: number; instant: boolean }>) {
+  const ref = useRef<Group>(null);
+  const target = -offset * Math.cos(RACK_TURN);
+  useFrame((_, delta) => {
+    const group = ref.current;
+    if (!group) return;
+    const ease = instant ? 1 : 1 - Math.exp(-delta * 3);
+    group.position.x += (target - group.position.x) * ease;
+  });
+  return (
+    <group ref={ref} rotation={[0, RACK_TURN, 0]} position={[target, 0.05, 0]}>
+      {children}
+    </group>
   );
 }
 

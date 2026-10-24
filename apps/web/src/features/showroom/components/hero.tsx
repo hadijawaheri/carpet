@@ -30,7 +30,7 @@ export function Hero() {
 
   return (
     <section id="top" className="relative overflow-hidden pt-32 pb-20">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-[1fr_1.2fr]">
         <div className="animate-fade-up">
           <p className="eyebrow text-gold-text">فرش ایرانی · گره به گره</p>
           <h1 className="mt-6 text-5xl leading-[1.25] md:text-7xl md:leading-[1.2]">
@@ -66,7 +66,7 @@ export function Hero() {
 
         {carpet ? (
           <div className="flex flex-col items-center gap-4">
-            <div className="relative flex h-[460px] w-full items-center justify-center sm:h-[580px]">
+            <div className="relative flex h-[520px] w-full items-center justify-center sm:h-[660px]">
               <div
                 aria-hidden
                 className="absolute h-[70%] w-[70%] rounded-full bg-madder/10 blur-3xl"
