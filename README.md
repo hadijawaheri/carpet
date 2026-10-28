@@ -30,7 +30,8 @@ apps/web/src/
   app/                    routing only
   components/ui/          shadcn components
   features/carpet-viewer/ cloth solver, knot normal maps, pointer tilt, R3F scene
-  features/showroom/      the Heritage Loom page: header, hero, gallery, room preview, drawer
+  features/showroom/      the Heritage Loom page: header, hero, gallery, room preview, drawer,
+                          and /carpets/[slug], each carpet's shareable page (docs/adr/0012)
   features/inquiry/       inquiry form → POST /api/inquiries
   features/newsletter/    newsletter form → POST /api/newsletter/subscriptions
   features/account/       /sign-in (OTP), /dashboard/profile: profile, logout, delete with a fresh code

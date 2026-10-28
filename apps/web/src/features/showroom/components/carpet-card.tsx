@@ -3,11 +3,13 @@
 import type { Carpet } from "@farsh/contracts";
 import { Eye, Heart } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 import { materialLabels } from "@/features/carpet-viewer";
 import { formatDensity } from "@/lib/density";
 import { formatPriceRial, formatSizeCm } from "@/lib/format";
+import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
 
 import { useShowroom } from "./showroom-store";
@@ -68,7 +70,14 @@ export function CarpetCard({ carpet, index }: { carpet: Carpet; index: number })
       <div className="mt-4 flex items-start justify-between gap-2">
         <div>
           <p className="eyebrow text-gold-text">{materialLabels[carpet.material]}</p>
-          <h3 className="mt-1 text-2xl">{carpet.name}</h3>
+          <h3 className="mt-1 text-2xl">
+            <Link
+              href={paths.carpet(carpet.slug)}
+              className="underline-offset-6 hover:underline focus-visible:underline"
+            >
+              {carpet.name}
+            </Link>
+          </h3>
           <p className="mt-1 flex flex-wrap gap-x-1.5 text-xs text-muted-foreground">
             <span className="whitespace-nowrap">
               {formatSizeCm(carpet.widthCm, carpet.lengthCm)}

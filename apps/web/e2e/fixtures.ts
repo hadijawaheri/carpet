@@ -32,13 +32,19 @@ export { expect };
 
 /** Opens the home page with the API mocked: the Nest API is not running during these tests. */
 export async function openHome(page: Page) {
+  await openPage(page, "/");
+}
+
+/** Opens any public page with the browser's API calls mocked as down. */
+export async function openPage(page: Page, path: string) {
   await page.route("**/api/**", (route) =>
     route.fulfill({
       status: 503,
       json: { statusCode: 503, code: "INTERNAL", message: "سرویس در دسترس نیست" },
     }),
   );
-  await page.goto("/");
+  const response = await page.goto(path);
   // Smooth scrolling makes scripted jumps between sections race the assertions.
   await page.evaluate(() => document.documentElement.classList.remove("scroll-smooth"));
+  return response;
 }
