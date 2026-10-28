@@ -1,4 +1,5 @@
 import type { Carpet } from "@farsh/contracts";
+import { Award } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -64,6 +65,13 @@ export function CarpetPage({ carpet, carpets }: { carpet: Carpet; carpets: Carpe
           <div className="mt-8">
             <CarpetActions carpet={carpet} />
           </div>
+          <Link
+            href={paths.certificate(carpet.slug)}
+            className="mt-6 inline-flex items-center gap-2 text-sm text-madder underline-offset-6 hover:underline"
+          >
+            <Award className="size-4" aria-hidden />
+            شناسنامه‌ی این فرش
+          </Link>
           <div className="mt-8 border-t pt-6">
             <p className="eyebrow text-muted-foreground">این فرش را برای کسی بفرستید</p>
             <div className="mt-3">

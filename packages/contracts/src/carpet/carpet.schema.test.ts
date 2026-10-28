@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { carpetSchema, knotDensitySchema } from "./carpet.schema";
+import { carpetSchema, knotDensitySchema, provenanceSchema } from "./carpet.schema";
 
 describe("carpetSchema", () => {
   const base = {
@@ -27,5 +27,19 @@ describe("carpetSchema", () => {
     );
     expect(knotDensitySchema.parse({ unit: "raj", value: 60 }).value).toBe(60);
     expect(knotDensitySchema.safeParse({ unit: "kpsi", value: 300 }).success).toBe(false);
+  });
+});
+
+describe("provenanceSchema", () => {
+  it("accepts a partial record and trims its text", () => {
+    expect(provenanceSchema.parse({ origin: "  کاشان ", wovenYear: 1398 })).toEqual({
+      origin: "کاشان",
+      wovenYear: 1398,
+    });
+  });
+
+  it("rejects blank text and a Gregorian year", () => {
+    expect(provenanceSchema.safeParse({ weaver: "   " }).success).toBe(false);
+    expect(provenanceSchema.safeParse({ wovenYear: 2019 }).success).toBe(false);
   });
 });
