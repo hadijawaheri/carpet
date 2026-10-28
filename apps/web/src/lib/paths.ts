@@ -5,6 +5,7 @@ export const paths = {
   visualizer: "/#visualizer",
   heritage: "/#heritage",
   carpet: (slug: string) => `/carpets/${slug}`,
+  certificate: (slug: string) => `/carpets/${slug}/certificate`,
   encyclopedia: "/encyclopedia",
   article: (slug: string) => `/encyclopedia/${slug}`,
   signIn: "/sign-in",
