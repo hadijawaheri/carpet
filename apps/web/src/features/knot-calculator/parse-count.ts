@@ -6,10 +6,11 @@ export type ParsedCount = { ok: true; value: number } | { ok: false; error: stri
 
 /**
  * A whole number typed in Persian or Latin digits, within the range a real carpet can have.
- * Thousands separators are accepted, so pasting "۱٬۲۰۰" works.
+ * Thousands separators are accepted, so pasting "۱٬۲۰۰" works; a space inside the number is not,
+ * because "7 0" is more likely a typo than seventy.
  */
 export function parseCount(input: string, min: number, max: number): ParsedCount {
-  const text = normalizeDigits(input).replace(/[,٬\s]/g, "");
+  const text = normalizeDigits(input).trim().replace(/[,٬،]/g, "");
   if (text === "") return { ok: false, error: "یک عدد بنویسید" };
   if (!/^\d+$/.test(text)) return { ok: false, error: "فقط عدد صحیح بنویسید" };
   const value = Number(text);

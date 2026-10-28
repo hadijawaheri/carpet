@@ -7,7 +7,12 @@ describe("parseCount", () => {
     expect(parseCount("۷۰", 10, 150)).toEqual({ ok: true, value: 70 });
     expect(parseCount("٧٠", 10, 150)).toEqual({ ok: true, value: 70 });
     expect(parseCount(" ۱٬۲۰۰ ", 100, 2000)).toEqual({ ok: true, value: 1200 });
+    expect(parseCount("۱،۲۰۰", 100, 2000)).toEqual({ ok: true, value: 1200 });
     expect(parseCount("1,200", 100, 2000)).toEqual({ ok: true, value: 1200 });
+  });
+
+  it("rejects a space inside the number", () => {
+    expect(parseCount("7 0", 1, 200).ok).toBe(false);
   });
 
   it("asks for a number when empty", () => {
