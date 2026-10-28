@@ -1,9 +1,9 @@
 "use client";
 
+import { MaterialPills } from "@/components/shared/material-pills";
 import { materialLabels } from "@/features/carpet-viewer";
 
 import { CarpetCard } from "./carpet-card";
-import { MaterialPills } from "./material-pills";
 import { type GalleryFilter, matchesSearch, useShowroom } from "./showroom-store";
 
 export function Gallery() {

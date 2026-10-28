@@ -8,6 +8,7 @@ export const paths = {
   certificate: (slug: string) => `/carpets/${slug}/certificate`,
   encyclopedia: "/encyclopedia",
   article: (slug: string) => `/encyclopedia/${slug}`,
+  knotCalculator: "/encyclopedia/knot-calculator",
   signIn: "/sign-in",
   dashboard: "/dashboard",
   profile: "/dashboard/profile",
