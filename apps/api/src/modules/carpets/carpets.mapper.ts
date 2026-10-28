@@ -15,6 +15,7 @@ export function toCarpetDto(carpet: CarpetEntity): Carpet {
     image: carpet.image,
     imageAspect: carpet.imageAspect,
     priceRial: carpet.priceRial ?? undefined,
+    provenance: carpet.provenance ?? undefined,
     isPlaceholder: carpet.isPlaceholder,
   });
 }

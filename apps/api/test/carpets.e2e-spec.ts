@@ -118,4 +118,22 @@ describe("admin", () => {
       .send(newCarpet)
       .expect(201);
   });
+
+  it("records a carpet's provenance for its certificate", async () => {
+    const provenance = { origin: "کاشان", workshop: "کارگاه آزمایشی", wovenYear: 1398 };
+    const updated = await request(t.http)
+      .patch("/v1/carpets/tabriz-test")
+      .set("Cookie", admin.cookie)
+      .send({ provenance: { ...provenance, origin: " کاشان " } })
+      .expect(200);
+    expect(updated.body.data.provenance).toEqual(provenance);
+    const fetched = await request(t.http).get("/v1/carpets/tabriz-test").expect(200);
+    expect(fetched.body.data.provenance).toEqual(provenance);
+
+    await request(t.http)
+      .patch("/v1/carpets/tabriz-test")
+      .set("Cookie", admin.cookie)
+      .send({ provenance: { wovenYear: 2019 } })
+      .expect(400);
+  });
 });

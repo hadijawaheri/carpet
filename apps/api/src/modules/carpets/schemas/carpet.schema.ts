@@ -1,4 +1,4 @@
-import type { KnotDensity, PileMaterial } from "@farsh/contracts";
+import type { KnotDensity, PileMaterial, Provenance } from "@farsh/contracts";
 import { pileMaterialSchema } from "@farsh/contracts";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import type { HydratedDocument, Types } from "mongoose";
@@ -11,6 +11,16 @@ const KnotDensitySchema = new MongooseSchema(
     unit: { type: String, enum: ["raj", "shaneh"], required: true },
     value: { type: Number, required: true },
     takham: { type: Number },
+  },
+  { _id: false },
+);
+
+const ProvenanceSchema = new MongooseSchema(
+  {
+    origin: { type: String, trim: true },
+    workshop: { type: String, trim: true },
+    weaver: { type: String, trim: true },
+    wovenYear: { type: Number },
   },
   { _id: false },
 );
@@ -47,6 +57,9 @@ export class CarpetEntity {
   /** Integer rials. */
   @Prop({ type: Number, default: undefined })
   priceRial?: number;
+
+  @Prop({ type: ProvenanceSchema, default: undefined })
+  provenance?: Provenance;
 
   @Prop({ type: Boolean, default: false })
   isPlaceholder!: boolean;
