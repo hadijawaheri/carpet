@@ -8,7 +8,7 @@ const house = ["کارشناسان ما", "شناسنامه و اصالت", "ر�
 
 export function SiteFooter() {
   return (
-    <footer id="heritage" className="mt-32 scroll-mt-24 border-t bg-alabaster linen">
+    <footer id="heritage" className="mt-32 scroll-mt-24 border-t bg-alabaster linen print:hidden">
       <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-3">
