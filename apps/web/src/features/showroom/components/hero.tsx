@@ -4,10 +4,10 @@ import type { PileMaterial } from "@farsh/contracts";
 import { Award, ChevronLeft, ChevronRight, Feather, Hand } from "lucide-react";
 import { useState } from "react";
 
+import { MaterialPills } from "@/components/shared/material-pills";
 import { Button } from "@/components/ui/button";
 import { CarpetRackStage, materialLabels } from "@/features/carpet-viewer";
 
-import { MaterialPills } from "./material-pills";
 import { useShowroom } from "./showroom-store";
 
 const badges = [

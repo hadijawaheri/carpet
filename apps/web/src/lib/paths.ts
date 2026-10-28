@@ -7,6 +7,7 @@ export const paths = {
   carpet: (slug: string) => `/carpets/${slug}`,
   encyclopedia: "/encyclopedia",
   article: (slug: string) => `/encyclopedia/${slug}`,
+  knotCalculator: "/encyclopedia/knot-calculator",
   signIn: "/sign-in",
   dashboard: "/dashboard",
   profile: "/dashboard/profile",

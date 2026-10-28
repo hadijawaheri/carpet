@@ -49,6 +49,18 @@ export function ArticlePage({ article }: { article: Article }) {
             ))}
           </section>
         ))}
+        {article.topic === "density" ? (
+          <p className="mt-12 bg-alabaster p-6 text-sm">
+            رج یا شانه‌ی یک فرش را دارید؟ با{" "}
+            <Link
+              href={paths.knotCalculator}
+              className="text-madder underline-offset-6 hover:underline"
+            >
+              ماشین‌حساب رج و تراکم گره
+            </Link>{" "}
+            شمار گره‌هایش را حساب کنید.
+          </p>
+        ) : null}
       </article>
 
       {others.length > 0 ? (

@@ -22,3 +22,16 @@ export function formatDensity(density: KnotDensity): string {
   const takham = density.takham ? ` · ${formatNumber(density.takham)} تراکم` : "";
   return `${formatNumber(density.value)} شانه${takham}`;
 }
+
+const SQUARE_INCHES_PER_SQUARE_METRE = 1550.0031;
+
+/** Knots per square inch (KPSI), the unit foreign rug sellers quote. */
+export const knotsPerSquareInch = (perSquareMetre: number) =>
+  Math.round(perSquareMetre / SQUARE_INCHES_PER_SQUARE_METRE);
+
+/** Every knot in a carpet of this size. */
+export const totalKnots = (perSquareMetre: number, widthCm: number, lengthCm: number) =>
+  Math.round((perSquareMetre * widthCm * lengthCm) / 10_000);
+
+/** Distance between neighbouring knots across the width, in millimetres. */
+export const rajKnotSpacingMm = (raj: number) => (RAJ_SPAN_M * 1000) / raj;

@@ -16,6 +16,16 @@ export function EncyclopediaIndex() {
         بدانید به چه چیزی نگاه کنید.
       </p>
       <DraftNotice className="mt-6 max-w-2xl" />
+      <Link
+        href={paths.knotCalculator}
+        className="mt-10 flex max-w-2xl flex-col gap-1 bg-alabaster p-6 transition hover:shadow-lift focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        <span className="eyebrow text-gold-text">ابزار</span>
+        <span className="text-2xl">ماشین‌حساب رج و تراکم گره</span>
+        <span className="text-sm text-muted-foreground">
+          از رج یا شانه، شمار گره در متر مربع و در کل فرش را حساب کنید.
+        </span>
+      </Link>
       <ul className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {articles.map((article) => (
           <li key={article.slug}>

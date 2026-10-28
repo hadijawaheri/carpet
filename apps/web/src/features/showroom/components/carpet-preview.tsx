@@ -4,10 +4,9 @@ import type { Carpet } from "@farsh/contracts";
 import Image from "next/image";
 import { useState } from "react";
 
+import { MaterialPills } from "@/components/shared/material-pills";
 import { CarpetStage } from "@/features/carpet-viewer";
 import { cn } from "@/lib/utils";
-
-import { MaterialPills } from "./material-pills";
 
 /** Photo or grab-and-shake 3D view of one carpet, with the knot loupe below it. */
 export function CarpetPreview({

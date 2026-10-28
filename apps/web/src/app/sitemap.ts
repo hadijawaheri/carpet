@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     { url: absoluteUrl(paths.encyclopedia), changeFrequency: "monthly", priority: 0.6 },
+    { url: absoluteUrl(paths.knotCalculator), changeFrequency: "yearly", priority: 0.5 },
     ...articles.map((article) => ({
       url: absoluteUrl(paths.article(article.slug)),
       changeFrequency: "monthly" as const,
