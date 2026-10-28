@@ -24,3 +24,15 @@ export const materialSpecSchema = z.object({
   feel: z.string().min(1),
 });
 export type MaterialSpec = z.infer<typeof materialSpecSchema>;
+
+export const articleSectionSchema = z.object({
+  heading: z.string().min(1),
+  paragraphs: z.array(z.string().min(1)).min(1),
+});
+export type ArticleSection = z.infer<typeof articleSectionSchema>;
+
+/** A full encyclopedia article: the summary plus its body. */
+export const articleSchema = articleSummarySchema.extend({
+  sections: z.array(articleSectionSchema).min(1),
+});
+export type Article = z.infer<typeof articleSchema>;
