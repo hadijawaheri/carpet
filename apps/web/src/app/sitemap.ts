@@ -1,9 +1,17 @@
 import type { MetadataRoute } from "next";
 
+import { getCarpets } from "@/features/showroom";
 import { paths } from "@/lib/paths";
-import { defaultMetadata } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/seo";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const base = new URL(String(defaultMetadata.metadataBase ?? "http://localhost:7782"));
-  return [{ url: new URL(paths.home, base).href, changeFrequency: "monthly", priority: 1 }];
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const carpets = await getCarpets();
+  return [
+    { url: absoluteUrl(paths.home), changeFrequency: "monthly", priority: 1 },
+    ...carpets.map((carpet) => ({
+      url: absoluteUrl(paths.carpet(carpet.slug)),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
+  ];
 }

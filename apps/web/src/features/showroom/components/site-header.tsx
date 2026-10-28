@@ -2,6 +2,7 @@
 
 import { Heart, Search, ShoppingBag, UserRound } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Monogram } from "@/components/shared/monogram";
@@ -12,14 +13,16 @@ import { cn } from "@/lib/utils";
 import { useShowroom } from "./showroom-store";
 
 const nav = [
-  { href: "#collection", label: "مجموعه" },
-  { href: "#visualizer", label: "پیش‌نمایش اتاق" },
-  { href: "#heritage", label: "میراث" },
+  { href: paths.collection, label: "مجموعه" },
+  { href: paths.visualizer, label: "پیش‌نمایش اتاق" },
+  { href: paths.heritage, label: "میراث" },
 ];
 
 export function SiteHeader() {
   const { search, setSearch, wishlist, selection, setDrawerOpen, setFilter } = useShowroom();
   const [scrolled, setScrolled] = useState(false);
+  const onHome = usePathname() === paths.home;
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -30,6 +33,10 @@ export function SiteHeader() {
 
   const showCollection = () =>
     document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" });
+  // The gallery lives on the home page; elsewhere, searching or opening the wishlist goes there. The
+  // header sits in the shared layout, so the search box keeps its focus across the move.
+  const openGallery = (param: "q" | "filter", value: string) =>
+    router.push(`${paths.home}?${new URLSearchParams({ [param]: value })}#collection`);
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 px-4 pt-4">
@@ -39,8 +46,8 @@ export function SiteHeader() {
           scrolled ? "bg-card/85 shadow-lift" : "border-transparent bg-card/50",
         )}
       >
-        <a
-          href="#top"
+        <Link
+          href={paths.top}
           aria-label="فرش، بازگشت به بالای صفحه"
           className="flex items-center gap-3 rounded-full"
         >
@@ -51,15 +58,19 @@ export function SiteHeader() {
               Farsh
             </span>
           </span>
-        </a>
+        </Link>
         <nav
           aria-label="بخش‌های صفحه"
           className="ms-6 hidden gap-6 text-sm text-muted-foreground lg:flex"
         >
           {nav.map((item) => (
-            <a key={item.href} href={item.href} className="transition-colors hover:text-foreground">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="transition-colors hover:text-foreground"
+            >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <div className="ms-auto flex items-center gap-1.5">
@@ -69,6 +80,7 @@ export function SiteHeader() {
               type="search"
               value={search}
               onChange={(e) => {
+                if (!onHome) return openGallery("q", e.target.value);
                 setSearch(e.target.value);
                 showCollection();
               }}
@@ -82,6 +94,7 @@ export function SiteHeader() {
             aria-label={`برگزیده‌ها، ${formatNumber(wishlist.length)} فرش`}
             disabled={wishlist.length === 0}
             onClick={() => {
+              if (!onHome) return openGallery("filter", "wishlist");
               setFilter("wishlist");
               showCollection();
             }}
