@@ -32,6 +32,7 @@ apps/web/src/
   features/carpet-viewer/ cloth solver, knot normal maps, pointer tilt, R3F scene
   features/showroom/      the Heritage Loom page: header, hero, gallery, room preview, drawer,
                           and /carpets/[slug], each carpet's shareable page (docs/adr/0012)
+  features/encyclopedia/  /encyclopedia: draft articles on knots, density, materials and price
   features/inquiry/       inquiry form → POST /api/inquiries
   features/newsletter/    newsletter form → POST /api/newsletter/subscriptions
   features/account/       /sign-in (OTP), /dashboard/profile: profile, logout, delete with a fresh code

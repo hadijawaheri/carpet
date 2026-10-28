@@ -15,6 +15,7 @@ import { useShowroom } from "./showroom-store";
 const nav = [
   { href: paths.collection, label: "مجموعه" },
   { href: paths.visualizer, label: "پیش‌نمایش اتاق" },
+  { href: paths.encyclopedia, label: "دانشنامه" },
   { href: paths.heritage, label: "میراث" },
 ];
 
