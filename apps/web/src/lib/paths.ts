@@ -12,4 +12,8 @@ export const paths = {
   signIn: "/sign-in",
   dashboard: "/dashboard",
   profile: "/dashboard/profile",
+  catalogue: "/dashboard/catalogue",
+  catalogueNew: "/dashboard/catalogue/new",
+  // Under /edit so that a carpet whose slug is "new" never collides with the create page
+  catalogueCarpet: (slug: string) => `/dashboard/catalogue/edit/${slug}`,
 } as const;

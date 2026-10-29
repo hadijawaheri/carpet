@@ -1,7 +1,8 @@
 import { paths } from "../paths";
 import { parseResponse } from "./parse";
 
-type ApiInit = Omit<RequestInit, "body"> & { json?: unknown };
+// `form` is sent as multipart; the browser sets its Content-Type with the boundary
+type ApiInit = Omit<RequestInit, "body"> & { json?: unknown; form?: FormData };
 
 let refreshing: Promise<boolean> | null = null;
 
@@ -20,7 +21,7 @@ function refreshSession(): Promise<boolean> {
  * Browser-side call through the same-origin `/api` rewrite, so cookies stay first-party. A 401
  * renews the 15-minute access cookie once; when that fails too, a page behind sign-in goes to it.
  */
-export async function api<T>(path: string, { json, ...init }: ApiInit = {}): Promise<T> {
+export async function api<T>(path: string, { json, form, ...init }: ApiInit = {}): Promise<T> {
   const send = () =>
     fetch(`/api${path}`, {
       ...init,
@@ -29,7 +30,7 @@ export async function api<T>(path: string, { json, ...init }: ApiInit = {}): Pro
         ...(json === undefined ? {} : { "Content-Type": "application/json" }),
         ...init.headers,
       },
-      body: json === undefined ? undefined : JSON.stringify(json),
+      body: json === undefined ? form : JSON.stringify(json),
     });
 
   let res = await send();

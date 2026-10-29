@@ -19,8 +19,8 @@ export type KnotDensity = z.infer<typeof knotDensitySchema>;
 
 export const carpetSlugSchema = z
   .string()
-  .regex(/^[a-z0-9-]+$/)
-  .max(80);
+  .regex(/^[a-z0-9-]+$/, "فقط حروف کوچک انگلیسی، عدد و خط تیره")
+  .max(80, "حداکثر ۸۰ نویسه");
 
 /**
  * Where and by whom a carpet was woven, for its certificate. Every field is optional: an empty one is
