@@ -10,7 +10,7 @@ const MAX_WIDTH_PX = 2400;
 const MAX_INPUT_PIXELS = 80_000_000;
 
 /** File names this API writes, and the only names the media route will serve. */
-export const STORED_IMAGE_NAME = /^[a-z0-9-]+-[a-f0-9]{12}\.webp$/;
+export const STORED_IMAGE_NAME = /^[a-f0-9]{24}\.webp$/;
 
 export interface ProcessedImage {
   data: Buffer;
@@ -63,8 +63,10 @@ export async function processCarpetImage(bytes: Buffer): Promise<ProcessedImage>
   }
 }
 
-/** Content-addressed, so a new photo gets a new URL and browsers can cache each one forever. */
-export function storedImageName(slug: string, data: Buffer): string {
-  const hash = createHash("sha256").update(data).digest("hex").slice(0, 12);
-  return `${slug}-${hash}.webp`;
+/**
+ * Content-addressed, so a new photo gets a new URL and browsers can cache each one forever. The
+ * slug is left out: a photo is uploaded before a new carpet has one, and a slug can be reused.
+ */
+export function storedImageName(data: Buffer): string {
+  return `${createHash("sha256").update(data).digest("hex").slice(0, 24)}.webp`;
 }

@@ -75,17 +75,17 @@ describe("processCarpetImage", () => {
 });
 
 describe("storedImageName", () => {
-  it("names a photo by its slug and content", () => {
-    const name = storedImageName("kashan-red", Buffer.from("pixels"));
+  it("names a photo by its content", () => {
+    const name = storedImageName(Buffer.from("pixels"));
     expect(name).toMatch(STORED_IMAGE_NAME);
-    expect(name.startsWith("kashan-red-")).toBe(true);
-    expect(storedImageName("kashan-red", Buffer.from("pixels"))).toBe(name);
-    expect(storedImageName("kashan-red", Buffer.from("other"))).not.toBe(name);
+    expect(storedImageName(Buffer.from("pixels"))).toBe(name);
+    expect(storedImageName(Buffer.from("other"))).not.toBe(name);
   });
 
   it("serves only names it could have written", () => {
     expect(STORED_IMAGE_NAME.test("../../etc/passwd")).toBe(false);
-    expect(STORED_IMAGE_NAME.test("kashan-red-0123456789ab.webp")).toBe(true);
-    expect(STORED_IMAGE_NAME.test("kashan-red-0123456789ab.webp/..")).toBe(false);
+    expect(STORED_IMAGE_NAME.test("0123456789abcdef01234567.webp")).toBe(true);
+    expect(STORED_IMAGE_NAME.test("0123456789abcdef01234567.webp/..")).toBe(false);
+    expect(STORED_IMAGE_NAME.test("kashan-red.jpg")).toBe(false);
   });
 });

@@ -18,3 +18,7 @@ export const updateCarpetSchema = carpetSchema
   .extend({ isPlaceholder: z.boolean().optional() })
   .refine((input) => Object.keys(input).length > 0, "دست‌کم یک فیلد را تغییر دهید");
 export type UpdateCarpetInput = z.infer<typeof updateCarpetSchema>;
+
+/** What `POST /v1/media/carpets` returns: ready to put on a carpet with create or update. */
+export const uploadedImageSchema = carpetSchema.pick({ image: true, imageAspect: true });
+export type UploadedImage = z.infer<typeof uploadedImageSchema>;
