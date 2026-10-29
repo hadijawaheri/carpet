@@ -60,8 +60,9 @@ export const carpetFormSchema = z
     widthCm: count(30, 2000),
     lengthCm: count(30, 3000),
     densityUnit: z.enum(["none", "raj", "shaneh"]),
-    densityValue: optionalCount(1, 5000),
-    takham: optionalCount(1, 10000),
+    // Checked below, only when the chosen unit shows them: a hidden field must never block saving
+    densityValue: z.string(),
+    takham: z.string(),
     priceToman: optionalCount(1, 100_000_000_000),
     origin: optionalText,
     workshop: optionalText,
@@ -69,10 +70,25 @@ export const carpetFormSchema = z
     wovenYear: optionalCount(1200, 1500),
     isPlaceholder: z.boolean(),
   })
-  .superRefine((form, ctx) => {
-    if (form.densityUnit !== "none" && form.densityValue === undefined) {
-      ctx.addIssue({ code: "custom", path: ["densityValue"], message: "تراکم را بنویسید" });
+  .transform((form, ctx) => {
+    const read = (field: "densityValue" | "takham", schema: z.ZodType<number | undefined>) => {
+      const parsed = schema.safeParse(form[field]);
+      if (parsed.success) return parsed.data;
+      for (const issue of parsed.error.issues) {
+        ctx.addIssue({ code: "custom", path: [field], message: issue.message });
+      }
+      return undefined;
+    };
+    let densityValue: number | undefined;
+    if (form.densityUnit !== "none") {
+      densityValue = read("densityValue", optionalCount(1, 5000));
+      if (densityValue === undefined && toDigits(form.densityValue) === "") {
+        ctx.addIssue({ code: "custom", path: ["densityValue"], message: "تراکم را بنویسید" });
+      }
     }
+    const takham =
+      form.densityUnit === "shaneh" ? read("takham", optionalCount(1, 10000)) : undefined;
+    return { ...form, densityValue, takham };
   });
 export type CarpetFormInput = z.input<typeof carpetFormSchema>;
 export type CarpetFormValues = z.output<typeof carpetFormSchema>;
@@ -100,14 +116,23 @@ function provenanceOf(form: CarpetFormValues): Provenance | null {
 /** Every field the form owns, with null for the ones left empty, so saving clears them on the API too. */
 export function toCarpetFields(
   form: CarpetFormValues,
+  original?: Carpet,
 ): Required<Omit<UpdateCarpetInput, "image" | "imageAspect">> {
+  // The form shows whole tomans; an untouched price keeps its exact stored rials
+  const keepPrice =
+    original?.priceRial !== undefined &&
+    form.priceToman === Math.floor(original.priceRial / RIAL_PER_TOMAN);
   return {
     name: form.name,
     material: form.material,
     widthCm: form.widthCm,
     lengthCm: form.lengthCm,
     density: densityOf(form),
-    priceRial: form.priceToman === undefined ? null : form.priceToman * RIAL_PER_TOMAN,
+    priceRial: keepPrice
+      ? (original?.priceRial ?? null)
+      : form.priceToman === undefined
+        ? null
+        : form.priceToman * RIAL_PER_TOMAN,
     provenance: provenanceOf(form),
     isPlaceholder: form.isPlaceholder,
   };

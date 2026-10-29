@@ -11,8 +11,15 @@ import { serverApi } from "@/lib/api/server";
  * what is really stored, and an outage must show as an error, not as the sample catalogue.
  */
 export async function getAdminCarpets(): Promise<Carpet[]> {
-  const { data } = await serverApi<PaginatedResponse<Carpet>>("/carpets?limit=100");
-  return data;
+  const carpets: Carpet[] = [];
+  // 100 is the API's page limit; the admin list must never silently stop at it
+  for (let page = 1; ; page += 1) {
+    const { data, meta } = await serverApi<PaginatedResponse<Carpet>>(
+      `/carpets?limit=100&page=${page}`,
+    );
+    carpets.push(...data);
+    if (page >= meta.totalPages) return carpets;
+  }
 }
 
 export async function getAdminCarpet(slug: string): Promise<Carpet | null> {

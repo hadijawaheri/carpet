@@ -31,13 +31,15 @@ export function DeleteCarpet({ slug, name }: { slug: string; name: string }) {
     setPending(true);
     try {
       await deleteCarpet(slug);
-      await refreshShowroom();
-      toast.success(`«${name}» از ویترین برداشته شد`);
-      router.push(paths.catalogue);
     } catch (e: unknown) {
       toast.error(getErrorMessage(e));
       setPending(false);
+      return;
     }
+    // Removed either way; a failed refresh only means the showroom catches up within a minute
+    await refreshShowroom().catch(() => undefined);
+    toast.success(`«${name}» از ویترین برداشته شد`);
+    router.push(paths.catalogue);
   };
 
   return (

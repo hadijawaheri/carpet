@@ -84,7 +84,7 @@ export function CarpetForm({ carpet }: { carpet?: Carpet }) {
         setPhotoError(PHOTO_REQUIRED);
         return;
       }
-      const fields = toCarpetFields(values);
+      const fields = toCarpetFields(values, carpet);
       try {
         if (carpet) {
           await updateCarpet(carpet.slug, { ...fields, ...photo });
@@ -99,10 +99,6 @@ export function CarpetForm({ carpet }: { carpet?: Carpet }) {
             ...(provenance ? { provenance } : {}),
           });
         }
-        await refreshShowroom();
-        toast.success(carpet ? "تغییرات ذخیره شد" : "فرش به ویترین اضافه شد");
-        if (carpet) router.refresh();
-        else router.push(paths.catalogueCarpet(values.slug));
       } catch (e: unknown) {
         if (e instanceof ApiError && e.code === "CONFLICT") {
           form.setError("slug", { message: e.message });
@@ -114,7 +110,13 @@ export function CarpetForm({ carpet }: { carpet?: Carpet }) {
           return;
         }
         showServerError(e, form.setError, SERVER_FIELDS);
+        return;
       }
+      // Saved either way; a failed refresh only means the showroom catches up within a minute
+      await refreshShowroom().catch(() => undefined);
+      toast.success(carpet ? "تغییرات ذخیره شد" : "فرش به ویترین اضافه شد");
+      if (carpet) router.refresh();
+      else router.push(paths.catalogueCarpet(values.slug));
     },
     () => {
       if (!photo) setPhotoError(PHOTO_REQUIRED);

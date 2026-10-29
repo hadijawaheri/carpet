@@ -67,7 +67,7 @@ const server = createServer((req, res) => {
       ? json(200, { data: { user: E2E_USER } })
       : json(401, unauthenticated);
   }
-  if (isAdmin && req.method === "GET" && req.url === "/v1/carpets?limit=100") {
+  if (isAdmin && req.method === "GET" && req.url === "/v1/carpets?limit=100&page=1") {
     const meta = { page: 1, limit: 100, totalItems: E2E_CARPETS.length, totalPages: 1 };
     return json(200, { data: E2E_CARPETS, meta });
   }

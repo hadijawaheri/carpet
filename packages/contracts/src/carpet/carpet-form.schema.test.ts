@@ -93,6 +93,24 @@ describe("carpetFormSchema", () => {
     });
   });
 
+  it("ignores density fields the chosen unit hides", () => {
+    expect(issues({ ...filled, densityUnit: "none", densityValue: "12.5" })).toEqual({});
+    expect(issues({ ...filled, densityUnit: "raj", takham: "abc" })).toEqual({});
+    expect(
+      issues({ ...filled, densityUnit: "shaneh", densityValue: "1200", takham: "abc" }),
+    ).toEqual({
+      takham: "فقط عدد صحیح بنویسید",
+    });
+  });
+
+  it("keeps an untouched price's exact rials", () => {
+    const original = { ...carpetCatalog[0]!, priceRial: 12_345 };
+    const form = carpetFormSchema.parse(toCarpetForm(original));
+    expect(toCarpetFields(form, original).priceRial).toBe(12_345);
+    const changed = carpetFormSchema.parse({ ...toCarpetForm(original), priceToman: "2000" });
+    expect(toCarpetFields(changed, original).priceRial).toBe(20_000);
+  });
+
   it("asks for the density once a unit is picked", () => {
     expect(issues({ ...filled, densityValue: "" })).toEqual({ densityValue: "تراکم را بنویسید" });
   });

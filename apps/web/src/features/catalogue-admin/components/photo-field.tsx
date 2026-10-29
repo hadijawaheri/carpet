@@ -41,7 +41,9 @@ export function PhotoField({ value, onChange, error }: PhotoFieldProps) {
 
   return (
     <Field data-invalid={Boolean(message)}>
-      <FieldLabel htmlFor={id}>عکس فرش</FieldLabel>
+      <FieldLabel id={`${id}-label`} htmlFor={id}>
+        عکس فرش
+      </FieldLabel>
       <FieldDescription>
         فقط عکس خود فرش، از روبه‌رو و با نور یکنواخت. JPEG، PNG یا WebP.
       </FieldDescription>
@@ -80,7 +82,10 @@ export function PhotoField({ value, onChange, error }: PhotoFieldProps) {
           type="button"
           variant="secondary"
           size="sm"
+          id={`${id}-button`}
           disabled={uploading}
+          // The visible control carries the field's name and state, not the hidden file input
+          aria-labelledby={`${id}-label ${id}-button`}
           aria-describedby={message ? `${id}-error` : undefined}
           onClick={() => input.current?.click()}
         >

@@ -87,7 +87,9 @@ test.describe("catalogue admin", () => {
     await expect(page.getByText("نام فرش را بنویسید")).toBeVisible();
     expect(sent).toEqual([]);
 
-    await page.getByLabel("عکس فرش").setInputFiles("public/carpets/three-medallion.jpg");
+    await page
+      .getByLabel("عکس فرش", { exact: true })
+      .setInputFiles("public/carpets/three-medallion.jpg");
     await expect(page.getByRole("img", { name: "عکس فعلی فرش" })).toBeVisible();
     await page.getByLabel("نام فرش").fill("سه ترنج");
     await page.getByLabel("شناسه در نشانی صفحه").fill("three-medallion-2");
@@ -130,7 +132,9 @@ test.describe("catalogue admin", () => {
           }),
     );
     await page.goto("/dashboard/catalogue/new");
-    await page.getByLabel("عکس فرش").setInputFiles("public/carpets/three-medallion.jpg");
+    await page
+      .getByLabel("عکس فرش", { exact: true })
+      .setInputFiles("public/carpets/three-medallion.jpg");
     await page.getByLabel("نام فرش").fill("کاشان");
     await page.getByLabel("شناسه در نشانی صفحه").fill("kashan-red");
     await page.getByLabel("عرض (سانتی‌متر)").fill("200");
