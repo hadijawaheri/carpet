@@ -3,6 +3,7 @@ import { Award } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { ArSection } from "@/features/carpet-ar";
 import { materialLabels } from "@/features/carpet-viewer";
 import { formatPriceRial, formatSizeCm } from "@/lib/format";
 import { paths } from "@/lib/paths";
@@ -65,6 +66,7 @@ export function CarpetPage({ carpet, carpets }: { carpet: Carpet; carpets: Carpe
           <div className="mt-8">
             <CarpetActions carpet={carpet} />
           </div>
+          <ArSection carpet={carpet} className="mt-6" />
           <Link
             href={paths.certificate(carpet.slug)}
             className="mt-6 inline-flex items-center gap-2 text-sm text-madder underline-offset-6 hover:underline"
