@@ -73,6 +73,19 @@ export class CarpetsService {
     return toCarpetDto(carpet);
   }
 
+  /** Points a carpet at a new photo and returns the photo it replaced. */
+  async setImage(
+    slug: string,
+    image: string,
+    imageAspect: number,
+  ): Promise<{ carpet: Carpet; previousImage: string }> {
+    const before = await this.carpetModel
+      .findOneAndUpdate({ slug }, { $set: { image, imageAspect } }, { returnDocument: "before" })
+      .lean<CarpetEntity>();
+    if (!before) throw new NotFoundException(NOT_FOUND);
+    return { carpet: toCarpetDto({ ...before, image, imageAspect }), previousImage: before.image };
+  }
+
   async softDelete(slug: string): Promise<void> {
     const result = await this.carpetModel.updateOne({ slug }, { $set: { deletedAt: new Date() } });
     if (result.matchedCount === 0) throw new NotFoundException(NOT_FOUND);

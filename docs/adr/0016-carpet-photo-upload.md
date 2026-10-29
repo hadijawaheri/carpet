@@ -1,0 +1,9 @@
+# 0016 · Carpet photos are uploaded to the API server's disk
+
+Date: 2026-10-29 · Status: accepted (owner chose to run the API on their own server, 141.11.107.22; the web stays on Vercel)
+
+- **`POST /v1/carpets/:slug/image`** (admin only, multipart field `image`, at most 15 MB) replaces a carpet's photo. The type is read from the file's first bytes (JPEG, PNG or WebP), not from its name or the browser's Content-Type.
+- **Every upload is re-encoded** with `sharp` to WebP, at most 2400 px wide, after applying the EXIF orientation. Re-encoding drops EXIF, including the GPS position phones record, and anything hidden after the image data. `imageAspect` is measured from the result, so the 3D cloth always matches the photo.
+- **Files live under `MEDIA_DIR/carpets`** on the server's disk, named `<slug>-<12 hex of sha256>.webp`. Because the name changes with the content, a URL never changes meaning and is served with `Cache-Control: immutable`. The previous uploaded photo is deleted after the carpet points at the new one. Photos under the web app's `public/carpets` are never touched.
+- **`GET /v1/media/carpets/:file`** serves them and only accepts names matching that pattern, so no path outside the folder can be reached. The carpet's `image` is stored as `/api/media/carpets/<file>`, a path on the web origin that the web app's `/api` rewrite forwards to the API. Photos stay same-origin, so three.js can use them as textures without CORS, and `carpetSchema.image` keeps requiring a path that starts with `/`.
+- **Why not Vercel Blob or S3:** the owner already runs this server, the catalogue is a few dozen photos, and a disk folder needs no new account or monthly bill. `MEDIA_DIR` must be outside the release folder and included in the server's backups. If the API ever runs on more than one machine, this becomes object storage behind the same `ImageStorage` class.
