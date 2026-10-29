@@ -70,8 +70,9 @@ export function buildCarpetGlb(quad: CarpetQuad, jpeg: Uint8Array): Uint8Array {
         componentType: 5126,
         count: 4,
         type: "VEC3",
-        min: [-quad.widthM / 2, 0, -quad.lengthM / 2],
-        max: [quad.widthM / 2, 0, quad.lengthM / 2],
+        // The bounds must equal the stored float32 values, not the float64 ones
+        min: [Math.fround(-quad.widthM / 2), 0, Math.fround(-quad.lengthM / 2)],
+        max: [Math.fround(quad.widthM / 2), 0, Math.fround(quad.lengthM / 2)],
       },
       { bufferView: 1, componentType: 5126, count: 4, type: "VEC3" },
       { bufferView: 2, componentType: 5126, count: 4, type: "VEC2" },

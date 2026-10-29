@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Carpet } from "@farsh/contracts";
+import { type Carpet, UPLOADED_IMAGE_PATH } from "@farsh/contracts";
 import sharp from "sharp";
 
 import { serverEnv } from "@/lib/env";
@@ -13,12 +13,20 @@ const MAX_TEXTURE_PX = 2048;
  * Where the server reads a photo. Never the request's own host: the model is cached for a year, and a
  * forged Host header would otherwise choose the picture every later visitor gets.
  */
+// A plain file name: nothing that could climb out of the folder or name another host
+const FILE_NAME = /^[\w-]+\.(?:jpe?g|png|webp)$/i;
+
 function photoUrl(image: string): URL {
   // Uploaded photos sit behind the /api rewrite; go straight to the API instead of round-tripping
-  if (image.startsWith("/api/")) {
-    return new URL(`v1/${image.slice("/api/".length)}`, `${serverEnv.INTERNAL_API_URL}/`);
+  if (image.startsWith(UPLOADED_IMAGE_PATH)) {
+    const name = image.slice(UPLOADED_IMAGE_PATH.length);
+    if (FILE_NAME.test(name)) {
+      return new URL(`v1/media/carpets/${name}`, `${serverEnv.INTERNAL_API_URL}/`);
+    }
+  } else if (image.startsWith("/carpets/") && FILE_NAME.test(image.slice("/carpets/".length))) {
+    return new URL(image, siteUrl);
   }
-  return new URL(image, siteUrl);
+  throw new Error(`Carpet photo ${image} is not a path this site serves`);
 }
 
 /** The carpet's own photo as a JPEG, the one image type both AR formats take. */

@@ -22,9 +22,12 @@ let detected: Platform | undefined;
 
 function detectPlatform(): Platform {
   if (detected) return detected;
-  // Safari on iPhone and iPad advertises Quick Look through rel="ar" support
-  if (document.createElement("a").relList.supports("ar")) detected = "quick-look";
-  else if (/android/i.test(navigator.userAgent)) detected = "scene-viewer";
+  const ua = navigator.userAgent;
+  // Every iOS browser (Safari, Chrome, Firefox, in-app views) runs WebKit and hands rel="ar" to Quick
+  // Look; iPadOS reports itself as a Mac, so touch tells them apart. Desktop Safari gets the QR code.
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (ios) detected = "quick-look";
+  else if (/android/i.test(ua)) detected = "scene-viewer";
   else detected = "other";
   return detected;
 }
@@ -59,15 +62,19 @@ export function ViewInRoom({ name, image, glbPath, usdzPath, pagePath, qr }: Vie
 
   if (platform === "scene-viewer") {
     const origin = window.location.origin;
-    const params = new URLSearchParams({
-      file: new URL(glbPath, origin).href,
-      mode: "ar_only",
+    // Built by hand: Android does not read "+" as a space, so the title needs %20
+    const params = [
+      ["file", new URL(glbPath, origin).href],
+      // Without ARCore it still opens the 3D view instead of bouncing back to this page
+      ["mode", "ar_preferred"],
       // Fixed scale: a 2 × 3 m carpet must look 2 × 3 m on the floor
-      resizable: "false",
-      title: name,
-    });
+      ["resizable", "false"],
+      ["title", name],
+    ]
+      .map(([key, value]) => `${key}=${encodeURIComponent(value!)}`)
+      .join("&");
     const fallback = encodeURIComponent(new URL(pagePath, origin).href);
-    const intent = `intent://arvr.google.com/scene-viewer/1.2?${params.toString()}#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=${fallback};end;`;
+    const intent = `intent://arvr.google.com/scene-viewer/1.2?${params}#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=${fallback};end;`;
     return (
       <Button asChild variant="secondary">
         <a href={intent}>

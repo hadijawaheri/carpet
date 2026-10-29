@@ -48,6 +48,11 @@ describe("buildCarpetGlb", () => {
     expect(Array.from(points)).toEqual([-1, 0, -1.5, -1, 0, 1.5, 1, 0, 1.5, 1, 0, -1.5]);
   });
 
+  it("states bounds that match the stored float32 positions", () => {
+    const odd = readGlb(buildCarpetGlb({ widthM: 1.7, lengthM: 2.45 }, jpeg)).json;
+    expect(odd.accessors[0]!.max).toEqual([Math.fround(0.85), 0, Math.fround(1.225)]);
+  });
+
   it("embeds the photo unchanged", () => {
     const image = json.images[0]!;
     expect(image.mimeType).toBe("image/jpeg");

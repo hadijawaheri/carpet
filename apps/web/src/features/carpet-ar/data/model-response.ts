@@ -13,7 +13,7 @@ type Build = (quad: CarpetQuad, jpeg: Uint8Array) => Uint8Array;
 
 /**
  * Serves a carpet's AR model. Only the current version's URL is cached (forever); an old or missing
- * `v` is sent to the current one, so a phone never places a carpet with last week's photo.
+ * `v`, or any other query, is sent to the current one, so a phone never places a carpet with last week's photo.
  */
 export async function modelResponse(
   request: Request,
@@ -24,13 +24,14 @@ export async function modelResponse(
   const carpet = await getCarpet(slug);
   if (!carpet) return new NextResponse(null, { status: 404 });
 
-  const url = new URL(request.url);
   const version = modelVersion(carpet);
-  if (url.searchParams.get("v") !== version) {
-    const current = new URL(paths.carpetModel(slug, format, version), url.origin);
-    return NextResponse.redirect(current, {
+  const current = paths.carpetModel(slug, format, version);
+  // Exactly the current URL or a redirect to it: any extra query would miss the CDN and rebuild
+  if (new URL(request.url).search !== new URL(current, "http://x").search) {
+    // Relative, so the redirect never names a host taken from the request
+    return new NextResponse(null, {
       status: 307,
-      headers: { "Cache-Control": "no-store" },
+      headers: { Location: current, "Cache-Control": "no-store" },
     });
   }
 

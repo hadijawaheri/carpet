@@ -17,11 +17,14 @@ test.describe("see the carpet in my room", () => {
     const glb = await model.body();
     expect(glb.subarray(0, 4).toString("latin1")).toBe("glTF");
     expect(glb.readUInt32LE(8)).toBe(glb.byteLength);
+    // Any extra query would miss the CDN cache and rebuild the model, so it is sent back too
+    const extra = await request.get(`${location}&x=1`, { maxRedirects: 0 });
+    expect(extra.status()).toBe(307);
     const json = JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString("utf8")) as {
       accessors: { max?: number[] }[];
     };
     // 200 × 345 cm in the catalogue, metres in the model
-    expect(json.accessors[0]!.max).toEqual([1, 0, 1.725]);
+    expect(json.accessors[0]!.max).toEqual([1, 0, Math.fround(1.725)]);
   });
 
   test("serves a USDZ for Quick Look and nothing for an unknown carpet", async ({ request }) => {
