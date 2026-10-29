@@ -34,6 +34,12 @@ export const provenanceSchema = z.object({
 });
 export type Provenance = z.infer<typeof provenanceSchema>;
 
+/**
+ * Uploaded photos are served by the API at /v1/media/carpets/:file and reached through the web
+ * app's /api rewrite, so they stay same-origin: three.js can use them as textures without CORS.
+ */
+export const UPLOADED_IMAGE_PATH = "/api/media/carpets/";
+
 export const carpetSchema = z.object({
   slug: carpetSlugSchema,
   name: z.string().min(1),
@@ -41,7 +47,10 @@ export const carpetSchema = z.object({
   widthCm: z.number().int().positive(),
   lengthCm: z.number().int().positive(),
   density: knotDensitySchema.optional(),
-  /** Path under the web app's public folder, e.g. `/carpets/medallion-black.jpg`. */
+  /**
+   * Path on the web origin: a file under the web app's public folder (`/carpets/medallion-black.jpg`)
+   * or a photo uploaded through the admin panel (under `UPLOADED_IMAGE_PATH`).
+   */
   image: z.string().startsWith("/"),
   /** Pixel aspect of the cropped photo (width / height); the 3D mesh uses it. */
   imageAspect: z.number().positive(),

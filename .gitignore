@@ -8,6 +8,8 @@ playwright-report
 *.tsbuildinfo
 .env
 .env.local
+# Carpet photos uploaded in development (MEDIA_DIR)
+apps/api/media
 next-env.d.ts
 .DS_Store
 **/.impeccable/hook.cache.json
