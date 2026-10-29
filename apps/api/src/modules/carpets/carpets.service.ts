@@ -1,4 +1,5 @@
 import type { Carpet, PaginatedResponse } from "@farsh/contracts";
+import { UPLOADED_IMAGE_PATH } from "@farsh/contracts";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import type { QueryFilter } from "mongoose";
@@ -7,6 +8,7 @@ import { Model } from "mongoose";
 import { AppException } from "../../common/app-exception.js";
 import { isDuplicateKeyError } from "../../common/database/mongo-errors.js";
 import { escapeRegex, toPageMeta } from "../../common/pagination.js";
+import { ImageStorage } from "../media/image-storage.js";
 import { toCarpetDto } from "./carpets.mapper.js";
 import type { CreateCarpetDto } from "./dto/create-carpet.dto.js";
 import type { ListCarpetsQueryDto } from "./dto/list-carpets-query.dto.js";
@@ -16,11 +18,13 @@ import { CarpetEntity } from "./schemas/carpet.schema.js";
 
 const NOT_FOUND = "فرش یافت نشد";
 const SLUG_TAKEN = "فرشی با این شناسه از قبل وجود دارد";
+const IMAGE_MISSING = "این عکس روی سرور نیست؛ دوباره بارگذاری کنید";
 
 @Injectable()
 export class CarpetsService {
   constructor(
     @InjectModel(CarpetEntity.name) private readonly carpetModel: Model<CarpetDocument>,
+    private readonly storage: ImageStorage,
   ) {}
 
   async list(query: ListCarpetsQueryDto): Promise<PaginatedResponse<Carpet>> {
@@ -56,6 +60,7 @@ export class CarpetsService {
   }
 
   async create(dto: CreateCarpetDto): Promise<Carpet> {
+    await this.assertImageStored(dto.image);
     try {
       const created = await this.carpetModel.create(dto);
       return toCarpetDto(created.toObject());
@@ -66,11 +71,38 @@ export class CarpetsService {
   }
 
   async update(slug: string, dto: UpdateCarpetDto): Promise<Carpet> {
-    const carpet = await this.carpetModel
-      .findOneAndUpdate({ slug }, { $set: dto }, { returnDocument: "after", runValidators: true })
+    if (dto.image !== undefined) await this.assertImageStored(dto.image);
+    const before = await this.carpetModel
+      .findOneAndUpdate({ slug }, { $set: dto }, { returnDocument: "before", runValidators: true })
       .lean<CarpetEntity>();
-    if (!carpet) throw new NotFoundException(NOT_FOUND);
-    return toCarpetDto(carpet);
+    if (!before) throw new NotFoundException(NOT_FOUND);
+    if (dto.image !== undefined && dto.image !== before.image) {
+      await this.removeUnusedImage(before.image);
+    }
+    return toCarpetDto({ ...before, ...dto });
+  }
+
+  /** A carpet may only point at an uploaded photo that is really on disk, so no page shows a broken image. */
+  private async assertImageStored(image: string): Promise<void> {
+    if (!image.startsWith(UPLOADED_IMAGE_PATH)) return;
+    const name = this.storage.nameOf(image);
+    if (!name || !(await this.storage.exists(name))) {
+      throw new AppException(400, "VALIDATION_FAILED", IMAGE_MISSING, [
+        { path: "image", message: IMAGE_MISSING },
+      ]);
+    }
+  }
+
+  /**
+   * Deletes a replaced upload once no carpet uses it. Soft-deleted carpets count: restoring one must
+   * bring its photo back. Failing to delete only wastes disk, so it never fails the update.
+   */
+  private async removeUnusedImage(image: string): Promise<void> {
+    const name = this.storage.nameOf(image);
+    if (!name) return;
+    const stillUsed = await this.carpetModel.exists({ image }).setOptions({ withDeleted: true });
+    if (stillUsed) return;
+    await this.storage.remove(name).catch(() => undefined);
   }
 
   async softDelete(slug: string): Promise<void> {

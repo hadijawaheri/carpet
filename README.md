@@ -34,7 +34,7 @@ apps/web/src/
                           and /carpets/[slug], each carpet's shareable page (docs/adr/0012)
   features/carpet-ar/     "see it in my room": the carpet at real size in the phone's own AR viewer,
                           served as /carpets/[slug]/model.glb and model.usdz (docs/adr/0018)
-  features/encyclopedia/  /encyclopedia: draft articles on knots, density, materials and price
+  features/encyclopedia/  /encyclopedia: articles on knots, density, materials and price
   features/inquiry/       inquiry form → POST /api/inquiries
   features/newsletter/    newsletter form → POST /api/newsletter/subscriptions
   features/account/       /sign-in (OTP), /dashboard/profile: profile, logout, delete with a fresh code

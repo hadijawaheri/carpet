@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import type { Env } from "../../config/env.js";
 import { ConsoleSmsProvider } from "./console-sms.provider.js";
+import { DisabledSmsProvider } from "./disabled-sms.provider.js";
 import { MelipayamakSmsProvider } from "./melipayamak-sms.provider.js";
 import { SmsProvider } from "./sms.provider.js";
 
@@ -12,6 +13,8 @@ export function createSmsProvider(env: SmsEnv): SmsProvider {
   switch (env.SMS_PROVIDER) {
     case "console":
       return new ConsoleSmsProvider();
+    case "disabled":
+      return new DisabledSmsProvider();
     case "melipayamak":
       // env.ts already refuses to boot without both; this keeps the types honest
       if (!env.MELIPAYAMAK_API_KEY || !env.MELIPAYAMAK_BODY_ID) {

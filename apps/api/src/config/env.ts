@@ -20,7 +20,8 @@ const envSchema = z
           .map((origin) => origin.trim())
           .filter(Boolean),
       ),
-    SMS_PROVIDER: z.enum(["console", "melipayamak"]).default("console"),
+    // disabled: production before an SMS vendor exists; sign-in answers 503 SMS_UNAVAILABLE
+    SMS_PROVIDER: z.enum(["console", "melipayamak", "disabled"]).default("console"),
     MELIPAYAMAK_API_KEY: z.preprocess(emptyToUndefined, z.string().min(8).optional()),
     MELIPAYAMAK_BODY_ID: z.preprocess(
       emptyToUndefined,
@@ -34,6 +35,8 @@ const envSchema = z
         .regex(/^\d{6}$/)
         .optional(),
     ),
+    // Uploaded carpet photos; on the server this is a directory outside the release folder, so a deploy never wipes it (ADR 0016)
+    MEDIA_DIR: z.string().min(1).default("media"),
     // Read by instrument.ts before Nest starts; listed here so a malformed value fails the boot
     SENTRY_DSN: z.preprocess(emptyToUndefined, z.url().optional()),
     THROTTLE_ENABLED: z

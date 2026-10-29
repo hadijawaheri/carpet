@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AppException } from "../../common/app-exception.js";
 import { ConsoleSmsProvider } from "./console-sms.provider.js";
+import { DisabledSmsProvider } from "./disabled-sms.provider.js";
 import { MelipayamakSmsProvider } from "./melipayamak-sms.provider.js";
 import { createSmsProvider } from "./sms.module.js";
 
@@ -17,6 +18,14 @@ describe("createSmsProvider", () => {
       MELIPAYAMAK_BODY_ID: 42,
     });
     expect(provider).toBeInstanceOf(MelipayamakSmsProvider);
+  });
+
+  it("returns a provider that refuses every send when SMS is disabled", async () => {
+    const provider = createSmsProvider({ SMS_PROVIDER: "disabled" });
+    expect(provider).toBeInstanceOf(DisabledSmsProvider);
+    await expect(provider.send("09121234567", "otp", ["654321"])).rejects.toMatchObject({
+      code: "SMS_UNAVAILABLE",
+    });
   });
 
   it("refuses Melipayamak without credentials", () => {

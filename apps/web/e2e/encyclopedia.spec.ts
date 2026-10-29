@@ -3,10 +3,10 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, openPage, test } from "./fixtures";
 
 test.describe("encyclopedia", () => {
-  test("lists the drafts and opens an article", async ({ page, consoleProblems }) => {
+  test("lists the articles and opens one", async ({ page, consoleProblems }) => {
     await openPage(page, "/encyclopedia");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("گره به گره، از نزدیک");
-    await expect(page.getByText(/^پیش‌نویس:/)).toBeVisible();
+    await expect(page.getByText(/^پیش‌نویس:/)).toHaveCount(0);
     const cards = page.getByRole("main").getByRole("listitem");
     await expect(cards).toHaveCount(5);
 
@@ -14,7 +14,7 @@ test.describe("encyclopedia", () => {
     await expect(page).toHaveURL(/\/encyclopedia\/raj-shaneh-density$/);
     await expect(page).toHaveTitle("رج، شانه و تراکم؛ زبان شمارش گره · فرش");
     await expect(page.getByRole("heading", { level: 2, name: "رج در فرش دستباف" })).toBeVisible();
-    await expect(page.getByText(/^پیش‌نویس:/)).toBeVisible();
+    await expect(page.getByText(/^پیش‌نویس:/)).toHaveCount(0);
 
     const others = page.getByRole("region", { name: "نوشته‌های دیگر" });
     await expect(others.getByRole("listitem")).toHaveCount(4);

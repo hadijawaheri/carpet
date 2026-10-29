@@ -4,10 +4,10 @@ import { describe, expect, it } from "vitest";
 import { articles, getArticle } from "./articles";
 
 describe("encyclopedia articles", () => {
-  it("are valid, uniquely addressed drafts", () => {
+  it("are valid, uniquely addressed and approved", () => {
     for (const article of articles) {
       expect(articleSchema.safeParse(article).success).toBe(true);
-      expect(article.isDraft).toBe(true);
+      expect(article.isDraft).toBe(false);
     }
     expect(new Set(articles.map((a) => a.slug)).size).toBe(articles.length);
   });
