@@ -15,7 +15,9 @@ export function EncyclopediaIndex() {
         نوشته‌هایی کوتاه درباره‌ی گره، تراکم، جنس و قیمت فرش ایرانی؛ برای اینکه پیش از دیدن یک فرش
         بدانید به چه چیزی نگاه کنید.
       </p>
-      <DraftNotice className="mt-6 max-w-2xl" />
+      {articles.some((article) => article.isDraft) ? (
+        <DraftNotice className="mt-6 max-w-2xl" />
+      ) : null}
       <Link
         href={paths.knotCalculator}
         className="mt-10 flex max-w-2xl flex-col gap-1 bg-alabaster p-6 transition hover:shadow-lift focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

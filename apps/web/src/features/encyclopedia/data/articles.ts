@@ -1,6 +1,7 @@
 import { type Article, articleSchema, type ArticleTopic } from "@farsh/contracts";
 
-type ArticleDraft = Omit<Article, "readingMinutes" | "isDraft">;
+// A new article can be added with `isDraft: true` and stays flagged until the owner approves it.
+type ArticleDraft = Omit<Article, "readingMinutes" | "isDraft"> & { isDraft?: boolean };
 
 // Persian prose reads at roughly this pace; the figure only rounds the "n-minute read" label.
 const WORDS_PER_MINUTE = 200;
@@ -196,7 +197,7 @@ function readingMinutes(article: ArticleDraft): number {
 }
 
 export const articles: Article[] = drafts.map((draft) =>
-  articleSchema.parse({ ...draft, readingMinutes: readingMinutes(draft), isDraft: true }),
+  articleSchema.parse({ isDraft: false, ...draft, readingMinutes: readingMinutes(draft) }),
 );
 
 export const getArticle = (slug: string): Article | null =>
