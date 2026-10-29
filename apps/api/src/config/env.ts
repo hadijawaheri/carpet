@@ -20,7 +20,8 @@ const envSchema = z
           .map((origin) => origin.trim())
           .filter(Boolean),
       ),
-    SMS_PROVIDER: z.enum(["console", "melipayamak"]).default("console"),
+    // disabled: production before an SMS vendor exists; sign-in answers 503 SMS_UNAVAILABLE
+    SMS_PROVIDER: z.enum(["console", "melipayamak", "disabled"]).default("console"),
     MELIPAYAMAK_API_KEY: z.preprocess(emptyToUndefined, z.string().min(8).optional()),
     MELIPAYAMAK_BODY_ID: z.preprocess(
       emptyToUndefined,
