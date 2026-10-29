@@ -51,6 +51,8 @@ docs/adr/                 decisions
 
 ## Production server
 
+Web on Vercel, API on its own server: see [docs/deploy/api-on-own-server.md](docs/deploy/api-on-own-server.md).
+
 No Docker in production (docs/adr/0010). Once, as root: fill `infra/.env`, then `infra/server/setup-mongo.sh` (MongoDB 8 on 127.0.0.1:27017, replica set, auth) and `infra/server/setup.sh <deploy-user>` (ufw, daily backup timer, `pm2 startup`, `pm2-logrotate`). Fill `apps/api/.env` (`NODE_ENV=production`, `DATABASE_URL` as printed by setup-mongo, `SMS_PROVIDER=melipayamak`, `CORS_ORIGINS=https://<domain>`, optional `SENTRY_DSN`) and `apps/web/.env.local` (see `.env.example`), set `SITE_ADDRESS` for Caddy, then `scripts/deploy.sh`. See docs/adr/0009 and 0010.
 
 ## Git
