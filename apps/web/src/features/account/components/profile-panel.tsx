@@ -2,6 +2,7 @@
 
 import { updateProfileSchema, type UserDto } from "@farsh/contracts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -95,6 +96,17 @@ export function ProfilePanel({ initialUser }: { initialUser: UserDto }) {
             </div>
           </FieldGroup>
         </form>
+        {user.role === "admin" ? (
+          <Link
+            href={paths.catalogue}
+            className="flex flex-col gap-1 bg-alabaster p-6 transition hover:shadow-lift focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <span className="text-2xl">فرش‌های ویترین</span>
+            <span className="text-sm text-muted-foreground">
+              افزودن، ویرایش و برداشتن فرش‌ها و عکس‌هایشان
+            </span>
+          </Link>
+        ) : null}
         <DeleteAccount mobile={user.mobile} onDeleted={leave} />
       </div>
     </AuthShell>

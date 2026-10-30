@@ -72,14 +72,28 @@ export class CarpetsService {
 
   async update(slug: string, dto: UpdateCarpetDto): Promise<Carpet> {
     if (dto.image !== undefined) await this.assertImageStored(dto.image);
+    // null clears a field: it is unset rather than stored, so the document matches a fresh one
+    const entries = Object.entries(dto);
+    const $set = Object.fromEntries(entries.filter(([, value]) => value !== null));
+    const $unset = Object.fromEntries(
+      entries.filter(([, value]) => value === null).map(([key]) => [key, 1]),
+    );
     const before = await this.carpetModel
-      .findOneAndUpdate({ slug }, { $set: dto }, { returnDocument: "before", runValidators: true })
+      .findOneAndUpdate(
+        { slug },
+        {
+          ...(Object.keys($set).length > 0 ? { $set } : {}),
+          ...(Object.keys($unset).length > 0 ? { $unset } : {}),
+        },
+        { returnDocument: "before", runValidators: true },
+      )
       .lean<CarpetEntity>();
     if (!before) throw new NotFoundException(NOT_FOUND);
     if (dto.image !== undefined && dto.image !== before.image) {
       await this.removeUnusedImage(before.image);
     }
-    return toCarpetDto({ ...before, ...dto });
+    // The mapper reads a cleared (null) field as absent, as it does for a document without it
+    return toCarpetDto({ ...before, ...dto } as CarpetEntity);
   }
 
   /** A carpet may only point at an uploaded photo that is really on disk, so no page shows a broken image. */

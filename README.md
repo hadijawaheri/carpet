@@ -32,10 +32,13 @@ apps/web/src/
   features/carpet-viewer/ cloth solver, knot normal maps, pointer tilt, R3F scene
   features/showroom/      the Heritage Loom page: header, hero, gallery, room preview, drawer,
                           and /carpets/[slug], each carpet's shareable page (docs/adr/0012)
+  features/carpet-ar/     "see it in my room": the carpet at real size in the phone's own AR viewer,
+                          served as /carpets/[slug]/model.glb and model.usdz (docs/adr/0018)
   features/encyclopedia/  /encyclopedia: articles on knots, density, materials and price
   features/inquiry/       inquiry form → POST /api/inquiries
   features/newsletter/    newsletter form → POST /api/newsletter/subscriptions
   features/account/       /sign-in (OTP), /dashboard/profile: profile, logout, delete with a fresh code
+  features/catalogue-admin/ /dashboard/catalogue (admin): add, edit and remove carpets and their photos
   lib/auth/dal.ts         getSession / requireSession for Server Components (server-only)
   proxy.ts                per-request CSP nonce, sign-in redirect and access-cookie refresh
 apps/api/src/             NestJS: config, common (guards, pipe, filter, origin check), infra/sms, health,
