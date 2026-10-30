@@ -36,6 +36,7 @@ apps/web/src/
   features/inquiry/       inquiry form → POST /api/inquiries
   features/newsletter/    newsletter form → POST /api/newsletter/subscriptions
   features/account/       /sign-in (OTP), /dashboard/profile: profile, logout, delete with a fresh code
+  features/catalogue-admin/ /dashboard/catalogue (admin): add, edit and remove carpets and their photos
   lib/auth/dal.ts         getSession / requireSession for Server Components (server-only)
   proxy.ts                per-request CSP nonce, sign-in redirect and access-cookie refresh
 apps/api/src/             NestJS: config, common (guards, pipe, filter, origin check), infra/sms, health,

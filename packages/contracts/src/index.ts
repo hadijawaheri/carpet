@@ -2,6 +2,7 @@ export * from "./auth/auth.schema";
 export * from "./carpet/carpet.schema";
 export * from "./carpet/carpet-admin.schema";
 export * from "./carpet/carpet-catalog";
+export * from "./carpet/carpet-form.schema";
 export * from "./carpet/material-presets";
 export * from "./common/api";
 export * from "./common/digits";

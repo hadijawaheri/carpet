@@ -136,4 +136,28 @@ describe("admin", () => {
       .send({ provenance: { wovenYear: 2019 } })
       .expect(400);
   });
+
+  it("clears optional fields sent as null and leaves absent ones alone", async () => {
+    await request(t.http)
+      .patch("/v1/carpets/tabriz-test")
+      .set("Cookie", admin.cookie)
+      .send({ priceRial: 2_000_000_000, density: { unit: "raj", value: 50 } })
+      .expect(200);
+    const cleared = await request(t.http)
+      .patch("/v1/carpets/tabriz-test")
+      .set("Cookie", admin.cookie)
+      .send({ priceRial: null, provenance: null })
+      .expect(200);
+    expect(cleared.body.data).not.toHaveProperty("priceRial");
+    expect(cleared.body.data).not.toHaveProperty("provenance");
+    expect(cleared.body.data.density).toEqual({ unit: "raj", value: 50 });
+
+    const raw = await t.connection
+      .collection("carpets")
+      .findOne({ slug: "tabriz-test", deletedAt: null });
+    expect(raw).not.toHaveProperty("priceRial");
+    expect(raw).not.toHaveProperty("provenance");
+    const fetched = await request(t.http).get("/v1/carpets/tabriz-test").expect(200);
+    expect(fetched.body.data).toEqual(cleared.body.data);
+  });
 });
