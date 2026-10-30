@@ -64,8 +64,8 @@ db:indexes`, then `pm2 start infra/ecosystem.config.cjs --only farsh-api && pm2 
 
    Caddy fetches and renews the certificate itself once DNS points at the server.
 
-6. Check from outside: `curl https://api.<domain>/health` answers, and nothing else is reachable
-   (`nmap 141.11.107.22` shows only 22, 80, 443).
+6. Check from outside: `curl https://api.<domain>/health/ready` answers (it also pings MongoDB), and nothing else is reachable
+   (`nmap 141.11.107.22` shows only the SSH port, 80 and 443).
 
 ## On Vercel
 
