@@ -18,16 +18,19 @@ interface ViewInRoomProps {
   qr: string;
 }
 
+const IOS_AR_BROWSERS = /CriOS|FxiOS|EdgiOS|GSA|DuckDuckGo/;
+
 let detected: Platform | undefined;
 
 function detectPlatform(): Platform {
   if (detected) return detected;
   const ua = navigator.userAgent;
-  // Every iOS browser (Safari, Chrome, Firefox, in-app views) runs WebKit and hands rel="ar" to Quick
-  // Look; iPadOS reports itself as a Mac, so touch tells them apart. Desktop Safari gets the QR code.
   const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  if (ios) detected = "quick-look";
-  else if (/android/i.test(ua)) detected = "scene-viewer";
+  // Safari says so through rel="ar"; these iOS browsers open Quick Look without saying it. In-app
+  // views (Telegram, Instagram) do neither, so they keep the QR code. Desktop Safari is not iOS.
+  if (ios && (document.createElement("a").relList.supports("ar") || IOS_AR_BROWSERS.test(ua))) {
+    detected = "quick-look";
+  } else if (/android/i.test(ua)) detected = "scene-viewer";
   else detected = "other";
   return detected;
 }
@@ -65,8 +68,8 @@ export function ViewInRoom({ name, image, glbPath, usdzPath, pagePath, qr }: Vie
     // Built by hand: Android does not read "+" as a space, so the title needs %20
     const params = [
       ["file", new URL(glbPath, origin).href],
-      // Without ARCore it still opens the 3D view instead of bouncing back to this page
-      ["mode", "ar_preferred"],
+      // ARCore's package opens only AR; without ARCore the phone goes to the fallback page
+      ["mode", "ar_only"],
       // Fixed scale: a 2 × 3 m carpet must look 2 × 3 m on the floor
       ["resizable", "false"],
       ["title", name],
