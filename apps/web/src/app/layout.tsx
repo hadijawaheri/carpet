@@ -1,43 +1,58 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Jost, Markazi_Text, Vazirmatn } from "next/font/google";
+import localFont from "next/font/local";
 import { connection } from "next/server";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { defaultMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
+// Self-hosted (docs/adr/0019): fetching from Google at build time failed builds at random. Variable
+// files, one per script the stack needs them for.
 // The design's Latin pair; neither has Persian glyphs, so each falls back to its closest Persian match.
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
+const cormorant = localFont({
+  src: [
+    {
+      path: "./fonts/cormorant-garamond-latin-wght-normal.woff2",
+      weight: "300 700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/cormorant-garamond-latin-wght-italic.woff2",
+      weight: "300 700",
+      style: "italic",
+    },
+  ],
   variable: "--font-cormorant",
   display: "swap",
-  // Next's metric fallback (a local serif) has Arabic glyphs and would win over Markazi Text.
+  // A metric fallback (a local serif) has Arabic glyphs and would win over Markazi Text.
   adjustFontFallback: false,
   fallback: [],
 });
-const jost = Jost({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
+const jost = localFont({
+  src: "./fonts/jost-latin-wght-normal.woff2",
+  weight: "100 900",
   variable: "--font-jost",
   display: "swap",
   adjustFontFallback: false,
   fallback: [],
 });
-const markazi = Markazi_Text({
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600"],
+// Only the Arabic-script files: Latin text in both stacks is set by Cormorant or Jost first.
+const markazi = localFont({
+  src: "./fonts/markazi-text-arabic-wght-normal.woff2",
+  weight: "400 700",
   variable: "--font-markazi",
   display: "swap",
+  // The default metric fallback is Arial, which has Arabic glyphs and would win over Vazirmatn
+  adjustFontFallback: false,
 });
-const vazirmatn = Vazirmatn({
-  subsets: ["arabic", "latin"],
-  weight: ["300", "400", "500", "600"],
+const vazirmatn = localFont({
+  src: "./fonts/vazirmatn-arabic-wght-normal.woff2",
+  weight: "100 900",
   variable: "--font-vazirmatn",
   display: "swap",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = defaultMetadata;
