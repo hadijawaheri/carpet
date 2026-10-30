@@ -44,12 +44,15 @@ const markazi = localFont({
   weight: "400 700",
   variable: "--font-markazi",
   display: "swap",
+  // The default metric fallback is Arial, which has Arabic glyphs and would win over Vazirmatn
+  adjustFontFallback: false,
 });
 const vazirmatn = localFont({
   src: "./fonts/vazirmatn-arabic-wght-normal.woff2",
   weight: "100 900",
   variable: "--font-vazirmatn",
   display: "swap",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = defaultMetadata;
