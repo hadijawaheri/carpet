@@ -8,6 +8,15 @@ playwright-report
 *.tsbuildinfo
 .env
 .env.local
+.env.*
+!.env.example
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
 # Carpet photos uploaded in development (MEDIA_DIR)
 apps/api/media
 next-env.d.ts
