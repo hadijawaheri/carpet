@@ -39,6 +39,8 @@ const envSchema = z
     MEDIA_DIR: z.string().min(1).default("media"),
     // Read by instrument.ts before Nest starts; listed here so a malformed value fails the boot
     SENTRY_DSN: z.preprocess(emptyToUndefined, z.url().optional()),
+    // Shared with the web app on Vercel; with it, rate limits follow the visitor's x-client-ip
+    API_PROXY_SECRET: z.preprocess(emptyToUndefined, z.string().min(32).optional()),
     THROTTLE_ENABLED: z
       .enum(["true", "false"])
       .default("true")

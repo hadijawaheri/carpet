@@ -3,6 +3,7 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 
 import { serverEnv } from "../env";
+import { clientIpHeaders } from "./client-ip";
 import { parseResponse } from "./parse";
 
 /**
@@ -16,7 +17,9 @@ export async function serverApi<T>(path: string, init: RequestInit = {}): Promis
     ...init,
     headers: {
       cookie: cookieStore.toString(),
+      // Self-hosted, the API trusts one proxy hop; on Vercel it needs the secret-backed header
       ...(forwardedFor ? { "x-forwarded-for": forwardedFor } : {}),
+      ...clientIpHeaders(incoming),
       ...(init.body === undefined ? {} : { "Content-Type": "application/json" }),
       ...init.headers,
     },
