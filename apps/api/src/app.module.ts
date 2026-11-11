@@ -47,6 +47,8 @@ const REQUEST_ID = /^[\w-]{1,64}$/;
             redact: [
               "req.headers.authorization",
               "req.headers.cookie",
+              // Shared with the web app; anyone reading the logs could otherwise forge visitor addresses
+              'req.headers["x-api-proxy-secret"]',
               'res.headers["set-cookie"]',
             ],
             transport: nodeEnv === "development" ? { target: "pino-pretty" } : undefined,
