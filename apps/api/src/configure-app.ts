@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import { Logger } from "nestjs-pino";
 
+import { clientIp } from "./common/http/client-ip.js";
 import { originCheck } from "./common/middleware/origin-check.js";
 import type { Env } from "./config/env.js";
 
@@ -18,6 +19,7 @@ export function configureApp(app: NestExpressApplication): void {
   app.disable("x-powered-by");
   app.use(helmet());
   app.use(cookieParser());
+  app.use(clientIp(config.get("API_PROXY_SECRET", { infer: true })));
   app.useBodyParser("json", { limit: "100kb" });
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: "1" });
   const origins = config.get("CORS_ORIGINS", { infer: true });

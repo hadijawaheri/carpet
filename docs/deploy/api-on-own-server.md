@@ -16,15 +16,12 @@ browser ── https://<site domain> ──► Vercel (Next.js)
 
 1. **A domain for the API.** Vercel's rewrite needs an HTTPS origin, and Caddy can only get a certificate for a
    name, not for a bare IP. Create an `A` record such as `api.<domain>` → `141.11.107.22`.
-2. **Client IPs and rate limits (must be settled before go-live).** Every browser call reaches the API through
-   Vercel, so the address Caddy sees is a Vercel egress IP shared by many visitors. The API trusts one proxy hop
-   (`apps/api/src/configure-app.ts`), so today the OTP limit (3 a minute) and the inquiry limit (5 a minute) would
-   count all visitors together. Options, in order of preference:
-   - keep the per-IP limits but trust the visitor address Vercel puts in `X-Forwarded-For`, and only accept
-     traffic to `api.<domain>` that carries a secret header added by the web app's `proxy.ts` (needs a small code
-     change and a new secret in Vercel and `apps/api/.env`);
-   - or key the OTP limit on the phone number as well as the IP (already the stronger control for SMS cost).
-     This is a code change and gets its own PR before the server goes live.
+2. **Client IPs and rate limits.** Every browser call reaches the API through Vercel, so the address Caddy sees
+   is a Vercel egress IP shared by many visitors. The web app's `proxy.ts` and `serverApi` therefore send the
+   visitor's address in `x-client-ip` together with a shared secret in `x-api-proxy-secret`, and the API's rate
+   limits use that address only when the secret matches (docs/adr/0020). Set the same `API_PROXY_SECRET`
+   (`openssl rand -base64 48`) in `apps/api/.env` and in Vercel. Without it the site still works, but all
+   visitors share one OTP limit (3 a minute) and one inquiry limit (5 a minute).
 3. **SMS:** sign-in needs Melipayamak (`SMS_PROVIDER=melipayamak`, API key, approved pattern id). Until then use
    `SMS_PROVIDER=disabled`: the site works and sign-in answers 503.
 
@@ -42,6 +39,7 @@ browser ── https://<site domain> ──► Vercel (Next.js)
    - `MEDIA_DIR=/var/lib/farsh/media` (create it, owned by the deploy user). It must live **outside** the
      release folder so a fresh clone or `git clean` never deletes photos.
    - `SMS_PROVIDER` as above; optional `SENTRY_DSN`.
+   - `API_PROXY_SECRET`: the shared secret from step 2 of the prerequisites.
 3. **Back up the photos too.** The daily timer only dumps MongoDB. Add `MEDIA_DIR` to whatever copies backups
    off the server (e.g. `rsync -a /var/lib/farsh/media/ <backup host>`); photos are content-addressed, so
    copies are append-only and cheap.
@@ -74,6 +72,8 @@ db:indexes`, then `pm2 start infra/ecosystem.config.cjs --only farsh-api && pm2 
      changing it.
    - `NEXT_PUBLIC_SITE_URL=https://<site domain>`: used for canonical links, QR codes and the AR models'
      photo fetch.
+   - `API_PROXY_SECRET`: the same value as in `apps/api/.env`. Read at runtime, so a redeploy is only needed
+     for Vercel to pick up the new variable.
 2. Redeploy, then check: home page lists the carpets from the API, `/api/carpets` answers JSON, an uploaded
    photo loads at `/api/media/carpets/<file>`, and `/carpets/<slug>/model.glb` downloads.
 3. Request size: Vercel limits a proxied request body to about 4.5 MB. The admin form already shrinks photos above

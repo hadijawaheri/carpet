@@ -1,6 +1,7 @@
 import { COOKIE_NAMES } from "@farsh/contracts";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { clientIpHeaders, withClientIp } from "@/lib/api/client-ip";
 import { buildCsp, createNonce } from "@/lib/csp";
 import { paths } from "@/lib/paths";
 
@@ -24,6 +25,7 @@ async function refresh(request: NextRequest): Promise<string[] | null> {
     headers: {
       cookie: request.headers.get("cookie") ?? "",
       ...(forwardedFor ? { "x-forwarded-for": forwardedFor } : {}),
+      ...clientIpHeaders(request.headers),
     },
     cache: "no-store",
   }).catch(() => null);
@@ -44,6 +46,11 @@ function withCookies(request: NextRequest, setCookies: string[]): string {
 // Optimistic check only: the real authorization is the API guards and lib/auth/dal.ts. Server
 // Components cannot set cookies, so an expired access cookie is rotated here.
 export async function proxy(request: NextRequest): Promise<NextResponse> {
+  // The /api rewrite in next.config.ts forwards these headers to the API
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    return NextResponse.next({ request: { headers: withClientIp(request.headers) } });
+  }
+
   const requestHeaders = new Headers(request.headers);
   let setCookies: string[] = [];
 
@@ -70,6 +77,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
 export const config = {
   matcher: [
+    // Only to tell the API who the visitor is (see lib/api/client-ip.ts)
+    "/api/:path*",
     {
       // /api is proxied JSON, /monitoring is the Sentry tunnel, and static files carry no script
       source:
